@@ -1,73 +1,118 @@
-# Welcome to your Lovable project
+# AI Engineer Portfolio
 
-## Project info
+A modern, responsive portfolio website for an AI Product Engineer specializing in generative AI and machine learning solutions.
 
-**URL**: https://lovable.dev/projects/9814a534-ba04-4c99-b897-0b02d35d6205
+## 🚀 Features
 
-## How can I edit this code?
+- **Clean, Modern Design**: Orange-themed design system with beautiful gradients and animations
+- **Neural Notes**: AI-focused blog section with multimedia content support
+- **Project Showcase**: Detailed project portfolio with live demos and code links  
+- **Git-Based Content Management**: Markdown + YAML frontmatter for easy content updates
+- **Responsive Design**: Optimized for all devices and screen sizes
+- **SEO Optimized**: Proper meta tags, semantic HTML, and performance optimized
 
-There are several ways of editing your application.
+## 🎨 Design System
 
-**Use Lovable**
+The portfolio uses a custom orange-focused design system with:
+- Primary color: Orange (#FF6B35) with variations
+- Gradients and glow effects for visual appeal
+- Smooth animations and transitions
+- Semantic design tokens for consistency
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/9814a534-ba04-4c99-b897-0b02d35d6205) and start prompting.
+## 📝 Content Management
 
-Changes made via Lovable will be committed automatically to this repo.
+### Adding Projects
 
-**Use your preferred IDE**
+Create new project files in `/content/projects/`:
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+```markdown
+---
+title: "Your Project Name"
+description: "Brief project description"
+date: "2024-01-20"
+tags: ["AI", "React", "Python"]
+github: "https://github.com/username/repo"
+demo: "https://your-demo.com"
+featured: true
+---
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+# Your Project Content Here
 ```
 
-**Edit a file directly in GitHub**
+### Adding Neural Notes
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Create new posts in `/content/neural-notes/`:
 
-**Use GitHub Codespaces**
+```markdown
+---
+title: "Your Post Title"
+excerpt: "Brief excerpt for the post"
+date: "2024-01-15"
+tags: ["AI", "ML"]
+hasVideo: true
+videoUrl: "https://youtube.com/embed/video-id"
+---
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+# Your Post Content Here
+```
 
-## What technologies are used for this project?
+## 🚀 Deployment Strategy
 
-This project is built with:
+### Git-Based Workflow
+1. **Main Branch**: Production-ready content
+2. **Feature Branches**: Draft content and new features
+3. **Tags**: Version releases (v1.0, v1.1, etc.)
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Recommended Workflow
+```bash
+# Create new content
+git checkout -b feature/new-neural-note
+# Add your content files
+git add content/neural-notes/new-post.md
+git commit -m "feat: add new neural note about transformers"
+git push origin feature/new-neural-note
+# Create PR for review
+# Merge to main for deployment
+```
 
-## How can I deploy this project?
+### Automated Deployment
+- Set up GitHub Actions for automatic deployment
+- Preview deployments for pull requests
+- Content validation and linting in CI/CD
 
-Simply open [Lovable](https://lovable.dev/projects/9814a534-ba04-4c99-b897-0b02d35d6205) and click on Share -> Publish.
+## 🛠️ Technologies Used
 
-## Can I connect a custom domain to my Lovable project?
+- **Frontend**: React, TypeScript, Tailwind CSS
+- **UI Components**: shadcn/ui with custom variants
+- **Build Tool**: Vite
+- **Content**: Markdown with YAML frontmatter
+- **Deployment**: Lovable (or any static host)
 
-Yes, you can!
+## 📱 Sections
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+1. **Hero Section**: Introduction with call-to-actions
+2. **About**: Skills, experience, and highlights  
+3. **Projects**: Featured work with live demos
+4. **Neural Notes**: AI-focused blog with multimedia support
+5. **Contact**: Multiple ways to get in touch
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## 🎯 SEO Features
+
+- Semantic HTML structure
+- Optimized meta tags and descriptions
+- Clean URLs and proper heading hierarchy
+- Image alt attributes
+- Mobile-first responsive design
+- Fast loading times
+
+## 📞 Contact
+
+Feel free to reach out for collaborations, consulting, or just to connect!
+
+- **Email**: hello@aiengine.dev
+- **GitHub**: [Your GitHub Profile]
+- **LinkedIn**: [Your LinkedIn Profile]
+
+---
+
+Built with ❤️ using modern web technologies and AI-first design principles.
