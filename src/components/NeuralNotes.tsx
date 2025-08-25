@@ -7,14 +7,13 @@ const NeuralNotes = () => {
   const posts = [
     {
       id: 1,
-      title: "The Future of Large Language Models: Beyond GPT-4",
-      excerpt: "Exploring the next generation of AI models and their potential impact on software development, creativity, and human-computer interaction.",
-      date: "2024-01-15",
-      readTime: "8 min read",
-      tags: ["LLM", "GPT-4", "AI Research"],
-      hasVideo: true,
+      title: "What Is Agile for an Agentic Workflow?",
+      excerpt: "Exploring how Agile methodology needs to evolve for AI agent teams, and why traditional processes may be holding back AI acceleration.",
+      date: "2024-01-20",
+      readTime: "12 min read",
+      tags: ["Agile", "AI Agents", "Leadership", "DevOps"],
+      hasVideo: false,
       hasAudio: false,
-      videoUrl: "https://youtube.com/embed/example",
       featured: true
     },
     {

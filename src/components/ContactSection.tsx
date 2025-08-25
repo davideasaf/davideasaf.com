@@ -11,7 +11,7 @@ const ContactSection = () => {
       icon: Mail,
       title: "Email",
       description: "Drop me a line anytime",
-      value: "hello@aiengine.dev",
+      value: "david@davidasaf.dev",
       action: "Send Email"
     },
     {
@@ -31,9 +31,8 @@ const ContactSection = () => {
   ];
 
   const socialLinks = [
-    { icon: Github, label: "GitHub", url: "https://github.com" },
-    { icon: Linkedin, label: "LinkedIn", url: "https://linkedin.com" },
-    { icon: Twitter, label: "Twitter", url: "https://twitter.com" },
+    { icon: Github, label: "GitHub", url: "https://github.com/davideasaf" },
+    { icon: Linkedin, label: "LinkedIn", url: "https://www.linkedin.com/in/davideasaf/" },
   ];
 
   return (
@@ -87,9 +86,11 @@ const ContactSection = () => {
               <h3 className="text-lg font-semibold">Follow My Journey</h3>
               <div className="flex space-x-4">
                 {socialLinks.map((link, index) => (
-                  <Button key={index} variant="outline" size="icon" className="hover:border-primary hover:text-primary">
-                    <link.icon className="h-5 w-5" />
-                  </Button>
+                  <a key={index} href={link.url} target="_blank" rel="noopener noreferrer">
+                    <Button variant="outline" size="icon" className="hover:border-primary hover:text-primary">
+                      <link.icon className="h-5 w-5" />
+                    </Button>
+                  </a>
                 ))}
               </div>
             </div>

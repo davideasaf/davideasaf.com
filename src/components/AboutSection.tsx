@@ -46,14 +46,14 @@ const AboutSection = () => {
                 </span>
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                I'm a passionate AI Product Engineer with over 5 years of experience building 
-                intelligent systems that solve real-world problems. My expertise spans from 
-                research and development to production deployment of AI applications.
+                I'm David Asaf, a passionate AI Product Engineer specializing in agentic workflows 
+                and generative AI systems. I focus on bridging the gap between cutting-edge AI research 
+                and practical business applications that deliver real value.
               </p>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                I believe in the transformative power of AI and focus on creating solutions 
-                that are not just technically impressive, but genuinely useful and accessible 
-                to users across different domains.
+                My expertise lies in orchestrating AI agents, designing human-AI collaboration patterns, 
+                and rethinking traditional development methodologies for the AI era. I believe we're at 
+                an inflection point where the right approach to AI can accelerate teams dramatically.
               </p>
             </div>
 

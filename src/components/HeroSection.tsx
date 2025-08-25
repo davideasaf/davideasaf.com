@@ -20,14 +20,14 @@ const HeroSection = () => {
                 🤖 AI Product Engineer & Developer
               </div>
               <h1 className="text-4xl md:text-6xl font-bold leading-tight">
-                Building the Future with{" "}
+                Hi, I'm{" "}
                 <span className="bg-gradient-primary bg-clip-text text-transparent">
-                  Generative AI
+                  David Asaf
                 </span>
               </h1>
               <p className="text-xl text-muted-foreground leading-relaxed max-w-lg">
-                Transforming ideas into intelligent products through cutting-edge AI engineering, 
-                machine learning, and innovative software development.
+                AI Product Engineer building the future of agentic workflows and intelligent systems. 
+                Transforming complex problems into elegant AI solutions.
               </p>
             </div>
 
@@ -45,12 +45,16 @@ const HeroSection = () => {
             <div className="flex items-center space-x-6">
               <span className="text-sm font-medium text-muted-foreground">Connect with me:</span>
               <div className="flex space-x-4">
-                <Button variant="ghost" size="icon" className="hover:text-primary">
-                  <Github className="h-5 w-5" />
-                </Button>
-                <Button variant="ghost" size="icon" className="hover:text-primary">
-                  <Linkedin className="h-5 w-5" />
-                </Button>
+                <a href="https://github.com/davideasaf" target="_blank" rel="noopener noreferrer">
+                  <Button variant="ghost" size="icon" className="hover:text-primary">
+                    <Github className="h-5 w-5" />
+                  </Button>
+                </a>
+                <a href="https://www.linkedin.com/in/davideasaf/" target="_blank" rel="noopener noreferrer">
+                  <Button variant="ghost" size="icon" className="hover:text-primary">
+                    <Linkedin className="h-5 w-5" />
+                  </Button>
+                </a>
                 <Button variant="ghost" size="icon" className="hover:text-primary">
                   <Mail className="h-5 w-5" />
                 </Button>
@@ -60,16 +64,24 @@ const HeroSection = () => {
 
           <div className="relative">
             <div className="relative z-10 bg-card rounded-2xl p-8 shadow-elegant border">
-              <div className="space-y-6">
-                <h3 className="text-2xl font-bold">Latest Neural Note</h3>
-                <div className="space-y-4">
-                  <div className="h-4 bg-gradient-primary rounded w-3/4"></div>
-                  <div className="h-4 bg-muted rounded w-1/2"></div>
-                  <div className="h-4 bg-muted rounded w-2/3"></div>
+              <div className="flex items-center space-x-6">
+                <div className="flex-shrink-0">
+                  <img 
+                    src="/lovable-uploads/bd5390db-4864-4adb-b1b3-ec91260f704c.png" 
+                    alt="David Asaf - AI Product Engineer"
+                    className="w-24 h-24 rounded-full object-cover border-4 border-primary/20"
+                  />
                 </div>
-                <Button variant="glow" className="w-full">
-                  Read Latest Insights
-                </Button>
+                <div className="space-y-4">
+                  <h3 className="text-2xl font-bold">Latest Neural Note</h3>
+                  <p className="text-muted-foreground">
+                    "What Is Agile for an Agentic Workflow?" - Exploring how traditional methodologies 
+                    need to evolve for AI agent teams.
+                  </p>
+                  <Button variant="glow" className="w-full">
+                    Read Latest Insights
+                  </Button>
+                </div>
               </div>
             </div>
             <div className="absolute -top-4 -right-4 w-72 h-72 bg-gradient-primary rounded-full opacity-20 blur-3xl"></div>
