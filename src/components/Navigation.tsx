@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Code2, Brain, FileText, User, Mail } from "lucide-react";
+import { Menu, X, Code2, Brain, FileText, User, Mail, Home } from "lucide-react";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('hero');
+  const location = useLocation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -33,11 +35,11 @@ const Navigation = () => {
   };
 
   const navItems = [
-    { id: 'hero', label: 'Home', icon: User },
-    { id: 'about', label: 'About', icon: User },
-    { id: 'projects', label: 'Projects', icon: Code2 },
-    { id: 'neural-notes', label: 'Neural Notes', icon: Brain },
-    { id: 'contact', label: 'Contact', icon: Mail },
+    { id: 'hero', label: 'Home', icon: Home, type: 'scroll' },
+    { id: 'about', label: 'About', icon: User, type: 'scroll' },
+    { id: 'projects', label: 'Projects', icon: Code2, type: 'link', path: '/projects' },
+    { id: 'neural-notes', label: 'Neural Notes', icon: Brain, type: 'link', path: '/neural-notes' },
+    { id: 'contact', label: 'Contact', icon: Mail, type: 'scroll' },
   ];
 
   return (
@@ -53,18 +55,35 @@ const Navigation = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => scrollToSection(item.id)}
-                className={`flex items-center space-x-1 text-sm font-medium transition-colors hover:text-primary ${
-                  activeSection === item.id ? 'text-primary' : 'text-muted-foreground'
-                }`}
-              >
-                <item.icon className="h-4 w-4" />
-                <span>{item.label}</span>
-              </button>
-            ))}
+            {navItems.map((item) => {
+              const isActive = item.type === 'scroll' 
+                ? activeSection === item.id 
+                : location.pathname === item.path;
+              
+              return item.type === 'link' ? (
+                <Link
+                  key={item.id}
+                  to={item.path!}
+                  className={`flex items-center space-x-1 text-sm font-medium transition-colors hover:text-primary ${
+                    isActive ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.label}</span>
+                </Link>
+              ) : (
+                <button
+                  key={item.id}
+                  onClick={() => scrollToSection(item.id)}
+                  className={`flex items-center space-x-1 text-sm font-medium transition-colors hover:text-primary ${
+                    isActive ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span>{item.label}</span>
+                </button>
+              );
+            })}
             <Button variant="glow" size="sm">
               Let's Connect
             </Button>
@@ -86,18 +105,36 @@ const Navigation = () => {
         {isOpen && (
           <div className="md:hidden pb-4">
             <div className="flex flex-col space-y-2">
-              {navItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => scrollToSection(item.id)}
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:text-primary hover:bg-accent ${
-                    activeSection === item.id ? 'text-primary bg-accent' : 'text-muted-foreground'
-                  }`}
-                >
-                  <item.icon className="h-4 w-4" />
-                  <span>{item.label}</span>
-                </button>
-              ))}
+              {navItems.map((item) => {
+                const isActive = item.type === 'scroll' 
+                  ? activeSection === item.id 
+                  : location.pathname === item.path;
+                
+                return item.type === 'link' ? (
+                  <Link
+                    key={item.id}
+                    to={item.path!}
+                    onClick={() => setIsOpen(false)}
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:text-primary hover:bg-accent ${
+                      isActive ? 'text-primary bg-accent' : 'text-muted-foreground'
+                    }`}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    <span>{item.label}</span>
+                  </Link>
+                ) : (
+                  <button
+                    key={item.id}
+                    onClick={() => scrollToSection(item.id)}
+                    className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:text-primary hover:bg-accent ${
+                      isActive ? 'text-primary bg-accent' : 'text-muted-foreground'
+                    }`}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
               <Button variant="glow" size="sm" className="mt-2">
                 Let's Connect
               </Button>
