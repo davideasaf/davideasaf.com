@@ -1,7 +1,7 @@
 import frontMatter from "front-matter";
 import yaml from "js-yaml";
 import type React from "react";
-import { calculateReadingTime } from "./config";
+import { computeReadingTimeFromRawOrComponent } from "./readingTime";
 
 // Type definitions for content
 export interface NeuralNoteMeta {
@@ -49,10 +49,27 @@ export async function loadNeuralNotes(): Promise<
     const modules = import.meta.glob("/content/neural-notes/*.mdx", {
       eager: true,
     });
+    // Load raw strings for MDX files (handle both raw strings and loaders)
     const rawModules = import.meta.glob("/content/neural-notes/*.mdx", {
       eager: true,
       as: "raw",
     });
+    const resolveRawContent = async (
+      entry: unknown,
+    ): Promise<string | undefined> => {
+      if (typeof entry === "string") return entry as string;
+      if (entry && typeof (entry as any).default === "string")
+        return (entry as any).default as string;
+      if (typeof entry === "function") {
+        try {
+          const res: unknown = await (entry as () => Promise<unknown>)();
+          if (typeof res === "string") return res as string;
+          if (res && typeof (res as any).default === "string")
+            return (res as any).default as string;
+        } catch { }
+      }
+      return undefined;
+    };
 
     // Helpers to work with frontmatter without third-party parsing issues
     const stripFrontMatter = (raw: string | undefined): string => {
@@ -84,21 +101,29 @@ export async function loadNeuralNotes(): Promise<
         const slug = path.split("/").pop()?.replace(".mdx", "") || "";
 
         // Prefer MDX-exported frontmatter; fall back to YAML block in the raw file
-        const rawMaybe = rawModules[path] as unknown;
-        const rawContent =
-          typeof rawMaybe === "string"
-            ? rawMaybe
-            : rawMaybe && typeof (rawMaybe as any).default === "string"
-              ? (rawMaybe as any).default
-              : undefined;
+        const rawMaybe = (rawModules as Record<string, unknown>)[path];
+        const rawContent = await resolveRawContent(rawMaybe);
+        if (typeof window !== "undefined") {
+          try {
+            console.debug(
+              "[reading-time] rawMaybe typeof",
+              typeof rawMaybe,
+              "hasDefault",
+              Boolean((rawMaybe as any)?.default),
+              "rawContentLen",
+              typeof rawContent === "string" ? rawContent.length : "n/a",
+            );
+          } catch { }
+        }
         const fmAttrs =
           (mdxModule as any).frontmatter ??
           (typeof rawContent === "string"
             ? parseFrontmatterYaml(rawContent)
             : {});
-        const body =
-          typeof rawContent === "string" ? stripFrontMatter(rawContent) : "";
-        const configuredReadTime = await calculateReadingTime(body);
+        const configuredReadTime = await computeReadingTimeFromRawOrComponent(
+          typeof rawContent === "string" ? rawContent : undefined,
+          MDXContent,
+        );
 
         const fm = (fmAttrs ?? {}) as Partial<NeuralNoteMeta>;
         const rawTags: unknown = (fm as unknown as { tags?: unknown }).tags;

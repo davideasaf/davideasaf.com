@@ -1,1 +1,0 @@
-The reading time calculation is failing as all things are showing up as '0' minutes. 

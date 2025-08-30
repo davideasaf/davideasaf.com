@@ -1,0 +1,18 @@
+---
+alwaysApply: true
+---
+
+# DRY Implementation Rules
+
+- Prefer a single source of truth for shared logic. Extract business logic into `src/lib/` and import where needed.
+- Keep UI logic in components; business logic in `src/lib/`.
+- Do not duplicate regexes, constants, utilities, or content parsing in components; centralize them in `src/lib/`.
+- Reading time DRY rule: use helpers from [`src/lib/readingTime.ts`](mdc:src/lib/readingTime.ts)
+  - Build/server: `computeReadingTimeFromRawOrComponent(raw, Component)`
+  - Client/detail: `computeReadingTimeFromDOM(element)`
+  - Always rely on `calculateReadingTime` for duration math; do not reimplement text cleanup.
+- When adding new utilities, colocate domain-specific logic under `src/lib/` and export named helpers. Avoid copy-pasting logic across pages/components.
+- Favor composition over inheritance in React components. Reuse smaller components and hooks rather than duplicating code.
+- If multiple files need the same config, put it in `src/lib/config.ts` and import it.
+- Before adding new helpers, search the codebase for existing equivalents and extend them if appropriate.
+- Prefer TypeScript types/interfaces in shared `.d.ts` or `src/lib/` over ad-hoc types in components.

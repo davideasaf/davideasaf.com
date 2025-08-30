@@ -84,3 +84,7 @@ bash scripts/dev_agent.sh \
 - Enforce write scope; never commit secrets.
 - Keep commits focused; do not batch unrelated edits.
 - If rebase conflicts or CI failures require human input, stop and request review.
+
+### Code Rules
+
+- Read .cursor/rules/dry-implementation.mdc
