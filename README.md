@@ -7,9 +7,10 @@ A modern, responsive portfolio website for an AI Product Engineer specializing i
 - **Clean, Modern Design**: Orange-themed design system with beautiful gradients and animations
 - **Neural Notes**: AI-focused blog section with multimedia content support
 - **Project Showcase**: Detailed project portfolio with live demos and code links  
-- **Git-Based Content Management**: Markdown + YAML frontmatter for easy content updates
+- **File-Based Content Management**: Markdown + YAML frontmatter loaded from `/content` directory
+- **Automatic Image Optimization**: WebP conversion and responsive sizing with vite-imagetools
 - **Responsive Design**: Optimized for all devices and screen sizes
-- **SEO Optimized**: Proper meta tags, semantic HTML, and performance optimized
+- **SEO Optimized**: Proper meta tags, structured data, and performance optimized
 
 ## 🎨 Design System
 
@@ -84,8 +85,9 @@ git push origin feature/new-neural-note
 
 - **Frontend**: React, TypeScript, Tailwind CSS
 - **UI Components**: shadcn/ui with custom variants
-- **Build Tool**: Vite
-- **Content**: Markdown with YAML frontmatter
+- **Build Tool**: Vite with vite-imagetools for image optimization
+- **Content**: Markdown with YAML frontmatter (parsed with front-matter)
+- **Image Optimization**: Automatic WebP conversion and responsive sizing
 - **Deployment**: Lovable (or any static host)
 
 ## 📱 Sections
@@ -109,7 +111,7 @@ git push origin feature/new-neural-note
 
 Feel free to reach out for collaborations, consulting, or just to connect!
 
-- **Email**: hello@aiengine.dev
+- **Email**: david@davidasaf.dev
 - **GitHub**: [Your GitHub Profile]
 - **LinkedIn**: [Your LinkedIn Profile]
 

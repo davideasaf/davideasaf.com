@@ -1,16 +1,6 @@
-// Content management utilities for Git-based markdown content
+import frontMatter from 'front-matter';
 
-export interface ProjectMeta {
-  title: string;
-  description: string;
-  date: string;
-  tags: string[];
-  github?: string;
-  demo?: string;
-  featured: boolean;
-  image?: string;
-}
-
+// Type definitions for content
 export interface NeuralNoteMeta {
   title: string;
   excerpt: string;
@@ -26,99 +16,131 @@ export interface NeuralNoteMeta {
   videoTitle?: string;
 }
 
-export interface ContentItem {
+export interface ProjectMeta {
+  title: string;
+  description: string;
+  date: string;
+  tags: string[];
+  github?: string;
+  demo?: string;
+  featured: boolean;
+  image?: string;
+}
+
+export interface ContentItem<T = NeuralNoteMeta | ProjectMeta> {
   slug: string;
-  meta: ProjectMeta | NeuralNoteMeta;
+  meta: T;
   content: string;
 }
 
-// Mock data for demonstration - in a real implementation, this would
-// parse markdown files from the content directory
-export const getProjects = (): ContentItem[] => {
-  return [
-    {
-      slug: "neural-content-generator",
-      meta: {
-        title: "Neural Content Generator",
-        description: "Advanced GPT-powered content generation platform with custom training capabilities and multi-modal output support.",
-        date: "2024-01-20",
-        tags: ["GPT-4", "Python", "React", "FastAPI"],
-        github: "https://github.com/yourusername/neural-content-generator", 
-        demo: "https://neural-generator.demo.com",
-        featured: true,
-        image: "/projects/neural-generator.jpg"
-      },
-      content: "" // Would contain the parsed markdown content
-    }
-  ];
-};
+// Load Neural Notes from markdown files
+export async function loadNeuralNotes(): Promise<ContentItem<NeuralNoteMeta>[]> {
+  try {
+    // Import all markdown files from content/neural-notes
+    const modules = import.meta.glob('/content/neural-notes/*.md', { 
+      eager: true,
+      query: '?raw',
+      import: 'default'
+    });
 
-export const getNeuralNotes = (): ContentItem[] => {
-  return [
-    {
-      slug: "future-of-llms",
-      meta: {
-        title: "The Future of Large Language Models: Beyond GPT-4",
-        excerpt: "Exploring the next generation of AI models and their potential impact on software development, creativity, and human-computer interaction.",
-        date: "2024-01-15",
-        author: "Your Name",
-        tags: ["LLM", "GPT-4", "AI Research"],
-        readTime: "8 min read",
-        featured: true,
-        hasVideo: true,
-        hasAudio: false,
-        videoUrl: "https://youtube.com/embed/dQw4w9WgXcQ",
-        videoTitle: "The Future of LLMs - Deep Dive Discussion"
-      },
-      content: "" // Would contain the parsed markdown content
-    }
-  ];
-};
+    const posts = Object.entries(modules).map(([path, content]) => {
+      // Parse frontmatter and content
+      const parsed = frontMatter(content as string);
+      const data = parsed.attributes;
+      const markdown = parsed.body;
+      
+      // Extract slug from filename
+      const slug = path.split('/').pop()?.replace('.md', '') || '';
 
-// Utility function to parse frontmatter from markdown
-export const parseFrontmatter = (content: string) => {
-  const frontmatterRegex = /^---\s*\n(.*?)\n---\s*\n/s;
-  const match = content.match(frontmatterRegex);
-  
-  if (!match) {
-    return { meta: {}, content };
+      return {
+        slug,
+        meta: data as NeuralNoteMeta,
+        content: markdown
+      };
+    });
+
+    // Sort by date (newest first)
+    return posts.sort((a, b) => 
+      new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime()
+    );
+  } catch (error) {
+    console.error('Error loading neural notes:', error);
+    return [];
   }
+}
 
-  const frontmatter = match[1];
-  const markdownContent = content.slice(match[0].length);
-  
-  // Simple YAML parser for demo - in production, use a proper YAML library
-  const meta: Record<string, any> = {};
-  frontmatter.split('\n').forEach(line => {
-    const [key, ...valueParts] = line.split(':');
-    if (key && valueParts.length > 0) {
-      const value = valueParts.join(':').trim();
-      meta[key.trim()] = value.replace(/^["']|["']$/g, '');
-    }
+// Load Projects from markdown files
+export async function loadProjects(): Promise<ContentItem<ProjectMeta>[]> {
+  try {
+    // Import all markdown files from content/projects
+    const modules = import.meta.glob('/content/projects/*.md', { 
+      eager: true,
+      query: '?raw',
+      import: 'default'
+    });
+
+    const projects = Object.entries(modules).map(([path, content]) => {
+      // Parse frontmatter and content
+      const parsed = frontMatter(content as string);
+      const data = parsed.attributes;
+      const markdown = parsed.body;
+      
+      // Extract slug from filename
+      const slug = path.split('/').pop()?.replace('.md', '') || '';
+
+      return {
+        slug,
+        meta: data as ProjectMeta,
+        content: markdown
+      };
+    });
+
+    // Sort by date (newest first)
+    return projects.sort((a, b) => 
+      new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime()
+    );
+  } catch (error) {
+    console.error('Error loading projects:', error);
+    return [];
+  }
+}
+
+// Get a specific neural note by slug
+export async function getNeuralNoteBySlug(slug: string): Promise<ContentItem<NeuralNoteMeta> | null> {
+  try {
+    const posts = await loadNeuralNotes();
+    return posts.find(post => post.slug === slug) || null;
+  } catch (error) {
+    console.error(`Error loading neural note ${slug}:`, error);
+    return null;
+  }
+}
+
+// Get a specific project by slug
+export async function getProjectBySlug(slug: string): Promise<ContentItem<ProjectMeta> | null> {
+  try {
+    const projects = await loadProjects();
+    return projects.find(project => project.slug === slug) || null;
+  } catch (error) {
+    console.error(`Error loading project ${slug}:`, error);
+    return null;
+  }
+}
+
+// Utility function to format date
+export function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
   });
+}
 
-  return { meta, content: markdownContent };
-};
-
-// Git-based deployment strategy recommendations:
-/*
-1. Content Structure:
-   - /content/projects/*.md - Project case studies
-   - /content/neural-notes/*.md - Blog posts
-   - /content/config.yaml - Site configuration
-
-2. Git Workflow:
-   - main branch: Production content
-   - draft branches: Work-in-progress content
-   - Tags: Version releases (v1.0, v1.1, etc.)
-
-3. Automated Deployment:
-   - GitHub Actions to build and deploy on push to main
-   - Preview deployments for pull requests
-   - Content validation and linting in CI/CD
-
-4. Content Management:
-   - Use conventional commits for content changes
-   - Leverage GitHub's web editor for quick updates
-   - Tag releases for major content updates
-*/
+// Utility function to calculate reading time
+export function calculateReadingTime(content: string): string {
+  const wordsPerMinute = 200;
+  const wordCount = content.split(/\s+/).length;
+  const minutes = Math.ceil(wordCount / wordsPerMinute);
+  return `${minutes} min read`;
+}
