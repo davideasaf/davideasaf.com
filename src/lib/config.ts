@@ -141,11 +141,6 @@ export async function calculateReadingTime(content: string): Promise<string> {
       : 200;
   const rawMinutes = wordCount > 0 ? wordCount / safeWpm : 1;
   const minutes = Math.max(1, Math.ceil(rawMinutes));
-  if (typeof window !== 'undefined') {
-    try {
-      console.debug('[reading-time]', { wordCount, safeWpm, minutes, sample: text.slice(0, 120) });
-    } catch { }
-  }
 
   return `${minutes} min read`;
 }
