@@ -1,10 +1,15 @@
 import { useState } from "react";
 import { ArrowLeft, Calendar, Clock, Tag, Youtube, Volume2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import rehypeHighlight from "rehype-highlight";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
+
+import "highlight.js/styles/github-dark.css";
 
 const neuralNotes = [
   {
@@ -294,13 +299,30 @@ const NeuralNotes = () => {
               </header>
 
               {/* Article Content */}
-              <div className="prose prose-lg max-w-none dark:prose-invert">
-                <div 
-                  className="space-y-6"
-                  dangerouslySetInnerHTML={{ 
-                    __html: selectedNoteData.content.replace(/\n/g, '<br>').replace(/---/g, '<hr class="my-8">') 
-                  }} 
-                />
+              <div className="markdown-content max-w-none">
+                <ReactMarkdown 
+                  remarkPlugins={[remarkGfm]}
+                  rehypePlugins={[rehypeHighlight]}
+                  components={{
+                    img: ({ node, ...props }) => (
+                      <img 
+                        {...props} 
+                        className="rounded-lg shadow-lg mb-4 max-w-full h-auto" 
+                        loading="lazy"
+                      />
+                    ),
+                    a: ({ node, ...props }) => (
+                      <a 
+                        {...props} 
+                        className="text-primary underline underline-offset-4 hover:text-primary-glow transition-colors"
+                        target={props.href?.startsWith('http') ? '_blank' : undefined}
+                        rel={props.href?.startsWith('http') ? 'noopener noreferrer' : undefined}
+                      />
+                    ),
+                  }}
+                >
+                  {selectedNoteData.content}
+                </ReactMarkdown>
               </div>
             </article>
           </div>
