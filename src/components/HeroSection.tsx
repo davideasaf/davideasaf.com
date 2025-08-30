@@ -8,14 +8,22 @@ import { Link } from "react-router-dom";
 
 const HeroSection = () => {
 	const [latestSlug, setLatestSlug] = useState<string | null>(null);
+	const [isLoadingLatest, setIsLoadingLatest] = useState(true);
+	const [hasError, setHasError] = useState(false);
 
 	useEffect(() => {
 		const loadLatest = async () => {
 			try {
+				setIsLoadingLatest(true);
+				setHasError(false);
 				const notes = await loadNeuralNotes();
 				setLatestSlug(notes[0]?.slug ?? null);
-			} catch {
-				// noop
+			} catch (error) {
+				console.error("Failed to load latest neural note:", error);
+				setHasError(true);
+				setLatestSlug(null);
+			} finally {
+				setIsLoadingLatest(false);
 			}
 		};
 		loadLatest();
@@ -119,21 +127,41 @@ const HeroSection = () => {
 								</div>
 								<div className="space-y-4">
 									<h3 className="text-2xl font-bold">Latest Neural Note</h3>
-									<p className="text-muted-foreground">
-										"What Is Agile for an Agentic Workflow?" - Exploring how
-										traditional methodologies need to evolve for AI agent teams.
-									</p>
-									<Button asChild variant="glow" className="w-full">
-										<Link
-											to={
-												latestSlug
-													? `/neural-notes/${latestSlug}`
-													: "/neural-notes"
-											}
-										>
-											Read Latest Insights
-										</Link>
-									</Button>
+									{isLoadingLatest ? (
+										<div className="space-y-3">
+											<div className="h-4 bg-muted rounded animate-pulse"></div>
+											<div className="h-4 bg-muted rounded animate-pulse w-3/4"></div>
+											<div className="h-10 bg-muted rounded animate-pulse"></div>
+										</div>
+									) : hasError ? (
+										<div className="space-y-3">
+											<p className="text-muted-foreground text-sm">
+												Unable to load latest insights at the moment.
+											</p>
+											<Button asChild variant="glow" className="w-full">
+												<Link to="/neural-notes">Browse All Insights</Link>
+											</Button>
+										</div>
+									) : (
+										<>
+											<p className="text-muted-foreground">
+												"What Is Agile for an Agentic Workflow?" - Exploring how
+												traditional methodologies need to evolve for AI agent
+												teams.
+											</p>
+											<Button asChild variant="glow" className="w-full">
+												<Link
+													to={
+														latestSlug
+															? `/neural-notes/${latestSlug}`
+															: "/neural-notes"
+													}
+												>
+													Read Latest Insights
+												</Link>
+											</Button>
+										</>
+									)}
 								</div>
 							</div>
 						</div>
