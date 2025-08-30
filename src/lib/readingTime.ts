@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOMServer from "react-dom/server";
-import { calculateReadingTime, loadConfig } from "./config";
+import { calculateReadingTime } from "./config";
 
 // Utility: remove YAML frontmatter if present
 export function stripFrontMatter(raw: string): string {
@@ -28,12 +28,9 @@ export async function computeReadingTimeFromRawOrComponent(
 
 // Browser-only fallback: compute reading time from an already-rendered element (e.g., on detail page)
 export async function computeReadingTimeFromDOM(element: Element): Promise<string> {
-  const cfg = await loadConfig();
-  const wpm = Math.max(1, cfg.content.reading.wordsPerMinute || 200);
-  const text = element.textContent || "";
-  const words = text.trim().split(/\s+/).filter(Boolean).length;
-  const minutes = Math.max(1, Math.ceil(words / wpm));
-  return `${minutes} min read`;
+  // Use the same normalization and configuration as the server-side calculation
+  const html = (element as HTMLElement).innerHTML || element.textContent || "";
+  return calculateReadingTime(html);
 }
 
 

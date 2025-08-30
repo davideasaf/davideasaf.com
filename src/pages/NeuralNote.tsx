@@ -3,13 +3,13 @@ import Navigation from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { loadConfig } from "@/lib/config";
 import {
     type ContentItem,
     formatDate,
     loadNeuralNotes,
     type NeuralNoteMetaWithCalculated,
 } from "@/lib/content";
+import { computeReadingTimeFromDOM } from "@/lib/readingTime";
 import {
     ArrowLeft,
     Calendar,
@@ -56,27 +56,25 @@ const NeuralNote = () => {
 		}
 	}, [slug]);
 
-	// After the content renders, compute reading time from DOM as a robust fallback
+	// After content renders, only compute reading time from DOM if missing in metadata
 	useEffect(() => {
 		const compute = async () => {
 			try {
-				const cfg = await loadConfig();
-				const wpm = Math.max(1, cfg.content.reading.wordsPerMinute || 200);
 				const el = document.querySelector(".markdown-content");
 				if (!el) return;
-				const text = el.textContent || "";
-				const words = text.trim().split(/\s+/).filter(Boolean).length;
-				const minutes = Math.max(1, Math.ceil(words / wpm));
-				setComputedReadTime(`${minutes} min read`);
+				const rt = await computeReadingTimeFromDOM(el);
+				setComputedReadTime(rt);
 			} catch {
 				// noop
 			}
 		};
-		if (!loading) {
+		if (!loading && neuralNote && !neuralNote.meta.readTime) {
 			// Wait a tick to ensure MDX content mounted
 			requestAnimationFrame(() => compute());
+		} else {
+			setComputedReadTime(null);
 		}
-	}, [loading]);
+	}, [loading, neuralNote]);
 
 	if (loading) {
 		return (
@@ -168,7 +166,7 @@ const NeuralNote = () => {
 									</div>
 									<div className="flex items-center gap-2">
 										<Clock className="h-4 w-4" />
-										{computedReadTime ?? neuralNote.meta.readTime}
+										{neuralNote.meta.readTime ?? computedReadTime}
 									</div>
 								</div>
 
