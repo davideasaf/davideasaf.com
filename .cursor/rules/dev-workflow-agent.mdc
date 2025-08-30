@@ -3,44 +3,62 @@ alwaysApply: false
 description: Dev-Workflow Agent — Worktree → Milestones → PR (with Model Disclosure)
 ---
 
-## Dev-Workflow Agent: Worktree → Milestones → PR (with Model Disclosure)
+Rule Name: dev-workflow-agent
+Description: Dev-Workflow Agent — Worktree → Milestones → PR (with Model Disclosure)
 
-Use this rule to run each development task in an isolated `git worktree`, commit at small milestones with standardized commit trailers, keep in sync via rebase, and open a draft PR that discloses the LLM/Gen-AI model and configuration used. Intended for agent-driven or scripted development.
+## Dev-Workflow Agent: Worktree → Milestones → PR (Sibling .worktrees)
+
+Use this rule to run each development task in an isolated git worktree that lives outside the repository as a sibling folder named `<repo>.worktrees`. Commit at small milestones with standardized commit trailers, keep in sync via rebase, and open a draft PR that discloses the LLM/Gen-AI model and configuration used. Intended for agent-driven or scripted development.
 
 ### Assumptions
 
-- **git ≥ 2.38**, **gh (GitHub CLI)**, and optionally **jq** are installed and on PATH.
-- Running inside an existing clean repo clone; default remote `origin`, base branch `main`.
-- Authenticated to GitHub (`gh auth status`) or `GH_TOKEN` is set.
+- git ≥ 2.38, gh (GitHub CLI), and optionally jq are installed and on PATH.
+- Running inside an existing clean repo clone; default remote origin, base branch main.
+- Authenticated to GitHub (gh auth status) or GH_TOKEN is set.
 - Agent has push rights (or will follow the optional fork flow).
 - Agent can set env vars describing its LLM model/config.
 
 ### 1) Preflight
 
 1. Assert tools
-   - `git --version`, `gh --version`; optionally `jq --version`.
+   - git --version, gh --version; optionally jq --version.
 2. Assert auth
-   - `gh auth status` must succeed (or `GH_TOKEN` set).
+   - gh auth status must succeed (or GH_TOKEN set).
 3. Assert cleanliness at repo root
-   - `git status --porcelain` must be empty; otherwise abort with a clear message.
+   - git status --porcelain must be empty; otherwise abort with a clear message.
 4. Fetch latest base
-   - `git fetch origin main --prune`
+   - git fetch origin main --prune
 
-### 2) Branch & Worktree (topic/ prefix)
+### 2) Branch & Worktree (topic/ prefix) — Sibling .worktrees
 
 - Create deterministic names:
-  - `BRANCH="topic/<slug>-run<runId>-$(date +%Y%m%d-%H%M)"`
-  - `WORKTREE="./_wt/${BRANCH}"`
-- Add isolated worktree from latest `origin/main`:
-  - `git worktree add --checkout "$WORKTREE" origin/main`
-  - `(cd "$WORKTREE" && git switch -c "$BRANCH")`
+  - BRANCH="topic/<slug>-run<runId>-$(date +%Y%m%d-%H%M)"
+  - WORKTREE_ROOT="<repo-parent>/<repo>.worktrees"
+  - FOLDER_NAME: replace '/' with '-' → "${BRANCH//\//-}"
+  - TARGET="$WORKTREE_ROOT/$FOLDER_NAME"
+- Add isolated worktree from latest origin/main and create the branch in one step:
+
+```bash
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+PARENT_DIR="$(dirname "$REPO_ROOT")"
+REPO_NAME="$(basename "$REPO_ROOT")"
+WORKTREE_ROOT="$PARENT_DIR/${REPO_NAME}.worktrees"
+mkdir -p "$WORKTREE_ROOT"
+FOLDER_NAME="${BRANCH//\//-}"
+TARGET="$WORKTREE_ROOT/$FOLDER_NAME"
+git -C "$REPO_ROOT" worktree add -b "$BRANCH" "$TARGET" origin/main
+```
+
 - Safe local git config in worktree:
-  - `git -C "$WORKTREE" config pull.rebase true`
-  - `git -C "$WORKTREE" config commit.gpgsign false`
+
+```bash
+git -C "$TARGET" config pull.rebase true
+git -C "$TARGET" config commit.gpgsign false
+```
 
 ### 3) Milestone Commit Protocol
 
-- Work only inside `$WORKTREE`. Commit in small milestones:
+- Work only inside $TARGET. Commit in small milestones:
   - 1/3 – planning & interfaces
   - 2/3 – implementation & tests
   - 3/3 – docs & polish
@@ -61,7 +79,7 @@ Model-Params: temperature=<t>; top_p=<p>; seed=<seed>; max_tokens=<n>
 ```bash
 agent_commit () {
   local msg="$1" ; local mi="$2" ; local of="$3" ; local title="$4"
-  ( cd "$WORKTREE"
+  ( cd "$TARGET"
     git add -A
     if git diff --cached --quiet; then
       echo "No staged changes; skipping commit."; return 0
@@ -83,7 +101,7 @@ Keep commits focused. Do not batch unrelated edits.
 Before each milestone and before pushing/PR:
 
 ```bash
-( cd "$WORKTREE"
+( cd "$TARGET"
   git fetch origin main
   git rebase origin/main || { echo "Rebase conflict—requires human review."; exit 2; }
 )
@@ -94,7 +112,7 @@ Re-run fast tests after a successful rebase.
 ### 5) Push & Create Pull Request (with Model Disclosure)
 
 1. Push the branch:
-   - `( cd "$WORKTREE" && git push -u origin "$BRANCH" )`
+   - ( cd "$TARGET" && git push -u origin "$BRANCH" )
 2. Generate PR body including Model & Config section:
 
 ```bash
@@ -122,7 +140,7 @@ Max tokens	${MODEL_MAX_TOKENS:-NA}
 # Agent metadata
 Agent: ${AGENT_NAME:-dev-workflow-bot@1.0}
 Branch: ${BRANCH}
-Worktree: ${WORKTREE}
+Worktree: ${TARGET}
 Implements: ${ISSUE_ID:-}
 
 ## Validation
@@ -139,14 +157,13 @@ EOF
 3. Create a draft PR (promote when CI is green):
 
 ```bash
-( cd "$WORKTREE" \
+( cd "$TARGET" \
   && gh pr create \
     --title "${ISSUE_ID:+$ISSUE_ID: }${TASK_TITLE}" \
     --body-file "$PR_BODY" \
     --base "main" \
     --draft )
 
-# Labels/reviewers (best-effort)
 gh pr edit --add-label "agent" --add-label "needs-review" || true
 [[ -n "${REVIEWERS:-}" ]] && gh pr edit --add-reviewer "$REVIEWERS" || true
 ```
@@ -160,20 +177,18 @@ gh pr checks --watch || { echo "CI failed—see checks."; exit 3; }
 gh pr ready
 ```
 
-Optionally post a summary comment with test results or coverage diffs.
-
 ### 7) Cleanup Policy
 
 - On success (PR created): keep the worktree for follow-ups.
 - On abort/failure before PR: remove safely:
-  - `git worktree remove "$WORKTREE"`
-  - `git branch -D "$BRANCH" || true`
-- Janitor: periodically remove stale `./_wt/topic/*` older than N days.
+  - git worktree remove "$TARGET"
+  - git branch -D "$BRANCH" || true
+- Janitor: periodically remove stale `<repo>.worktrees/topic-*` older than N days.
 
 ### 8) Safety & Guardrails
 
 - Enforce write scope: reject if diff touches outside allowed paths.
-- Secrets: never commit tokens; use env vars; `.gitignore` should cover artifacts (e.g., `venv/`, `dist/`, `.env*`).
+- Secrets: never commit tokens; use env vars; .gitignore should cover artifacts (e.g., venv/, dist/, .env\*).
 - Conventional structure: enforce commit trailers so runs are auditable.
 - Human-help mode: if rebase conflicts or CI failures can’t be auto-fixed, post a PR comment with diagnostics and halt.
 
@@ -182,7 +197,7 @@ Optionally post a summary comment with test results or coverage diffs.
 ```bash
 gh repo fork --remote=true
 REMOTE="fork"
-git -C "$WORKTREE" push -u "$REMOTE" "$BRANCH"
+git -C "$TARGET" push -u "$REMOTE" "$BRANCH"
 gh pr create --repo "<upstream_owner>/<repo>" --base main --head "<your_user>:$BRANCH" --draft --title "${ISSUE_ID:+$ISSUE_ID: }${TASK_TITLE}" --body-file "$PR_BODY"
 ```
 
@@ -198,7 +213,7 @@ on_task_start(task):
   rebase_onto_main()
 
 milestone(i, n, title, apply_changes):
-  apply_changes(WORKTREE)
+  apply_changes(TARGET)
   rebase_onto_main()
   agent_commit(" " + title, i, n, title)
 
@@ -212,128 +227,45 @@ finish():
 
 ### 11) Ready-to-Use Shell Wrapper (reference)
 
-Save the following as `scripts/dev_agent.sh` and call with `--task`, `--slug`, optionally `--issue`, `--reviewers`, `--labels`.
+Prefer using `scripts/dev_agent.sh` which already implements this sibling .worktrees convention end-to-end.
+
+### 12) Per-worktree Dev Server Port & Playwright Base URL
+
+- Allocate a unique dev port per worktree to avoid conflicts when multiple worktrees run concurrently.
+- Deterministic scheme: compute a hash of the worktree folder name and map it into a port range.
+- Default range: 5300–6299 (configurable via `PORT_BASE`, `PORT_RANGE`).
+
+Example (performed automatically by `scripts/dev_agent.sh`):
 
 ```bash
-#!/usr/bin/env bash
-set -euo pipefail
-ROOT="$(git rev-parse --show-toplevel)"
-BASE="${BASE_BRANCH:-main}"
-REMOTE="${REMOTE:-origin}"
-RUNID="${RUN_ID:-$(date +%s)}"
-TASK=""; SLUG=""; ISSUE_ID="${ISSUE_ID:-}"; REVIEWERS=""; LABELS="${LABELS:-agent,automation}"
-while [[ $# -gt 0 ]]; do
-  case "$1" in
-    --task) TASK="$2"; shift 2 ;;
-    --slug) SLUG="$2"; shift 2 ;;
-    --issue) ISSUE_ID="$2"; shift 2 ;;
-    --reviewers) REVIEWERS="$2"; shift 2 ;;
-    --labels) LABELS="$2"; shift 2 ;;
-    *) echo "Unknown arg: $1"; exit 1 ;;
-  esac
-done
-[[ -n "$TASK" && -n "$SLUG" ]] || { echo "Need --task and --slug"; exit 1; }
+# Computed per-worktree
+DEV_PORT=5321
+DEV_URL="http://localhost:${DEV_PORT}"
 
-command -v git >/dev/null || { echo "git missing"; exit 1; }
-command -v gh >/dev/null  || { echo "gh missing"; exit 1; }
-gh auth status >/dev/null || { echo "gh not authenticated"; exit 1; }
-
-cd "$ROOT"
-[[ -z "$(git status --porcelain)" ]] || { echo "Repo not clean"; exit 1; }
-git fetch "$REMOTE" "$BASE" --prune
-
-TS="$(date +%Y%m%d-%H%M)"
-BRANCH="topic/${SLUG}-run${RUNID}-${TS}"
-WORKTREE="${ROOT}/_wt/${BRANCH}"
-mkdir -p "$(dirname "$WORKTREE")"
-git worktree add --checkout "$WORKTREE" "${REMOTE}/${BASE}"
-git -C "$WORKTREE" switch -c "$BRANCH"
-git -C "$WORKTREE" config pull.rebase true
-git -C "$WORKTREE" config commit.gpgsign false
-
-agent_commit () {
-  local msg="$1" ; local mi="$2" ; local of="$3" ; local title="$4"
-  ( cd "$WORKTREE"
-    git add -A
-    if git diff --cached --quiet; then echo "No changes; skip commit"; return 0; fi
-    git commit -m "[agent] ${msg}" \
-      -m "Implements: ${ISSUE_ID:-}" \
-      -m "Milestone: ${mi}/${of} – ${title}" \
-      -m "Agent: ${AGENT_NAME:-dev-workflow-bot@1.0}" \
-      -m "Model: ${MODEL_PROVIDER:-unknown}/${MODEL_NAME:-unknown}@${MODEL_VERSION:-unknown}" \
-      -m "Model-Params: temperature=${MODEL_TEMPERATURE:-NA}; top_p=${MODEL_TOP_P:-NA}; seed=${MODEL_SEED:-NA}; max_tokens=${MODEL_MAX_TOKENS:-NA}"
-  )
-}
-
-rebase_main () {
-  ( cd "$WORKTREE"
-    git fetch "$REMOTE" "$BASE"
-    git rebase "$REMOTE/$BASE" || { echo "Rebase conflict."; exit 2; }
-  )
-}
-
-# --- agent performs work and calls agent_commit per milestone ---
-# Example placeholder:
-# echo "scaffold" > "$WORKTREE/AGENT_SENTINEL.txt"
-# agent_commit "scaffold sentinel" "1" "3" "scaffold"
-
-rebase_main
-git -C "$WORKTREE" push -u "$REMOTE" "$BRANCH"
-
-PR_BODY="$(mktemp)"
-cat > "$PR_BODY" <<EOF
-## Summary
-$TASK
-
-## Milestones
-- [ ] 1/3 – planning & interfaces
-- [ ] 2/3 – implementation & tests
-- [ ] 3/3 – docs & polish
-
-## Model & Config
-| Field | Value |
-|---|---|
-| Provider | ${MODEL_PROVIDER:-unknown} |
-| Model | ${MODEL_NAME:-unknown} |
-| Version | ${MODEL_VERSION:-unknown} |
-| Temperature | ${MODEL_TEMPERATURE:-NA} |
-| Top-p | ${MODEL_TOP_P:-NA} |
-| Seed | ${MODEL_SEED:-NA} |
-| Max tokens | ${MODEL_MAX_TOKENS:-NA} |
-
+# Start dev server in the worktree
+cd "$TARGET"
+npm ci
+npm run dev -- --port "$DEV_PORT"
 ```
 
-Agent: ${AGENT_NAME:-dev-workflow-bot@1.0}
-Branch: ${BRANCH}
-Worktree: ${WORKTREE}
-Implements: ${ISSUE_ID:-}
+Playwright guidance:
 
+- Use `baseURL=${DEV_URL}` so each worktree runs tests against its own dev instance.
+- You can pass `PLAYWRIGHT_BASE_URL=${DEV_URL}` via env and read it in your Playwright config, or override `--base-url` if using the CLI flag.
+
+Minimal `playwright.config.ts` excerpt:
+
+```ts
+import { defineConfig } from "@playwright/test";
+
+export default defineConfig({
+  use: {
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:5173",
+  },
+});
 ```
 
-## Validation
-- [ ] Lints pass
-- [ ] Unit tests pass
-- [ ] CI green
-- [ ] Docs updated (if needed)
+Notes:
 
-## Notes
-This PR was authored via an isolated `git worktree` by an agent.
-EOF
-
-( cd "$WORKTREE"
-  gh pr create --title "${ISSUE_ID:+$ISSUE_ID: }${TASK}" --body-file "$PR_BODY" --base "$BASE" --draft
-  IFS=',' read -ra LBL <<<"$LABELS"; for l in "${LBL[@]}"; do gh pr edit --add-label "$l" || true; done
-  [[ -n "$REVIEWERS" ]] && gh pr edit --add-reviewer "$REVIEWERS" || true
-)
-echo "PR opened for $BRANCH"
-```
-
-### 12) Environment Variables per Run
-
-- Agent identity:
-  - `AGENT_NAME=dev-workflow-bot@1.0`
-- Model disclosure (required):
-  - `MODEL_PROVIDER`, `MODEL_NAME`, `MODEL_VERSION`
-  - Optional: `MODEL_TEMPERATURE`, `MODEL_TOP_P`, `MODEL_SEED`, `MODEL_MAX_TOKENS`
-- Task metadata (optional):
-  - `RUN_ID`, `ISSUE_ID`, `REVIEWERS`, `LABELS`
+- The agent writes `${TARGET}/.agent/env` containing `DEV_PORT`, `DEV_URL`, and `PLAYWRIGHT_BASE_URL`.
+- These files are ephemeral and should not be committed.
