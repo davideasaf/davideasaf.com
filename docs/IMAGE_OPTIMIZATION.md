@@ -1,183 +1,140 @@
 # Image Optimization Guide
 
-This project uses **vite-imagetools** for modern, automated image optimization during build time to ensure fast loading times and better SEO performance.
+This project uses vite-imagetools for build-time image optimization and a remark transformer to produce responsive, modern `<picture>` output from markdown.
 
 ## 🚀 How It Works
 
-### Automatic Processing with vite-imagetools
-Images are automatically optimized when referenced in markdown files or imported with query parameters:
-- **WebP conversion** for modern browsers
-- **Quality optimization** (default 80%)
-- **Responsive sizing** for different screen sizes
-- **File size reduction** (typically 60-80% smaller)
+- Optimizes images at build time (smaller files, better LCP/CLS/SEO)
+- Generates multiple widths and modern formats (AVIF/WebP/JPG)
+- Emits `<picture>` tags with `srcset`/`sizes` so the browser picks the best variant
 
-### Smart Defaults Configuration
-The vite.config.ts includes smart defaults for different image types:
-- **Blog images** (`/blog/`): WebP format, quality 80, width 800px
-- **Project images** (`/projects/`): WebP format, quality 80, multiple sizes
-- **Other images**: WebP conversion with quality 85
+### Parameter precedence (who wins?)
 
-## 📸 How to Add New Images
+For images in MDX/Markdown, settings resolve in this order:
 
-### 1. In Markdown Files (Neural Notes/Projects)
-Simply reference images normally in your markdown:
+1. Per‑image MDX title parameters you specify (e.g., `sizes`, `widths`, `formats`, `q`)
+2. remark-image-to-mdx defaults: `widths=[320,640,960,1280]`, `formats=[avif,webp,jpg]`, `quality=82`, `sizes='100vw'`
+3. Vite imagetools defaultDirectives (build defaults) only fill directives not already provided on the import. Because the MDX transformer emits explicit `w`, `format` and `quality` queries, build defaults typically apply to non‑MDX imports (manual component imports) or to any directives not set by MDX.
+
+Note: `src/config/site.yaml` image values are legacy and not used by the MDX transformer. They only apply to legacy components that aren’t part of the current MDX flow.
+
+## 📸 Using Images in Markdown (MDX)
+
+Write a normal markdown image and use the title string to pass parameters:
+
 ```markdown
-![AI Workflow Diagram](/src/assets/blog/my-workflow.png)
+![AI Workflow Evolution](/src/assets/blog/ai-workflow-example.png "sizes=(min-width: 768px) 720px, 100vw; widths=400,800,1200; formats=avif,webp,jpg; q=85")
 ```
 
-The `OptimizedMarkdownImage` component automatically processes these with:
-- WebP conversion (`?format=webp&quality=80&w=800`)
-- Lazy loading
-- Proper alt text rendering
-- Responsive styling
+Supported per‑image parameters (in the title string):
 
-### 2. In React Components - Manual Import
-Use direct imports with vite-imagetools directives:
-```tsx
-import heroImg from '@/assets/hero.jpg?format=webp&quality=80&w=800'
-import heroImgFallback from '@/assets/hero.jpg'
+- `sizes`: HTML `sizes` attribute for responsive selection
+- `widths`: semicolon- or comma‑separated target widths (e.g., `400,800,1200`)
+- `formats`: output formats (e.g., `avif,webp,jpg`)
+- `q`: quality (1–100)
 
-<picture>
-  <source srcSet={heroImg} type="image/webp" />
-  <img src={heroImgFallback} alt="Hero image" />
-</picture>
+Under the hood, the remark transformer rewrites the image into an imagetools import like:
+
+```
+?w=400;800;1200&format=avif;webp;jpg&as=picture&quality=85
 ```
 
-### 3. For Multiple Responsive Sizes
-```tsx
-import heroSrcset from '@/assets/hero.jpg?w=400;800;1200&format=webp'
+and renders it via `ResponsiveImage` → `Picture` as a `<picture>` element with multiple sources.
 
-<img src={heroSrcset} alt="Hero image" />
-```
+## 🔧 Build Defaults (vite-imagetools)
 
-## 🎯 Image Guidelines
+These defaults apply primarily to images imported directly in React components (non‑MDX), and only when the import lacks explicit directives:
 
-### File Size Limits
-- **Max original size**: 5MB per image (vite-imagetools handles optimization)
-- **Recommended dimensions**: Based on usage:
-  - Profile photos: 600x600px
-  - Hero images: 1200x800px
-  - Blog images: 800x600px
-  - Thumbnails: 400x300px
-
-### File Formats
-- **Preferred**: JPEG for photos, PNG for graphics/logos
-- **Automatic**: WebP versions generated via query parameters
-- **Avoid**: Extremely large uncompressed files
-
-### SEO Best Practices
-- **Always include descriptive alt text** in markdown
-- **Include relevant keywords in alt text**
-- **Use consistent naming convention**: `descriptive-name.jpg`
-
-## 🛠️ Available Commands
-
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Development server with hot reload |
-| `npm run build` | Production build with full optimization |
-| `npm run build:dev` | Development build with faster compilation |
-| `npm run preview` | Preview production build locally |
-
-## 📈 Performance Benefits
-
-### Real Example from This Project
-- **Original PNG**: `ai-workflow-example.png` (~200KB)
-- **Optimized WebP**: `ai-workflow-example.png?format=webp&quality=80&w=800` (~45KB)
-- **Savings**: ~77% file size reduction
-
-### Browser Support
-- **WebP**: Modern browsers (95%+ support)
-- **Fallback**: Automatic fallback to original format for older browsers
-- **Lazy loading**: Applied to all markdown images
-
-## 🔧 Technical Implementation
-
-### Vite Configuration
-```typescript
+```ts
 import { imagetools } from "vite-imagetools";
 
 export default defineConfig({
   plugins: [
     imagetools({
       defaultDirectives: (url) => {
-        if (url.pathname.includes('/blog/') || url.pathname.includes('/projects/')) {
+        if (
+          url.pathname.includes("/blog/") ||
+          url.pathname.includes("/projects/")
+        ) {
           return new URLSearchParams({
-            format: 'webp',
-            quality: '80',
-            w: '800'
+            format: "webp;jpg",
+            w: "400;800;1200",
+            quality: "80",
           });
         }
         return new URLSearchParams({
-          format: 'webp',
-          quality: '85'
+          format: "webp",
+          quality: "85",
         });
-      }
-    })
-  ]
+      },
+    }),
+  ],
 });
 ```
 
-### Markdown Image Processing
-The `OptimizedMarkdownImage` component in `NeuralNotes.tsx` automatically adds optimization parameters:
+## 🧩 Using Images in React Components
+
+### Simple (single size)
+
 ```tsx
-const OptimizedMarkdownImage = ({ src, alt }) => {
-  if (src?.startsWith('/src/assets/')) {
-    imageSrc = src + '?format=webp&quality=80&w=800';
-  }
-  return <img src={imageSrc} alt={alt} loading="lazy" />;
-};
+import heroImg from "@/assets/hero.jpg?format=webp&quality=80&w=1200";
+
+<img src={heroImg} alt="Hero image" />;
 ```
 
-## 🎨 Example Usage
+### Responsive `<picture>` via imagetools bundle
 
-### In Neural Notes Markdown
-```markdown
----
-title: "My AI Journey"
----
-
-# My AI Journey
-
-Here's my workflow diagram:
-![AI Workflow Evolution](/src/assets/blog/ai-workflow-example.png)
-```
-
-### In React Components
 ```tsx
-// For a hero image
-import heroImg from '@/assets/hero.jpg?format=webp&quality=80&w=1200'
+import data from "@/assets/hero.jpg?w=400;800;1200&format=webp;jpg&as=picture";
+import { ResponsiveImage } from "@/components/ResponsiveImage";
 
-<img src={heroImg} alt="AI Engineer workspace" />
-```
-
-### For Responsive Images
-```tsx
-// Multiple sizes for different breakpoints
-import projectImg from '@/assets/project.jpg?w=400;800;1200&format=webp'
-
-<img 
-  src={projectImg} 
-  alt="Project screenshot"
+<ResponsiveImage
+  data={data}
+  alt="Hero image"
   sizes="(max-width: 768px) 100vw, 50vw"
-/>
+/>;
 ```
 
-## 🔧 Troubleshooting
+## 🎯 Image Guidelines
 
-### Images Not Optimizing
-1. Check that images are in `src/assets/` directory
-2. Ensure markdown images use the `/src/assets/` prefix
-3. Verify vite-imagetools is installed and configured
+### File Size Limits
 
-### Build Issues
-1. Check image file formats are supported (jpg, png, webp)
-2. Ensure images exist at the specified paths
-3. Check vite.config.ts has imagetools plugin configured
+- Max original size: ~5MB (optimization happens at build)
+- Recommended dimensions by use:
+  - Profile photos: 600×600
+  - Hero images: 1200×800
+  - Blog images: 800×600
+  - Thumbnails: 400×300
 
-### Images Not Loading
-1. Verify file paths are correct in markdown
-2. Check that alt text is included
-3. Ensure images are referenced with `/src/assets/` prefix
+### Formats
 
-This system provides automatic optimization while maintaining simplicity for content creators! 🎉
+- Prefer JPEG for photos, PNG for graphics/logos
+- Modern variants (AVIF/WebP) are generated automatically when requested
+
+### SEO
+
+- Always include descriptive alt text
+- Use meaningful filenames (e.g., `ai-workflow-example.png`)
+
+## 📈 Performance Example
+
+- Original PNG: `ai-workflow-example.png` (~200KB)
+- Optimized WebP (800w @ q=80): ~45KB (~77% reduction)
+
+## 🧪 Commands
+
+| Command             | Description                             |
+| ------------------- | --------------------------------------- |
+| `npm run dev`       | Development server with HMR             |
+| `npm run build`     | Production build with full optimization |
+| `npm run build:dev` | Development build                       |
+| `npm run preview`   | Preview production build locally        |
+
+## ❗ Troubleshooting
+
+1. Images must live under `/src/assets/` for MDX processing
+2. In MDX, use the title string syntax (not `{attr=value}`) for parameters
+3. For component imports, ensure imagetools query params are present when you need specific sizes/formats
+4. Verify `vite-imagetools` is installed and configured in `vite.config.ts`
+
+This system provides automatic optimization while keeping authoring simple, while still allowing precise per‑image control when you need it.

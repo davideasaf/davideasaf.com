@@ -1,0 +1,31 @@
+# Site Configuration
+site:
+  title: "David Asaf - AI Product Engineer"
+  email: "david@davidasaf.dev"
+  location: "Charlotte, NC"
+  social:
+    github: "https://github.com/davideasaf"
+    linkedin: "https://www.linkedin.com/in/davideasaf/"
+
+# Content Processing Settings
+content:
+  reading:
+    wordsPerMinute: 200
+    includeCodeInWordCount: false
+  
+  # Image optimization defaults (used by OptimizedMarkdownImage component)
+  images:
+    quality: 80
+    defaultWidth: 800
+    formats: ["webp"]
+    
+# Neural Notes Configuration
+neuralNotes:
+  defaultAuthor: "David Asaf"
+  sortBy: "date" # date | title | readTime
+  sortOrder: "desc" # asc | desc
+
+# Projects Configuration  
+projects:
+  sortBy: "date" # date | title | featured
+  sortOrder: "desc" # asc | desc

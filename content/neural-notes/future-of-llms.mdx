@@ -7,7 +7,6 @@ tags:
   - "LLM"
   - "GPT-4"
   - "AI Research"
-readTime: "8 min read"
 featured: true
 hasVideo: true
 hasAudio: false
