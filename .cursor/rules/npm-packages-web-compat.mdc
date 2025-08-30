@@ -1,0 +1,56 @@
+---
+description: Ensure any new npm package is browser-compatible for this web-only project
+alwaysApply: false
+---
+
+# NPM Packages: Browser-Only Compatibility Rule
+
+This project runs purely in the browser. Before adding or recommending any dependency, verify it works without Node.js APIs or polyfills.
+
+## Checklist before installing a package
+
+- Verify browser support: package docs mention "browser" or "isomorphic" usage.
+- Inspect package.json: has `exports`/`module` and ideally a `browser` field or separate browser build.
+- No Node built-ins: reject packages that depend on `fs`, `path`, `net`, `tls`, `child_process`, `worker_threads`, `http`, `https`, `zlib`, `crypto` (Node version), `stream`, or `buffer` shims.
+- ESM-first and tree-shakeable: avoid CommonJS-only libs when a browser-native alternative exists.
+- Types available: includes TypeScript types (`types` or DefinitelyTyped).
+- Size: check Bundlephobia to avoid very large bundles.
+
+## Quick evaluation commands
+
+- Check metadata:
+  - `npm view <pkg> exports browser module types | cat`
+- Inspect files on the CDN:
+  - `https://unpkg.com/<pkg>/package.json`
+  - `https://cdn.skypack.dev/<pkg>`
+- Bundle size and deps: `https://bundlephobia.com/package/<pkg>`
+
+## Prefer web-native APIs and web-first libraries
+
+- Networking: use `fetch` (and `AbortController`) instead of Node HTTP clients.
+- File I/O: use `File`, `Blob`, `FileReader`, `DataTransfer`; never `fs`.
+- Crypto: use Web Crypto (`window.crypto.subtle`).
+- Streams: use Web Streams API.
+- Encoding: `TextEncoder`/`TextDecoder`, `Uint8Array`—avoid `Buffer`.
+- URL utils: `URL`, `URLSearchParams` instead of `path`.
+- Env/config: `import.meta.env` (Vite) instead of `process.env`.
+
+## Common anti-patterns to avoid
+
+- Adding Node polyfills or shims (e.g., rollup/node polyfills) to make a Node-only lib work in the browser.
+- Choosing Node-only packages (e.g., `node-fetch`, Node `crypto` wrappers) when a browser-native API exists.
+
+## Acceptable fallbacks (only if strictly necessary)
+
+- If no browser-native option exists and the functionality is critical, prefer an isomorphic or browser-targeted alternative. Document the evaluation and rationale in the PR description.
+- Do not introduce global polyfills; scope any compatibility code to the specific module.
+
+## PR requirement
+
+When proposing a new dependency, include a short note confirming:
+
+- Browser support confirmed and no Node built-ins required
+- ESM build available and tree-shakeable
+- Bundle size is reasonable and types are available
+
+If any criterion is not met, do not add the package and propose a browser-safe alternative.
