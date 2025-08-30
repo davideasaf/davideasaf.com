@@ -4,7 +4,7 @@ This project uses an agent-driven workflow with isolated git worktrees that live
 
 ### Key Changes
 
-- **Worktree root**: `/Users/dasaf/personal-dev/generative-spark-studio.worktrees`
+- **Worktree root**: `/Users/dasaf/personal-dev/davideasaf.com.worktrees`
 - **Folder naming**: Replace `/` with `-` in the branch name (e.g., `topic/feat-x` → `topic-feat-x`).
 - **Isolation**: Work only inside the created worktree folder. Keep the main repo clean.
 
@@ -17,8 +17,8 @@ This project uses an agent-driven workflow with isolated git worktrees that live
 
 ### Worktree Creation (Sibling Convention)
 
-- Repo root (example): `/Users/dasaf/personal-dev/generative-spark-studio`
-- Worktrees root: `/Users/dasaf/personal-dev/generative-spark-studio.worktrees`
+- Repo root (example): `/Users/dasaf/personal-dev/davideasaf.com`
+- Worktrees root: `/Users/dasaf/personal-dev/davideasaf.com.worktrees`
 - Branch: `topic/<slug>-run<runId>-<ts>`
 - Folder: replace `/` with `-` → `topic-<slug>-run<runId>-<ts>`
 - Target: `<worktrees_root>/<folder>`
