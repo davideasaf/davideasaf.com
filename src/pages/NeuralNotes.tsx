@@ -15,7 +15,6 @@ import {
   type NeuralNoteMetaWithCalculated,
 } from "@/lib/content";
 import {
-  ArrowLeft,
   Calendar,
   Clock,
   Tag,
@@ -24,9 +23,9 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
 
 const NeuralNotes = () => {
-	const [selectedNote, setSelectedNote] = useState<string | null>(null);
 	const [neuralNotes, setNeuralNotes] = useState<
 		ContentItem<NeuralNoteMetaWithCalculated>[]
 	>([]);
@@ -49,8 +48,6 @@ const NeuralNotes = () => {
 		loadContent();
 	}, []);
 
-	const selectedNoteData = neuralNotes.find((n) => n.slug === selectedNote);
-
 	if (loading) {
 		return (
 			<div className="min-h-screen bg-background">
@@ -69,129 +66,7 @@ const NeuralNotes = () => {
 		);
 	}
 
-	if (selectedNote && selectedNoteData) {
-		return (
-			<div className="min-h-screen bg-background">
-				<Helmet>
-					<title>
-						{selectedNoteData.meta.title} - Neural Notes by David Asaf
-					</title>
-					<meta name="description" content={selectedNoteData.meta.excerpt} />
-					<meta name="author" content="David Asaf" />
-					<meta property="og:title" content={selectedNoteData.meta.title} />
-					<meta
-						property="og:description"
-						content={selectedNoteData.meta.excerpt}
-					/>
-					<meta property="article:author" content="David Asaf" />
-					<meta
-						property="article:published_time"
-						content={selectedNoteData.meta.date}
-					/>
-				</Helmet>
-				<Navigation />
-				<div className="pt-20 pb-12">
-					<div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-						<Button
-							variant="ghost"
-							className="mb-8"
-							onClick={() => setSelectedNote(null)}
-						>
-							<ArrowLeft className="mr-2 h-4 w-4" />
-							Back to Neural Notes
-						</Button>
-
-						<article className="space-y-8">
-							<header className="space-y-6">
-								<div className="space-y-4">
-									<h1 className="text-3xl md:text-4xl font-bold leading-tight">
-										{selectedNoteData.meta.title}
-									</h1>
-
-									<div className="flex items-center gap-4 text-muted-foreground flex-wrap">
-										<div className="flex items-center gap-2">
-											<Calendar className="h-4 w-4" />
-											{formatDate(selectedNoteData.meta.date)}
-										</div>
-										<div className="flex items-center gap-2">
-											<Clock className="h-4 w-4" />
-											{selectedNoteData.meta.readTime}
-										</div>
-									</div>
-
-									<div className="flex flex-wrap gap-2">
-										{(selectedNoteData.meta.tags ?? []).map((tag) => (
-											<Badge key={tag} variant="outline">
-												<Tag className="mr-1 h-3 w-3" />
-												{tag}
-											</Badge>
-										))}
-									</div>
-								</div>
-
-								{/* Media Section */}
-								{(selectedNoteData.meta.videoUrl ||
-									selectedNoteData.meta.audioUrl) && (
-									<Card className="overflow-hidden">
-										<CardContent className="p-0">
-											{selectedNoteData.meta.videoUrl && (
-												<div className="space-y-4 p-6">
-													<div className="flex items-center gap-2 text-primary">
-														<Youtube className="h-5 w-5" />
-														<span className="font-medium">
-															Watch the discussion
-														</span>
-													</div>
-													<div className="aspect-video">
-														<iframe
-															src={selectedNoteData.meta.videoUrl}
-															title={`${selectedNoteData.meta.title} - Video Discussion`}
-															className="w-full h-full rounded-lg"
-															allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-															allowFullScreen
-														/>
-													</div>
-												</div>
-											)}
-
-											{selectedNoteData.meta.audioUrl &&
-												!selectedNoteData.meta.videoUrl && (
-													<div className="space-y-4 p-6">
-														<div className="flex items-center gap-2 text-primary">
-															<Volume2 className="h-5 w-5" />
-															<span className="font-medium">
-																Listen to the audio version
-															</span>
-														</div>
-														<audio controls className="w-full">
-															<source
-																src={selectedNoteData.meta.audioUrl}
-																type="audio/mpeg"
-															/>
-															<track
-																kind="captions"
-																srcLang="en"
-																label="captions"
-															/>
-															Your browser does not support the audio element.
-														</audio>
-													</div>
-												)}
-										</CardContent>
-									</Card>
-								)}
-							</header>
-
-							{/* Article Content */}
-							<div className="markdown-content max-w-none">
-								{selectedNoteData.content && <selectedNoteData.content />}
-							</div>
-						</article>
-					</div>
-				</div>
-			</div>
-		);
-	}
+	
 
 	return (
 		<div className="min-h-screen bg-background">
@@ -231,13 +106,13 @@ const NeuralNotes = () => {
 
 					<div className="space-y-8">
 						{neuralNotes.map((note) => (
-							<Card
-								key={note.slug}
-								className={`cursor-pointer transition-all duration-300 hover:shadow-elegant hover:scale-[1.01] ${
-									note.meta.featured ? "ring-2 ring-primary/20" : ""
-								}`}
-								onClick={() => setSelectedNote(note.slug)}
-							>
+							<Link to={`/neural-notes/${note.slug}`}>
+								<Card
+									key={note.slug}
+									className={`cursor-pointer transition-all duration-300 hover:shadow-elegant hover:scale-[1.01] ${
+										note.meta.featured ? "ring-2 ring-primary/20" : ""
+									}`}
+								>
 								<CardHeader>
 									<div className="flex items-start justify-between gap-4">
 										<div className="space-y-3 flex-1">
@@ -289,6 +164,7 @@ const NeuralNotes = () => {
 									</div>
 								</CardContent>
 							</Card>
+							</Link>
 						))}
 					</div>
 
