@@ -195,13 +195,12 @@ const Projects = () => {
 
           <div className="grid md:grid-cols-2 gap-8">
             {projects.map((project) => (
-              <Card 
-                key={project.id} 
-                className={`cursor-pointer transition-all duration-300 hover:shadow-elegant hover:scale-[1.02] ${
-                  project.featured ? 'ring-2 ring-primary/20' : ''
-                }`}
-                onClick={() => setSelectedProject(project.id)}
-              >
+              <Link key={project.id} to={`/projects/${project.id}`}>
+                <Card
+                  className={`cursor-pointer transition-all duration-300 hover:shadow-elegant hover:scale-[1.02] ${
+                    project.featured ? 'ring-2 ring-primary/20' : ''
+                  }`}
+                >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="space-y-2">
@@ -265,6 +264,7 @@ const Projects = () => {
                   </div>
                 </CardContent>
               </Card>
+              </Link>
             ))}
           </div>
 

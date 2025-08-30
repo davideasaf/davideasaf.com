@@ -348,13 +348,12 @@ const NeuralNotes = () => {
 
           <div className="space-y-8">
             {neuralNotes.map((note) => (
-              <Card 
-                key={note.id} 
-                className={`cursor-pointer transition-all duration-300 hover:shadow-elegant hover:scale-[1.01] ${
-                  note.featured ? 'ring-2 ring-primary/20' : ''
-                }`}
-                onClick={() => setSelectedNote(note.id)}
-              >
+              <Link key={note.id} to={`/neural-notes/${note.id}`}>
+                <Card
+                  className={`cursor-pointer transition-all duration-300 hover:shadow-elegant hover:scale-[1.01] ${
+                    note.featured ? 'ring-2 ring-primary/20' : ''
+                  }`}
+                >
                 <CardHeader>
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-3 flex-1">
@@ -414,6 +413,7 @@ const NeuralNotes = () => {
                   </div>
                 </CardContent>
               </Card>
+              </Link>
             ))}
           </div>
 
