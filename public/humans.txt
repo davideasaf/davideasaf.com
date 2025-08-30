@@ -1,0 +1,13 @@
+/* TEAM */
+Name: David Asaf
+Role: AI Product Engineer
+Location: Charlotte, NC, USA
+LinkedIn: https://www.linkedin.com/in/davideasaf/
+GitHub: https://github.com/davideasaf
+
+/* SITE */
+Last update: 2024/12/30
+Language: English
+Standards: HTML5, CSS3, JavaScript ES6+
+Components: React, TypeScript, Tailwind CSS
+Tools: Vite, Node.js, Git

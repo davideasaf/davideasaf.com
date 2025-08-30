@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Github, Linkedin, Mail, Download } from "lucide-react";
 import heroImage from "@/assets/hero-bg.jpg";
+import headshotImage from "@/assets/headshot.png";
 
 const HeroSection = () => {
   return (
@@ -67,9 +68,10 @@ const HeroSection = () => {
               <div className="flex items-center space-x-6">
                 <div className="flex-shrink-0">
                   <img 
-                    src="/lovable-uploads/bd5390db-4864-4adb-b1b3-ec91260f704c.png" 
-                    alt="David Asaf - AI Product Engineer"
+                    src={headshotImage} 
+                    alt="David Asaf - AI Product Engineer in Charlotte, NC"
                     className="w-24 h-24 rounded-full object-cover border-4 border-primary/20"
+                    loading="eager"
                   />
                 </div>
                 <div className="space-y-4">

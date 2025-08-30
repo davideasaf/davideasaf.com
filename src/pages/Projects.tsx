@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ArrowLeft, Github, ExternalLink, Calendar, Tag } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -88,6 +89,12 @@ const Projects = () => {
   if (selectedProject && selectedProjectData) {
     return (
       <div className="min-h-screen bg-background">
+        <Helmet>
+          <title>{selectedProjectData.title} - David Asaf's AI Project</title>
+          <meta name="description" content={selectedProjectData.longDescription} />
+          <meta property="og:title" content={`${selectedProjectData.title} - David Asaf's AI Project`} />
+          <meta property="og:description" content={selectedProjectData.longDescription} />
+        </Helmet>
         <Navigation />
         <div className="pt-20 pb-12">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -180,6 +187,12 @@ const Projects = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>AI Projects by David Asaf | Generative AI & Machine Learning Portfolio</title>
+        <meta name="description" content="Explore David Asaf's portfolio of AI and machine learning projects including neural content generation, agentic workflows, and intelligent automation systems." />
+        <meta property="og:title" content="AI Projects by David Asaf | Charlotte, NC" />
+        <meta property="og:description" content="Portfolio of innovative AI projects by David Asaf - Neural Content Generator, Agentic Workflow Orchestrator, and more." />
+      </Helmet>
       <Navigation />
       <div className="pt-20 pb-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
