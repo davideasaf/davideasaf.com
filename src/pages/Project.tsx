@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Navigation from "@/components/Navigation";
+import Breadcrumb from "@/components/Breadcrumb";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -178,6 +179,12 @@ const Project = () => {
       <Navigation />
       <div className="pt-20 pb-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Breadcrumb
+            items={[
+              { label: "Projects", href: "/projects" },
+              { label: project?.title || "Loading..." }
+            ]}
+          />
           <Button
             variant="ghost"
             className="mb-8"
