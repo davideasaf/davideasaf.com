@@ -1,4 +1,4 @@
-import yaml from 'js-yaml';
+import yaml from "js-yaml";
 
 // Type definitions for site configuration
 export interface SiteConfig {
@@ -24,12 +24,12 @@ export interface SiteConfig {
   };
   neuralNotes: {
     defaultAuthor: string;
-    sortBy: 'date' | 'title' | 'readTime';
-    sortOrder: 'asc' | 'desc';
+    sortBy: "date" | "title" | "readTime";
+    sortOrder: "asc" | "desc";
   };
   projects: {
-    sortBy: 'date' | 'title' | 'featured';
-    sortOrder: 'asc' | 'desc';
+    sortBy: "date" | "title" | "featured";
+    sortOrder: "asc" | "desc";
   };
 }
 
@@ -38,20 +38,20 @@ let config: SiteConfig | null = null;
 
 export async function loadConfig(): Promise<SiteConfig> {
   if (config) return config;
-  
+
   try {
     // Import the YAML file as raw text
-    const configModule = await import('@/config/site.yaml?raw');
+    const configModule = await import("@/config/site.yaml?raw");
     const yamlContent = configModule.default;
-    
+
     // Parse YAML content
     const parsedConfig = yaml.load(yamlContent) as SiteConfig;
     config = parsedConfig;
-    
+
     return config;
   } catch (error) {
-    console.error('Failed to load site configuration:', error);
-    
+    console.error("Failed to load site configuration:", error);
+
     // Return sensible defaults if config loading fails
     const defaultConfig: SiteConfig = {
       site: {
@@ -60,31 +60,31 @@ export async function loadConfig(): Promise<SiteConfig> {
         location: "Charlotte, NC",
         social: {
           github: "https://github.com/davideasaf",
-          linkedin: "https://www.linkedin.com/in/davideasaf/"
-        }
+          linkedin: "https://www.linkedin.com/in/davideasaf/",
+        },
       },
       content: {
         reading: {
           wordsPerMinute: 200,
-          includeCodeInWordCount: false
+          includeCodeInWordCount: false,
         },
         images: {
           quality: 80,
           defaultWidth: 800,
-          formats: ["webp"]
-        }
+          formats: ["webp"],
+        },
       },
       neuralNotes: {
         defaultAuthor: "David Asaf",
         sortBy: "date",
-        sortOrder: "desc"
+        sortOrder: "desc",
       },
       projects: {
         sortBy: "date",
-        sortOrder: "desc"
-      }
+        sortOrder: "desc",
+      },
     };
-    
+
     config = defaultConfig;
     return config;
   }
@@ -93,7 +93,7 @@ export async function loadConfig(): Promise<SiteConfig> {
 // Helper function to get config synchronously (must be called after loadConfig)
 export function getConfig(): SiteConfig {
   if (!config) {
-    throw new Error('Configuration not loaded. Call loadConfig() first.');
+    throw new Error("Configuration not loaded. Call loadConfig() first.");
   }
   return config;
 }
@@ -102,41 +102,60 @@ export function getConfig(): SiteConfig {
 export async function calculateReadingTime(content: string): Promise<string> {
   const config = await loadConfig();
   const { wordsPerMinute, includeCodeInWordCount } = config.content.reading;
-  
+
   let text = content;
-  
+
   // Remove code blocks if configured to exclude them
   if (!includeCodeInWordCount) {
     // Remove code blocks (both ``` and ` style)
-    text = text.replace(/```[\s\S]*?```/g, '');
-    text = text.replace(/`[^`]+`/g, '');
+    text = text.replace(/```[\s\S]*?```/g, "");
+    text = text.replace(/`[^`]+`/g, "");
   }
-  
+
   // Remove markdown syntax for more accurate word count
   text = text
-    .replace(/#{1,6}\s/g, '') // Remove headers
-    .replace(/\*\*([^*]+)\*\*/g, '$1') // Remove bold
-    .replace(/\*([^*]+)\*/g, '$1') // Remove italics
-    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1') // Remove links, keep text
-    .replace(/!\[[^\]]*\]\([^)]+\)/g, '') // Remove images
-    .replace(/---+/g, '') // Remove horizontal rules
-    .replace(/>\s/g, '') // Remove blockquotes
-    .replace(/^\s*[-\*\+]\s/gm, '') // Remove list markers
-    .replace(/^\s*\d+\.\s/gm, ''); // Remove numbered list markers
-  
+    .replace(/#{1,6}\s/g, "") // Remove headers
+    .replace(/\*\*([^*]+)\*\*/g, "$1") // Remove bold
+    .replace(/\*([^*]+)\*/g, "$1") // Remove italics
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1") // Remove links, keep text
+    .replace(/!\[[^\]]*\]\([^)]+\)/g, "") // Remove images
+    .replace(/---+/g, "") // Remove horizontal rules
+    .replace(/>\s/g, "") // Remove blockquotes
+    .replace(/^\s*[-*+]\s/gm, "") // Remove list markers
+    .replace(/^\s*\d+\.\s/gm, ""); // Remove numbered list markers
+
+  // Remove HTML tags if HTML was provided as a fallback source
+  text = text.replace(/<[^>]+>/g, " ");
+
+  // Collapse whitespace
+  text = text.replace(/\s+/g, " ");
+
   // Count words
-  const wordCount = text.trim().split(/\s+/).filter(word => word.length > 0).length;
-  const minutes = Math.ceil(wordCount / wordsPerMinute);
-  
+  const wordCount = text
+    .trim()
+    .split(/\s+/)
+    .filter((word) => word.length > 0).length;
+  const safeWpm =
+    Number.isFinite(wordsPerMinute) && wordsPerMinute > 0
+      ? wordsPerMinute
+      : 200;
+  const rawMinutes = wordCount > 0 ? wordCount / safeWpm : 1;
+  const minutes = Math.max(1, Math.ceil(rawMinutes));
+  if (typeof window !== 'undefined') {
+    try {
+      console.debug('[reading-time]', { wordCount, safeWpm, minutes, sample: text.slice(0, 120) });
+    } catch { }
+  }
+
   return `${minutes} min read`;
 }
 
 // Utility function to format date (keeping existing functionality)
 export function formatDate(dateString: string): string {
   const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
   });
 }
