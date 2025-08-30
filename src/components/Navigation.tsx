@@ -1,31 +1,15 @@
 import { Button } from "@/components/ui/button";
+import { useActiveSection } from "@/hooks/use-active-section";
 import { Brain, Code2, Home, Mail, Menu, User, X } from "lucide-react";
-import { type ComponentType, type SVGProps, useEffect, useState } from "react";
+import { type ComponentType, type SVGProps, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 const Navigation = () => {
 	const [isOpen, setIsOpen] = useState(false);
-	const [activeSection, setActiveSection] = useState("hero");
 	const location = useLocation();
 	const navigate = useNavigate();
-
-	useEffect(() => {
-		const handleScroll = () => {
-			const sections = ["hero", "about", "projects", "neural-notes", "contact"];
-			const current = sections.find((section) => {
-				const element = document.getElementById(section);
-				if (element) {
-					const { top } = element.getBoundingClientRect();
-					return top <= 100 && top > -element.offsetHeight;
-				}
-				return false;
-			});
-			if (current) setActiveSection(current);
-		};
-
-		window.addEventListener("scroll", handleScroll);
-		return () => window.removeEventListener("scroll", handleScroll);
-	}, []);
+	const sectionIds = ["hero", "about", "projects", "neural-notes", "contact"];
+	const activeSection = useActiveSection(sectionIds, 100);
 
 	const goHome = () => {
 		if (location.pathname !== "/") {
