@@ -246,8 +246,9 @@ All colors MUST be HSL.
 }
 
 /* Images */
-.markdown-content img {
-  @apply rounded-lg shadow-lg mb-4 max-w-full h-auto;
+.markdown-content img,
+.markdown-content picture {
+  @apply rounded-lg shadow-lg mb-4 max-w-full h-auto mx-auto block;
 }
 
 .markdown-content figure {
