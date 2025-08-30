@@ -3,54 +3,269 @@ description: Ensure any new npm package is browser-compatible for this web-only 
 alwaysApply: false
 ---
 
-# NPM Packages: Browser-Only Compatibility Rule
+Rule Name: dev-workflow-agent
+Description: Dev-Workflow Agent — Worktree → Milestones → PR (with Model Disclosure)
 
-This project runs purely in the browser. Before adding or recommending any dependency, verify it works without Node.js APIs or polyfills.
+## Dev-Workflow Agent: Worktree → Milestones → PR (Sibling .worktrees)
 
-## Checklist before installing a package
+Use this rule to run each development task in an isolated git worktree that lives outside the repository as a sibling folder named `<repo>.worktrees`. Commit at small milestones with standardized commit trailers, keep in sync via rebase, and open a draft PR that discloses the LLM/Gen-AI model and configuration used. Intended for agent-driven or scripted development.
 
-- Verify browser support: package docs mention "browser" or "isomorphic" usage.
-- Inspect package.json: has `exports`/`module` and ideally a `browser` field or separate browser build.
-- No Node built-ins: reject packages that depend on `fs`, `path`, `net`, `tls`, `child_process`, `worker_threads`, `http`, `https`, `zlib`, `crypto` (Node version), `stream`, or `buffer` shims.
-- ESM-first and tree-shakeable: avoid CommonJS-only libs when a browser-native alternative exists.
-- Types available: includes TypeScript types (`types` or DefinitelyTyped).
-- Size: check Bundlephobia to avoid very large bundles.
+### Assumptions
 
-## Quick evaluation commands
+- git ≥ 2.38, gh (GitHub CLI), and optionally jq are installed and on PATH.
+- Running inside an existing clean repo clone; default remote origin, base branch main.
+- Authenticated to GitHub (gh auth status) or GH_TOKEN is set.
+- Agent has push rights (or will follow the optional fork flow).
+- Agent can set env vars describing its LLM model/config.
 
-- Check metadata:
-  - `npm view <pkg> exports browser module types | cat`
-- Inspect files on the CDN:
-  - `https://unpkg.com/<pkg>/package.json`
-  - `https://cdn.skypack.dev/<pkg>`
-- Bundle size and deps: `https://bundlephobia.com/package/<pkg>`
+### 1) Preflight
 
-## Prefer web-native APIs and web-first libraries
+1. Assert tools
+   - git --version, gh --version; optionally jq --version.
+2. Assert auth
+   - gh auth status must succeed (or GH_TOKEN set).
+3. Assert cleanliness at repo root
+   - git status --porcelain must be empty; otherwise abort with a clear message.
+4. Fetch latest base
+   - git fetch origin main --prune
 
-- Networking: use `fetch` (and `AbortController`) instead of Node HTTP clients.
-- File I/O: use `File`, `Blob`, `FileReader`, `DataTransfer`; never `fs`.
-- Crypto: use Web Crypto (`window.crypto.subtle`).
-- Streams: use Web Streams API.
-- Encoding: `TextEncoder`/`TextDecoder`, `Uint8Array`—avoid `Buffer`.
-- URL utils: `URL`, `URLSearchParams` instead of `path`.
-- Env/config: `import.meta.env` (Vite) instead of `process.env`.
+### 2) Branch & Worktree (topic/ prefix) — Sibling .worktrees
 
-## Common anti-patterns to avoid
+- Create deterministic names:
+  - BRANCH="topic/<slug>-run<runId>-$(date +%Y%m%d-%H%M)"
+  - WORKTREE_ROOT="<repo-parent>/<repo>.worktrees"
+  - FOLDER_NAME: replace '/' with '-' → "${BRANCH//\//-}"
+  - TARGET="$WORKTREE_ROOT/$FOLDER_NAME"
+- Add isolated worktree from latest origin/main and create the branch in one step:
 
-- Adding Node polyfills or shims (e.g., rollup/node polyfills) to make a Node-only lib work in the browser.
-- Choosing Node-only packages (e.g., `node-fetch`, Node `crypto` wrappers) when a browser-native API exists.
+```bash
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+PARENT_DIR="$(dirname "$REPO_ROOT")"
+REPO_NAME="$(basename "$REPO_ROOT")"
+WORKTREE_ROOT="$PARENT_DIR/${REPO_NAME}.worktrees"
+mkdir -p "$WORKTREE_ROOT"
+FOLDER_NAME="${BRANCH//\//-}"
+TARGET="$WORKTREE_ROOT/$FOLDER_NAME"
+git -C "$REPO_ROOT" worktree add -b "$BRANCH" "$TARGET" origin/main
+```
 
-## Acceptable fallbacks (only if strictly necessary)
+- Safe local git config in worktree:
 
-- If no browser-native option exists and the functionality is critical, prefer an isomorphic or browser-targeted alternative. Document the evaluation and rationale in the PR description.
-- Do not introduce global polyfills; scope any compatibility code to the specific module.
+```bash
+git -C "$TARGET" config pull.rebase true
+git -C "$TARGET" config commit.gpgsign false
+```
 
-## PR requirement
+### 3) Milestone Commit Protocol
 
-When proposing a new dependency, include a short note confirming:
+- Work only inside $TARGET. Commit in small milestones:
+  - 1/3 – planning & interfaces
+  - 2/3 – implementation & tests
+  - 3/3 – docs & polish
+- Commit message convention with trailers:
 
-- Browser support confirmed and no Node built-ins required
-- ESM build available and tree-shakeable
-- Bundle size is reasonable and types are available
+```
+[agent] <concise summary>
 
-If any criterion is not met, do not add the package and propose a browser-safe alternative.
+Implements: <ISSUE-ID or URL if any>
+Milestone: <i>/<n> – <short milestone title>
+Agent: dev-workflow-bot@1.0
+Model: <PROVIDER>/<MODEL_NAME>@<VERSION>
+Model-Params: temperature=<t>; top_p=<p>; seed=<seed>; max_tokens=<n>
+```
+
+- Helper function (bash) to standardize commits:
+
+```bash
+agent_commit () {
+  local msg="$1" ; local mi="$2" ; local of="$3" ; local title="$4"
+  ( cd "$TARGET"
+    git add -A
+    if git diff --cached --quiet; then
+      echo "No staged changes; skipping commit."; return 0
+    fi
+    git commit -m "[agent] ${msg}" \
+      -m "Implements: ${ISSUE_ID:-}" \
+      -m "Milestone: ${mi}/${of} – ${title}" \
+      -m "Agent: ${AGENT_NAME:-dev-workflow-bot@1.0}" \
+      -m "Model: ${MODEL_PROVIDER:-unknown}/${MODEL_NAME:-unknown}@${MODEL_VERSION:-unknown}" \
+      -m "Model-Params: temperature=${MODEL_TEMPERATURE:-NA}; top_p=${MODEL_TOP_P:-NA}; seed=${MODEL_SEED:-NA}; max_tokens=${MODEL_MAX_TOKENS:-NA}"
+  )
+}
+```
+
+Keep commits focused. Do not batch unrelated edits.
+
+### 4) Rebase Discipline (stay synced with main)
+
+Before each milestone and before pushing/PR:
+
+```bash
+( cd "$TARGET"
+  git fetch origin main
+  git rebase origin/main || { echo "Rebase conflict—requires human review."; exit 2; }
+)
+```
+
+Re-run fast tests after a successful rebase.
+
+### 5) Push & Create Pull Request (with Model Disclosure)
+
+1. Push the branch:
+   - ( cd "$TARGET" && git push -u origin "$BRANCH" )
+2. Generate PR body including Model & Config section:
+
+```bash
+PR_BODY="$(mktemp)"
+cat > "$PR_BODY" <<'EOF'
+## Summary
+<short explanation of the change, user impact, and why>
+
+## Milestones
+- [ ] 1/3 – planning & interfaces
+- [ ] 2/3 – implementation & tests
+- [ ] 3/3 – docs & polish
+
+## Model & Config
+
+Field	Value
+Provider	${MODEL_PROVIDER:-unknown}
+Model	${MODEL_NAME:-unknown}
+Version	${MODEL_VERSION:-unknown}
+Temperature	${MODEL_TEMPERATURE:-NA}
+Top-p	${MODEL_TOP_P:-NA}
+Seed	${MODEL_SEED:-NA}
+Max tokens	${MODEL_MAX_TOKENS:-NA}
+
+# Agent metadata
+Agent: ${AGENT_NAME:-dev-workflow-bot@1.0}
+Branch: ${BRANCH}
+Worktree: ${TARGET}
+Implements: ${ISSUE_ID:-}
+
+## Validation
+- Lints pass
+- Unit tests pass
+- CI green
+- Docs updated (if needed)
+
+## Notes
+This PR was authored via an isolated git worktree by an agent.
+EOF
+```
+
+3. Create a draft PR (promote when CI is green):
+
+```bash
+( cd "$TARGET" \
+  && gh pr create \
+    --title "${ISSUE_ID:+$ISSUE_ID: }${TASK_TITLE}" \
+    --body-file "$PR_BODY" \
+    --base "main" \
+    --draft )
+
+gh pr edit --add-label "agent" --add-label "needs-review" || true
+[[ -n "${REVIEWERS:-}" ]] && gh pr edit --add-reviewer "$REVIEWERS" || true
+```
+
+### 6) CI & Status Watching
+
+- Do not mark PR ready until checks are green:
+
+```bash
+gh pr checks --watch || { echo "CI failed—see checks."; exit 3; }
+gh pr ready
+```
+
+### 7) Cleanup Policy
+
+- On success (PR created): keep the worktree for follow-ups.
+- On abort/failure before PR: remove safely:
+  - git worktree remove "$TARGET"
+  - git branch -D "$BRANCH" || true
+- Janitor: periodically remove stale `<repo>.worktrees/topic-*` older than N days.
+
+### 8) Safety & Guardrails
+
+- Enforce write scope: reject if diff touches outside allowed paths.
+- Secrets: never commit tokens; use env vars; .gitignore should cover artifacts (e.g., venv/, dist/, .env\*).
+- Conventional structure: enforce commit trailers so runs are auditable.
+- Human-help mode: if rebase conflicts or CI failures can’t be auto-fixed, post a PR comment with diagnostics and halt.
+
+### 9) Optional: Fork Flow (no direct push rights)
+
+```bash
+gh repo fork --remote=true
+REMOTE="fork"
+git -C "$TARGET" push -u "$REMOTE" "$BRANCH"
+gh pr create --repo "<upstream_owner>/<repo>" --base main --head "<your_user>:$BRANCH" --draft --title "${ISSUE_ID:+$ISSUE_ID: }${TASK_TITLE}" --body-file "$PR_BODY"
+```
+
+### 10) Minimal Agent API (pseudocode)
+
+```text
+env MODEL_PROVIDER, MODEL_NAME, MODEL_VERSION
+env AGENT_NAME="dev-workflow-bot@1.0"
+
+on_task_start(task):
+  preflight()
+  create_worktree_and_branch("topic/" + task.slug + "-run" + task.runId + "-<ts>")
+  rebase_onto_main()
+
+milestone(i, n, title, apply_changes):
+  apply_changes(TARGET)
+  rebase_onto_main()
+  agent_commit(" " + title, i, n, title)
+
+finish():
+  rebase_onto_main()
+  push_branch()
+  open_draft_pr_with_model_disclosure()
+  watch_ci_until_green()
+  mark_pr_ready()
+```
+
+### 11) Ready-to-Use Shell Wrapper (reference)
+
+Prefer using `scripts/dev_agent.sh` which already implements this sibling .worktrees convention end-to-end.
+
+### 12) Per-worktree Dev Server Port & Playwright Base URL
+
+- Allocate a unique dev port per worktree to avoid conflicts when multiple worktrees run concurrently.
+- Deterministic scheme: compute a hash of the worktree folder name and map it into a port range.
+- Default range: 5300–6299 (configurable via `PORT_BASE`, `PORT_RANGE`).
+
+Example (performed automatically by `scripts/dev_agent.sh`):
+
+```bash
+# Computed per-worktree
+DEV_PORT=5321
+DEV_URL="http://localhost:${DEV_PORT}"
+
+# Start dev server in the worktree
+cd "$TARGET"
+npm ci
+npm run dev -- --port "$DEV_PORT"
+```
+
+Playwright guidance:
+
+- Use `baseURL=${DEV_URL}` so each worktree runs tests against its own dev instance.
+- You can pass `PLAYWRIGHT_BASE_URL=${DEV_URL}` via env and read it in your Playwright config, or override `--base-url` if using the CLI flag.
+
+Minimal `playwright.config.ts` excerpt:
+
+```ts
+import { defineConfig } from "@playwright/test";
+
+export default defineConfig({
+  use: {
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || "http://localhost:5173",
+  },
+});
+```
+
+Notes:
+
+- The agent writes `${TARGET}/.agent/env` containing `DEV_PORT`, `DEV_URL`, and `PLAYWRIGHT_BASE_URL`.
+- These files are ephemeral and should not be committed.
