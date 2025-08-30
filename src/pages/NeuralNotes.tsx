@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ArrowLeft, Calendar, Clock, Tag, Youtube, Volume2 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
@@ -215,6 +216,15 @@ const NeuralNotes = () => {
   if (selectedNote && selectedNoteData) {
     return (
       <div className="min-h-screen bg-background">
+        <Helmet>
+          <title>{selectedNoteData.title} - Neural Notes by David Asaf</title>
+          <meta name="description" content={selectedNoteData.description} />
+          <meta name="author" content="David Asaf" />
+          <meta property="og:title" content={selectedNoteData.title} />
+          <meta property="og:description" content={selectedNoteData.description} />
+          <meta property="article:author" content="David Asaf" />
+          <meta property="article:published_time" content={selectedNoteData.date} />
+        </Helmet>
         <Navigation />
         <div className="pt-20 pb-12">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -333,6 +343,12 @@ const NeuralNotes = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <Helmet>
+        <title>Neural Notes by David Asaf | AI Engineering Insights & Thought Leadership</title>
+        <meta name="description" content="Deep insights on AI, agentic workflows, and the future of intelligent systems by David Asaf. Thoughts from the frontier of AI product engineering in Charlotte, NC." />
+        <meta property="og:title" content="Neural Notes by David Asaf | AI Thought Leadership" />
+        <meta property="og:description" content="Explore cutting-edge AI insights and thought leadership from David Asaf on generative AI, agentic workflows, and the future of intelligent systems." />
+      </Helmet>
       <Navigation />
       <div className="pt-20 pb-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
