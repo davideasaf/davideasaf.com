@@ -1,9 +1,9 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 
 // Lazy load pages for better performance
@@ -26,6 +26,45 @@ const PageLoader = () => (
   </div>
 );
 
+// Handles scrolling to hash targets across routes and on initial loads
+const ScrollToHash = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    const { hash } = location;
+
+    if (hash) {
+      const targetId = decodeURIComponent(hash.replace('#', ''));
+
+      const tryScroll = () => {
+        const el = document.getElementById(targetId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+          return true;
+        }
+        return false;
+      };
+
+      // Attempt multiple times in case content is lazy-loaded
+      let attempts = 0;
+      const maxAttempts = 20; // ~1s at 50ms intervals
+      const interval = setInterval(() => {
+        attempts++;
+        if (tryScroll() || attempts >= maxAttempts) {
+          clearInterval(interval);
+        }
+      }, 50);
+
+      return () => clearInterval(interval);
+    } else {
+      // No hash: scroll to top on route change
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [location.pathname, location.hash]);
+
+  return null;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <HelmetProvider>
@@ -33,6 +72,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <ScrollToHash />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               <Route path="/" element={<Index />} />
