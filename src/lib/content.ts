@@ -1,7 +1,27 @@
-import frontMatter from "front-matter";
 import yaml from "js-yaml";
 import type React from "react";
-import { computeReadingTimeFromRawOrComponent } from "./readingTime";
+import { computeReadingTimeFromRawOrComponent, stripFrontMatter } from "./readingTime";
+
+// MDX module types
+interface MdxModuleWithFrontmatter<TMeta> {
+  default: React.ComponentType;
+  frontmatter?: Partial<TMeta>;
+}
+
+type RawLoader = () => Promise<string>;
+
+const parseFrontmatterYaml = <TMeta extends object>(
+  raw: string | undefined,
+): Partial<TMeta> => {
+  if (!raw) return {};
+  const match = raw.match(/^---\s*([\s\S]*?)\s*---/);
+  if (!match) return {};
+  try {
+    return (yaml.load(match[1]) as Partial<TMeta>) ?? {};
+  } catch {
+    return {};
+  }
+};
 
 // Type definitions for content
 export interface NeuralNoteMeta {
@@ -45,83 +65,41 @@ export async function loadNeuralNotes(): Promise<
   ContentItem<NeuralNoteMetaWithCalculated>[]
 > {
   try {
-    // Import MDX components and raw content for frontmatter extraction
+    // Import MDX components (eager for routing/build-time awareness)
     const modules = import.meta.glob("/content/neural-notes/*.mdx", {
       eager: true,
     });
-    // Load raw strings for MDX files (handle both raw strings and loaders)
-    const rawModules = import.meta.glob("/content/neural-notes/*.mdx", {
-      eager: true,
-      as: "raw",
-    });
-    const resolveRawContent = async (
-      entry: unknown,
-    ): Promise<string | undefined> => {
-      if (typeof entry === "string") return entry as string;
-      if (entry && typeof (entry as any).default === "string")
-        return (entry as any).default as string;
-      if (typeof entry === "function") {
-        try {
-          const res: unknown = await (entry as () => Promise<unknown>)();
-          if (typeof res === "string") return res as string;
-          if (res && typeof (res as any).default === "string")
-            return (res as any).default as string;
-        } catch { }
-      }
-      return undefined;
-    };
-
-    // Helpers to work with frontmatter without third-party parsing issues
-    const stripFrontMatter = (raw: string | undefined): string => {
-      if (!raw) return "";
-      return raw.replace(/^---[\s\S]*?---\s*/, "");
-    };
-    const parseFrontmatterYaml = (
-      raw: string | undefined,
-    ): Partial<NeuralNoteMeta> => {
-      if (!raw) return {};
-      const match = raw.match(/^---\s*([\s\S]*?)\s*---/);
-      if (!match) return {};
-      try {
-        return (yaml.load(match[1]) as Partial<NeuralNoteMeta>) ?? {};
-      } catch {
-        return {};
-      }
-    };
+    // Prepare lazy raw loaders only for fallback scenarios (no eager double-load)
+    const rawLoaders = import.meta.glob("/content/neural-notes/*.mdx", {
+      query: "?raw",
+      import: "default",
+    }) as Record<string, RawLoader>;
 
     const posts = await Promise.all(
       Object.entries(modules).map(async ([path, moduleExports]) => {
-        const mdxModule = moduleExports as {
-          default: React.ComponentType;
-          frontmatter?: Partial<NeuralNoteMeta>;
-        };
+        const mdxModule = moduleExports as MdxModuleWithFrontmatter<NeuralNoteMeta>;
         const MDXContent = mdxModule.default;
 
         // Extract slug from filename
         const slug = path.split("/").pop()?.replace(".mdx", "") || "";
 
-        // Prefer MDX-exported frontmatter; fall back to YAML block in the raw file
-        const rawMaybe = (rawModules as Record<string, unknown>)[path];
-        const rawContent = await resolveRawContent(rawMaybe);
-        if (typeof window !== "undefined") {
-          try {
-            console.debug(
-              "[reading-time] rawMaybe typeof",
-              typeof rawMaybe,
-              "hasDefault",
-              Boolean((rawMaybe as any)?.default),
-              "rawContentLen",
-              typeof rawContent === "string" ? rawContent.length : "n/a",
-            );
-          } catch { }
+        // Prefer MDX-exported frontmatter; fall back to YAML block in the raw file (lazy-loaded)
+        let rawContent: string | undefined;
+        let fmAttrs: Partial<NeuralNoteMeta> | undefined = mdxModule.frontmatter;
+        if (!fmAttrs) {
+          const loader = rawLoaders[path];
+          if (typeof loader === "function") {
+            try {
+              rawContent = await loader();
+              fmAttrs = parseFrontmatterYaml<NeuralNoteMeta>(rawContent);
+            } catch {
+              // ignore and continue without raw fallback
+            }
+          }
         }
-        const fmAttrs =
-          (mdxModule as any).frontmatter ??
-          (typeof rawContent === "string"
-            ? parseFrontmatterYaml(rawContent)
-            : {});
+
         const configuredReadTime = await computeReadingTimeFromRawOrComponent(
-          typeof rawContent === "string" ? rawContent : undefined,
+          rawContent ? stripFrontMatter(rawContent) : undefined,
           MDXContent,
         );
 
@@ -172,41 +150,45 @@ export async function loadNeuralNotes(): Promise<
 // Load Projects from MDX files
 export async function loadProjects(): Promise<ContentItem<ProjectMeta>[]> {
   try {
-    // Import MDX components
+    // Import MDX components (eager)
     const modules = import.meta.glob("/content/projects/*.mdx", {
       eager: true,
     });
+    // Lazy raw loaders only for fallback
+    const rawLoaders = import.meta.glob("/content/projects/*.mdx", {
+      query: "?raw",
+      import: "default",
+    }) as Record<string, RawLoader>;
 
-    // Import raw content for frontmatter extraction
-    const rawModules = import.meta.glob("/content/projects/*.mdx", {
-      eager: true,
-      as: "raw",
-    });
+    const projects = await Promise.all(
+      Object.entries(modules).map(async ([path, moduleExports]) => {
+        const mdxModule = moduleExports as MdxModuleWithFrontmatter<ProjectMeta>;
+        const MDXContent = mdxModule.default;
 
-    const projects = Object.entries(modules).map(([path, moduleExports]) => {
-      // Get the MDX component
-      const mdxModule = moduleExports as any;
-      const MDXContent = mdxModule.default;
+        // Determine frontmatter (prefer module export)
+        let meta: Partial<ProjectMeta> | undefined = mdxModule.frontmatter;
+        if (!meta) {
+          const loader = rawLoaders[path];
+          if (typeof loader === "function") {
+            try {
+              const raw = await loader();
+              meta = parseFrontmatterYaml<ProjectMeta>(raw);
+            } catch {
+              // ignore
+            }
+          }
+        }
 
-      // Get raw content and extract frontmatter
-      const rawMaybe = rawModules[path] as unknown;
-      const rawContent =
-        typeof rawMaybe === "string"
-          ? rawMaybe
-          : rawMaybe && typeof (rawMaybe as any).default === "string"
-            ? (rawMaybe as any).default
-            : "";
-      const { attributes: frontmatter } = frontMatter(rawContent);
+        // Extract slug from filename
+        const slug = path.split("/").pop()?.replace(".mdx", "") || "";
 
-      // Extract slug from filename
-      const slug = path.split("/").pop()?.replace(".mdx", "") || "";
-
-      return {
-        slug,
-        meta: frontmatter as ProjectMeta,
-        content: MDXContent, // This is now a React component
-      };
-    });
+        return {
+          slug,
+          meta: (meta ?? {}) as ProjectMeta,
+          content: MDXContent,
+        };
+      }),
+    );
 
     // Sort by date (newest first)
     return projects.sort(
