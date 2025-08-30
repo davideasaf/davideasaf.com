@@ -7,51 +7,31 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
+import {
+    type ContentItem,
+    loadNeuralNotes,
+    type NeuralNoteMetaWithCalculated,
+} from "@/lib/content";
 import { ArrowRight, Calendar, Clock, Play, Volume2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
 const NeuralNotes = () => {
-	const posts = [
-		{
-			id: 1,
-			title: "What Is Agile for an Agentic Workflow?",
-			excerpt:
-				"Exploring how Agile methodology needs to evolve for AI agent teams, and why traditional processes may be holding back AI acceleration.",
-			date: "2024-01-20",
-			readTime: "12 min read",
-			tags: ["Agile", "AI Agents", "Leadership", "DevOps"],
-			hasVideo: false,
-			hasAudio: false,
-			featured: true,
-		},
-		{
-			id: 2,
-			title: "Building Production-Ready AI Applications",
-			excerpt:
-				"A comprehensive guide to deploying AI models at scale, including best practices for monitoring, versioning, and maintaining AI systems.",
-			date: "2024-01-10",
-			readTime: "12 min read",
-			tags: ["MLOps", "Production", "Scaling"],
-			hasVideo: false,
-			hasAudio: true,
-			audioUrl: "https://example.com/audio/post2.mp3",
-			featured: false,
-		},
-		{
-			id: 3,
-			title: "Prompt Engineering: An Art and Science",
-			excerpt:
-				"Deep dive into advanced prompt engineering techniques that can dramatically improve AI model performance and reliability.",
-			date: "2024-01-05",
-			readTime: "10 min read",
-			tags: ["Prompt Engineering", "AI", "Best Practices"],
-			hasVideo: true,
-			hasAudio: true,
-			videoUrl: "https://youtube.com/embed/example2",
-			audioUrl: "https://example.com/audio/post3.mp3",
-			featured: false,
-		},
-	];
+	const [notes, setNotes] = useState<
+		ContentItem<NeuralNoteMetaWithCalculated>[]
+	>([]);
+
+	useEffect(() => {
+		const load = async () => {
+			try {
+				const loaded = await loadNeuralNotes();
+				setNotes(loaded.slice(0, 3));
+			} catch (err) {
+				console.error("Failed to load neural notes for home:", err);
+			}
+		};
+		load();
+	}, []);
 
 	const sectionId = "neural-notes";
 
@@ -76,10 +56,10 @@ const NeuralNotes = () => {
 				</div>
 
 				<div className="grid lg:grid-cols-3 gap-8">
-					{posts.map((post, index) => (
+					{notes.map((note, index) => (
 						<Card
-							key={post.id}
-							className={`group hover:shadow-elegant transition-all duration-300 ${post.featured && index === 0 ? "lg:col-span-2 lg:row-span-2" : ""}`}
+							key={note.slug}
+							className={`group hover:shadow-elegant transition-all duration-300 ${note.meta.featured && index === 0 ? "lg:col-span-2 lg:row-span-2" : ""}`}
 						>
 							<CardHeader className="space-y-4">
 								<div className="flex items-center justify-between">
@@ -87,7 +67,7 @@ const NeuralNotes = () => {
 										<div className="flex items-center space-x-1">
 											<Calendar className="h-4 w-4" />
 											<span>
-												{new Date(post.date).toLocaleDateString("en-US", {
+												{new Date(note.meta.date).toLocaleDateString("en-US", {
 													month: "short",
 													day: "numeric",
 													year: "numeric",
@@ -96,24 +76,24 @@ const NeuralNotes = () => {
 										</div>
 										<div className="flex items-center space-x-1">
 											<Clock className="h-4 w-4" />
-											<span>{post.readTime}</span>
+											<span>{note.meta.readTime}</span>
 										</div>
 									</div>
-									{post.featured && (
+									{note.meta.featured && (
 										<Badge variant="default" className="bg-gradient-primary">
 											Featured
 										</Badge>
 									)}
 								</div>
 
-								{(post.hasVideo || post.hasAudio) && (
+								{(note.meta.hasVideo || note.meta.hasAudio) && (
 									<div className="bg-muted rounded-lg p-4 space-y-2">
 										<div className="flex items-center justify-between">
 											<span className="text-sm font-medium">
 												Multimedia Content Available
 											</span>
 											<div className="flex space-x-2">
-												{post.hasVideo && (
+												{note.meta.hasVideo && (
 													<Button
 														variant="ghost"
 														size="sm"
@@ -122,7 +102,7 @@ const NeuralNotes = () => {
 														<Play className="h-4 w-4" />
 													</Button>
 												)}
-												{post.hasAudio && (
+												{note.meta.hasAudio && (
 													<Button
 														variant="ghost"
 														size="sm"
@@ -134,9 +114,9 @@ const NeuralNotes = () => {
 											</div>
 										</div>
 										<p className="text-xs text-muted-foreground">
-											{post.hasVideo && post.hasAudio
+											{note.meta.hasVideo && note.meta.hasAudio
 												? "Watch the video or listen to the audio version"
-												: post.hasVideo
+												: note.meta.hasVideo
 													? "Watch the video explanation"
 													: "Listen to the audio version"}
 										</p>
@@ -144,20 +124,20 @@ const NeuralNotes = () => {
 								)}
 
 								<CardTitle
-									className={`group-hover:text-primary transition-colors ${post.featured && index === 0 ? "text-2xl" : "text-xl"}`}
+									className={`group-hover:text-primary transition-colors ${note.meta.featured && index === 0 ? "text-2xl" : "text-xl"}`}
 								>
-									{post.title}
+									{note.meta.title}
 								</CardTitle>
 								<CardDescription
-									className={`${post.featured && index === 0 ? "text-base" : "text-sm"}`}
+									className={`${note.meta.featured && index === 0 ? "text-base" : "text-sm"}`}
 								>
-									{post.excerpt}
+									{note.meta.excerpt}
 								</CardDescription>
 							</CardHeader>
 
 							<CardContent className="space-y-4">
 								<div className="flex flex-wrap gap-2">
-									{post.tags.map((tag) => (
+									{note.meta.tags.map((tag) => (
 										<Badge key={tag} variant="secondary" className="text-xs">
 											{tag}
 										</Badge>
@@ -165,11 +145,14 @@ const NeuralNotes = () => {
 								</div>
 
 								<Button
+									asChild
 									variant="ghost"
 									className="w-full group-hover:text-primary p-0 justify-start"
 								>
-									Continue Reading
-									<ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+									<Link to={`/neural-notes/${note.slug}`}>
+										Continue Reading
+										<ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+									</Link>
 								</Button>
 							</CardContent>
 						</Card>
