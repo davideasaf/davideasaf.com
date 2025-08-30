@@ -1,0 +1,61 @@
+---
+description: Use GitHub CLI to fetch PR details whenever a PR reference is mentioned.
+alwaysApply: false
+---
+
+## GitHub Pull Request details via gh
+
+When a message references a GitHub Pull Request, automatically fetch its details using GitHub CLI and present a concise summary. Treat these formats as PR references:
+
+- `https://github.com/<owner>/<repo>/pull/<number>` (with or without a leading `@`)
+- `<owner>/<repo>#<number>`
+- `#<number>` when the current workspace repository applies
+
+### Behavior
+
+- Parse the PR reference to extract `<owner>`, `<repo>`, and `<number>`.
+- Run the command in non-interactive mode and avoid pagers.
+- Use the workspace root as the command working directory: `/Users/dasaf/personal-dev/davideasaf.com`.
+- Prefer JSON output and then summarize key fields.
+- Always include the original PR URL in the response.
+
+### Command template
+
+Use GitHub CLI to retrieve structured data. Replace placeholders based on the parsed reference.
+
+```bash
+gh pr view <number> --repo <owner>/<repo> \
+  --json number,title,state,author,headRefName,baseRefName,mergeable,mergeStateStatus,createdAt,updatedAt,additions,deletions,changedFiles,commits,labels,assignees,url | cat
+```
+
+Notes:
+
+- Append `| cat` to disable any pager.
+- If the PR reference is `#<number>` and the workspace repo is the target, omit `--repo`.
+
+### Example
+
+For `@https://github.com/davideasaf/davideasaf.com/pull/4`:
+
+```bash
+gh pr view 4 --repo davideasaf/davideasaf.com \
+  --json number,title,state,author,headRefName,baseRefName,mergeable,mergeStateStatus,createdAt,updatedAt,additions,deletions,changedFiles,commits,labels,assignees,url | cat
+```
+
+### Output and presentation
+
+After retrieving JSON, present a concise summary containing at least:
+
+- PR number and title
+- State and mergeability (including `mergeStateStatus`)
+- Branches (`headRefName` -> `baseRefName`)
+- Author
+- Counts: `commits`, `changedFiles`, `additions`/`deletions`
+- Labels and assignees (names only)
+- The PR URL
+
+### Operational considerations
+
+- If `gh` is not installed or not authenticated, report the issue succinctly and propose the necessary one-liner to fix (e.g., `brew install gh` and `gh auth login --hostname github.com --web`). Do not block; prefer continuing after the user authorizes.
+- Use absolute paths for command contexts where applicable.
+- Do not open the browser (`--web`); prefer structured data for summarization.
