@@ -11,22 +11,47 @@ Images are automatically optimized when referenced in markdown files or imported
 - **Responsive sizing** for different screen sizes
 - **File size reduction** (typically 60-80% smaller)
 
-### Smart Defaults Configuration
-The vite.config.ts includes smart defaults for different image types:
-- **Blog images** (`/blog/`): WebP format, quality 80, width 800px
-- **Project images** (`/projects/`): WebP format, quality 80, multiple sizes
-- **Other images**: WebP conversion with quality 85
+### Configuration-Driven Optimization
+Image defaults are configured in `src/config/site.yaml`:
+```yaml
+content:
+  images:
+    quality: 80
+    defaultWidth: 800
+    formats: ["webp"]
+```
+
+These defaults are used when no custom parameters are specified in markdown.
+The vite.config.ts provides additional smart defaults for build-time optimization.
 
 ## 📸 How to Add New Images
 
 ### 1. In Markdown Files (Neural Notes/Projects)
+
+#### Basic Usage
 Simply reference images normally in your markdown:
 ```markdown
 ![AI Workflow Diagram](/src/assets/blog/my-workflow.png)
 ```
 
+#### Custom Image Parameters
+You can override defaults with custom parameters:
+```markdown
+![Small thumbnail](/src/assets/blog/thumbnail.png){width=200 quality=90}
+![Hero image](/src/assets/blog/hero.png){width=1200}
+![JPG fallback](/src/assets/blog/photo.png){format=jpg quality=95}
+![Multiple params](/src/assets/blog/custom.png){width=600 quality=85 format=webp}
+```
+
+**Supported Parameters:**
+- `width` or `w`: Image width in pixels
+- `quality`: Image quality (1-100)
+- `format`: Output format (webp, jpg, png)
+
 The `OptimizedMarkdownImage` component automatically processes these with:
-- WebP conversion (`?format=webp&quality=80&w=800`)
+- **Default values** from `site.yaml` configuration
+- **Custom overrides** when parameters are specified
+- WebP conversion with fallbacks
 - Lazy loading
 - Proper alt text rendering
 - Responsive styling
@@ -139,8 +164,17 @@ title: "My AI Journey"
 
 # My AI Journey
 
-Here's my workflow diagram:
+# Default size (uses site.yaml defaults)
 ![AI Workflow Evolution](/src/assets/blog/ai-workflow-example.png)
+
+# Custom width for a smaller diagram
+![Process Flow](/src/assets/blog/process-flow.png){width=400}
+
+# High quality hero image
+![Hero Banner](/src/assets/blog/hero.png){width=1200 quality=95}
+
+# JPG format for photos
+![Team Photo](/src/assets/blog/team.png){format=jpg quality=90}
 ```
 
 ### In React Components

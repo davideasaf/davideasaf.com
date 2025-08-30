@@ -9,13 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import Navigation from "@/components/Navigation";
-import { loadNeuralNotes, formatDate, type ContentItem, type NeuralNoteMeta } from "@/lib/content";
+import { loadNeuralNotes, formatDate, type ContentItem, type NeuralNoteMetaWithCalculated } from "@/lib/content";
+import OptimizedMarkdownImage from "@/components/OptimizedMarkdownImage";
 
 import "highlight.js/styles/github-dark.css";
 
 const NeuralNotes = () => {
   const [selectedNote, setSelectedNote] = useState<string | null>(null);
-  const [neuralNotes, setNeuralNotes] = useState<ContentItem<NeuralNoteMeta>[]>([]);
+  const [neuralNotes, setNeuralNotes] = useState<ContentItem<NeuralNoteMetaWithCalculated>[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Load neural notes from markdown files
@@ -37,28 +38,6 @@ const NeuralNotes = () => {
 
   const selectedNoteData = neuralNotes.find(n => n.slug === selectedNote);
 
-  // Enhanced image renderer for optimized images with vite-imagetools
-  const OptimizedMarkdownImage = ({ src, alt }: { src?: string; alt?: string }) => {
-    if (!src) return null;
-    
-    // Handle relative paths by converting to assets paths with optimization
-    let imageSrc = src;
-    if (src.startsWith('/src/assets/')) {
-      // For vite-imagetools, add optimization parameters for blog images
-      imageSrc = src + '?format=webp&quality=80&w=800';
-    }
-
-    return (
-      <picture className="block my-8">
-        <img 
-          src={imageSrc} 
-          alt={alt || ''}
-          loading="lazy"
-          className="rounded-lg shadow-lg w-full h-auto"
-        />
-      </picture>
-    );
-  };
 
   if (loading) {
     return (

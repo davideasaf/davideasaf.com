@@ -48,6 +48,7 @@
     "front-matter": "^4.0.2",
     "highlight.js": "^11.11.1",
     "input-otp": "^1.4.2",
+    "js-yaml": "^4.1.0",
     "lucide-react": "^0.462.0",
     "next-themes": "^0.3.0",
     "react": "^18.3.1",
@@ -70,6 +71,7 @@
   "devDependencies": {
     "@eslint/js": "^9.32.0",
     "@tailwindcss/typography": "^0.5.16",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.16.5",
     "@types/react": "^18.3.23",
     "@types/react-dom": "^18.3.7",

@@ -1,4 +1,5 @@
 import frontMatter from 'front-matter';
+import { calculateReadingTime } from './config';
 
 // Type definitions for content
 export interface NeuralNoteMeta {
@@ -7,13 +8,17 @@ export interface NeuralNoteMeta {
   date: string;
   author: string;
   tags: string[];
-  readTime: string;
   featured: boolean;
   hasVideo: boolean;
   hasAudio: boolean;
   videoUrl?: string;
   audioUrl?: string;
   videoTitle?: string;
+}
+
+// Extended interface that includes calculated fields
+export interface NeuralNoteMetaWithCalculated extends NeuralNoteMeta {
+  readTime: string;
 }
 
 export interface ProjectMeta {
@@ -27,14 +32,14 @@ export interface ProjectMeta {
   image?: string;
 }
 
-export interface ContentItem<T = NeuralNoteMeta | ProjectMeta> {
+export interface ContentItem<T = NeuralNoteMetaWithCalculated | ProjectMeta> {
   slug: string;
   meta: T;
   content: string;
 }
 
 // Load Neural Notes from markdown files
-export async function loadNeuralNotes(): Promise<ContentItem<NeuralNoteMeta>[]> {
+export async function loadNeuralNotes(): Promise<ContentItem<NeuralNoteMetaWithCalculated>[]> {
   try {
     // Import all markdown files from content/neural-notes
     const modules = import.meta.glob('/content/neural-notes/*.md', { 
@@ -43,21 +48,29 @@ export async function loadNeuralNotes(): Promise<ContentItem<NeuralNoteMeta>[]> 
       import: 'default'
     });
 
-    const posts = Object.entries(modules).map(([path, content]) => {
-      // Parse frontmatter and content
-      const parsed = frontMatter(content as string);
-      const data = parsed.attributes;
-      const markdown = parsed.body;
-      
-      // Extract slug from filename
-      const slug = path.split('/').pop()?.replace('.md', '') || '';
+    const posts = await Promise.all(
+      Object.entries(modules).map(async ([path, content]) => {
+        // Parse frontmatter and content
+        const parsed = frontMatter(content as string);
+        const data = parsed.attributes;
+        const markdown = parsed.body;
+        
+        // Extract slug from filename
+        const slug = path.split('/').pop()?.replace('.md', '') || '';
+        
+        // Calculate reading time dynamically
+        const readTime = await calculateReadingTime(markdown);
 
-      return {
-        slug,
-        meta: data as NeuralNoteMeta,
-        content: markdown
-      };
-    });
+        return {
+          slug,
+          meta: {
+            ...data as NeuralNoteMeta,
+            readTime
+          } as NeuralNoteMetaWithCalculated,
+          content: markdown
+        };
+      })
+    );
 
     // Sort by date (newest first)
     return posts.sort((a, b) => 
@@ -106,7 +119,7 @@ export async function loadProjects(): Promise<ContentItem<ProjectMeta>[]> {
 }
 
 // Get a specific neural note by slug
-export async function getNeuralNoteBySlug(slug: string): Promise<ContentItem<NeuralNoteMeta> | null> {
+export async function getNeuralNoteBySlug(slug: string): Promise<ContentItem<NeuralNoteMetaWithCalculated> | null> {
   try {
     const posts = await loadNeuralNotes();
     return posts.find(post => post.slug === slug) || null;
@@ -127,20 +140,6 @@ export async function getProjectBySlug(slug: string): Promise<ContentItem<Projec
   }
 }
 
-// Utility function to format date
-export function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-}
 
-// Utility function to calculate reading time
-export function calculateReadingTime(content: string): string {
-  const wordsPerMinute = 200;
-  const wordCount = content.split(/\s+/).length;
-  const minutes = Math.ceil(wordCount / wordsPerMinute);
-  return `${minutes} min read`;
-}
+// Re-export the config-based functions for backward compatibility
+export { calculateReadingTime, formatDate } from './config';
