@@ -82,109 +82,6 @@ const projects = [
 ];
 
 const Projects = () => {
-  const [selectedProject, setSelectedProject] = useState<string | null>(null);
-
-  const selectedProjectData = projects.find(p => p.id === selectedProject);
-
-  if (selectedProject && selectedProjectData) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Helmet>
-          <title>{selectedProjectData.title} - David Asaf's AI Project</title>
-          <meta name="description" content={selectedProjectData.longDescription} />
-          <meta property="og:title" content={`${selectedProjectData.title} - David Asaf's AI Project`} />
-          <meta property="og:description" content={selectedProjectData.longDescription} />
-        </Helmet>
-        <Navigation />
-        <div className="pt-20 pb-12">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <Button 
-              variant="ghost" 
-              className="mb-8" 
-              onClick={() => setSelectedProject(null)}
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Projects
-            </Button>
-
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <div className="flex items-center gap-4 flex-wrap">
-                  <h1 className="text-3xl md:text-4xl font-bold">{selectedProjectData.title}</h1>
-                  <Badge variant={selectedProjectData.status === "Active Development" ? "default" : "secondary"}>
-                    {selectedProjectData.status}
-                  </Badge>
-                </div>
-                
-                <div className="flex items-center gap-4 text-muted-foreground">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    {selectedProjectData.date}
-                  </div>
-                </div>
-
-                <p className="text-xl text-muted-foreground leading-relaxed">
-                  {selectedProjectData.longDescription}
-                </p>
-
-                <div className="flex gap-4">
-                  {selectedProjectData.github && (
-                    <Button asChild>
-                      <a href={selectedProjectData.github} target="_blank" rel="noopener noreferrer">
-                        <Github className="mr-2 h-4 w-4" />
-                        View Code
-                      </a>
-                    </Button>
-                  )}
-                  {selectedProjectData.demo && (
-                    <Button variant="outline" asChild>
-                      <a href={selectedProjectData.demo} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        Live Demo
-                      </a>
-                    </Button>
-                  )}
-                </div>
-              </div>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Key Features</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ul className="space-y-2">
-                    {selectedProjectData.keyFeatures.map((feature, index) => (
-                      <li key={index} className="flex items-start gap-2">
-                        <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Technologies</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedProjectData.tags.map((tag) => (
-                      <Badge key={tag} variant="outline">
-                        <Tag className="mr-1 h-3 w-3" />
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
@@ -208,13 +105,12 @@ const Projects = () => {
 
           <div className="grid md:grid-cols-2 gap-8">
             {projects.map((project) => (
-              <Card 
-                key={project.id} 
-                className={`cursor-pointer transition-all duration-300 hover:shadow-elegant hover:scale-[1.02] ${
-                  project.featured ? 'ring-2 ring-primary/20' : ''
-                }`}
-                onClick={() => setSelectedProject(project.id)}
-              >
+              <Link key={project.id} to={`/projects/${project.id}`}>
+                <Card
+                  className={`cursor-pointer transition-all duration-300 hover:shadow-elegant hover:scale-[1.02] ${
+                    project.featured ? 'ring-2 ring-primary/20' : ''
+                  }`}
+                >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="space-y-2">
@@ -278,6 +174,7 @@ const Projects = () => {
                   </div>
                 </CardContent>
               </Card>
+              </Link>
             ))}
           </div>
 

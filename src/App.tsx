@@ -9,7 +9,9 @@ import { HelmetProvider } from "react-helmet-async";
 // Lazy load pages for better performance
 const Index = lazy(() => import("./pages/Index"));
 const Projects = lazy(() => import("./pages/Projects"));
+const Project = lazy(() => import("./pages/Project"));
 const NeuralNotes = lazy(() => import("./pages/NeuralNotes"));
+const NeuralNote = lazy(() => import("./pages/NeuralNote"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -35,7 +37,9 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/projects" element={<Projects />} />
+              <Route path="/projects/:id" element={<Project />} />
               <Route path="/neural-notes" element={<NeuralNotes />} />
+              <Route path="/neural-notes/:slug" element={<NeuralNote />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
