@@ -108,31 +108,18 @@ const projects: ProjectData[] = [
 const Project = () => {
   const { id } = useParams<{ id: string }>();
   const [project, setProject] = useState<ProjectData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, _setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadProject = () => {
-      try {
-        setLoading(true);
-        const foundProject = projects.find((p) => p.id === id);
-
-        if (!foundProject) {
-          setError("Project not found");
-          return;
-        }
-
-        setProject(foundProject);
-      } catch (err) {
-        console.error("Error loading project:", err);
-        setError("Failed to load project");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (id) {
-      loadProject();
+    if (!id) return;
+    const foundProject = projects.find((p) => p.id === id) || null;
+    if (!foundProject) {
+      setError("Project not found");
+      setProject(null);
+    } else {
+      setError(null);
+      setProject(foundProject);
     }
   }, [id]);
 
@@ -142,23 +129,7 @@ const Project = () => {
     }
   }, [project]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <div className="pt-20 pb-12">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-center min-h-[400px]">
-              <div className="text-center">
-                <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-muted-foreground">Loading Project...</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // no loading state — render immediately or show error
 
   if (error || !project) {
     return (

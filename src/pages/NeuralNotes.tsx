@@ -1,65 +1,33 @@
 import { Calendar, Clock, Volume2, Youtube } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import Navigation from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ANALYTICS_EVENTS, captureEvent } from "@/lib/analytics";
 import {
   type ContentItem,
   formatDate,
-  loadNeuralNotes,
+  getNeuralNotesSync,
   type NeuralNoteMetaWithCalculated,
 } from "@/lib/content";
+import { prefetchDetailPages } from "@/lib/prefetch";
 
 const NeuralNotes = () => {
-  const [neuralNotes, setNeuralNotes] = useState<ContentItem<NeuralNoteMetaWithCalculated>[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // Load neural notes from markdown files
+  const neuralNotes = useMemo<ContentItem<NeuralNoteMetaWithCalculated>[]>(
+    () => getNeuralNotesSync(),
+    [],
+  );
   useEffect(() => {
-    const loadContent = async () => {
-      try {
-        setLoading(true);
-        const notes = await loadNeuralNotes();
-        setNeuralNotes(notes);
-      } catch (error) {
-        console.error("Error loading neural notes:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadContent();
+    prefetchDetailPages();
   }, []);
 
   useEffect(() => {
-    if (!loading) {
-      captureEvent(ANALYTICS_EVENTS.NEURAL_NOTES_LIST_VIEWED, {
-        count: neuralNotes.length,
-      });
-    }
-  }, [loading, neuralNotes.length]);
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <div className="pt-20 pb-12">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-center min-h-[400px]">
-              <div className="text-center">
-                <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-muted-foreground">Loading Neural Notes...</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+    captureEvent(ANALYTICS_EVENTS.NEURAL_NOTES_LIST_VIEWED, {
+      count: neuralNotes.length,
+    });
+  }, [neuralNotes.length]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -90,7 +58,7 @@ const NeuralNotes = () => {
             </p>
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-8" data-prefetch="details">
             {neuralNotes.map((note) => (
               <Link
                 key={note.slug}

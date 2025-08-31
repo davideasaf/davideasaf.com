@@ -1,6 +1,10 @@
 import yaml from "js-yaml";
 import type React from "react";
-import { computeReadingTimeFromRawOrComponent, stripFrontMatter } from "./readingTime";
+import {
+  computeReadingTimeFromRawOrComponent,
+  readingTimeFromText,
+  stripFrontMatter,
+} from "./readingTime";
 
 // MDX module types
 interface MdxModuleWithFrontmatter<TMeta> {
@@ -60,6 +64,72 @@ export interface ContentItem<T = NeuralNoteMetaWithCalculated | ProjectMeta> {
   slug: string;
   meta: T;
   content: React.ComponentType; // MDX component instead of raw string
+}
+
+// ------------------------------------------------------------
+// Synchronous caches for instant render on list/detail pages
+// ------------------------------------------------------------
+// Build once at module init from eager MDX modules. Avoid async config loads.
+const noteModulesSync = import.meta.glob("/content/neural-notes/*.mdx", { eager: true }) as Record<
+  string,
+  MdxModuleWithFrontmatter<NeuralNoteMeta>
+>;
+
+const NOTES_SYNC: ContentItem<NeuralNoteMetaWithCalculated>[] = Object.entries(noteModulesSync)
+  .map(([path, mdxModule]) => {
+    const MDXContent = mdxModule.default;
+    const slug = path.split("/").pop()?.replace(".mdx", "") || "";
+    const fm = (mdxModule.frontmatter ?? {}) as Partial<NeuralNoteMeta>;
+
+    const rawTags: unknown = (fm as unknown as { tags?: unknown }).tags;
+    const normalizedTags: string[] = Array.isArray(rawTags)
+      ? (rawTags as unknown[]).map((t) => String(t)).filter(Boolean)
+      : typeof rawTags === "string" && rawTags.trim().length > 0
+        ? [rawTags.trim()]
+        : [];
+    const rawEditorTodos: unknown = (fm as unknown as { editorTodos?: unknown }).editorTodos;
+    const normalizedEditorTodos: string[] = Array.isArray(rawEditorTodos)
+      ? (rawEditorTodos as unknown[]).map((t) => String(t)).filter(Boolean)
+      : typeof rawEditorTodos === "string" && rawEditorTodos.trim().length > 0
+        ? [rawEditorTodos.trim()]
+        : [];
+
+    const normalizedMeta: NeuralNoteMetaWithCalculated = {
+      title: fm.title ?? slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+      excerpt: fm.excerpt ?? "",
+      date: fm.date ?? "2024-01-01",
+      author: fm.author ?? "David Asaf",
+      tags: normalizedTags,
+      featured: Boolean(fm.featured),
+      hasVideo: Boolean(fm.hasVideo) || typeof fm.videoUrl === "string",
+      hasAudio: Boolean(fm.hasAudio) || typeof fm.audioUrl === "string",
+      videoUrl: fm.videoUrl,
+      audioUrl: fm.audioUrl,
+      videoTitle: fm.videoTitle,
+      draft: Boolean((fm as unknown as { draft?: unknown }).draft),
+      editorTodos: normalizedEditorTodos,
+      // Synchronous approximation using excerpt; precise calculation is done when needed via async helpers
+      readTime: readingTimeFromText(fm.excerpt ?? ""),
+    };
+
+    return {
+      slug,
+      meta: normalizedMeta,
+      content: MDXContent,
+    };
+  })
+  // Exclude drafts and sort by date (newest first)
+  .filter((p) => !p.meta.draft)
+  .sort((a, b) => new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime());
+
+export function getNeuralNotesSync(): ContentItem<NeuralNoteMetaWithCalculated>[] {
+  return NOTES_SYNC;
+}
+
+export function getNeuralNoteBySlugSync(
+  slug: string,
+): ContentItem<NeuralNoteMetaWithCalculated> | null {
+  return NOTES_SYNC.find((n) => n.slug === slug) ?? null;
 }
 
 // Load Neural Notes from MDX files

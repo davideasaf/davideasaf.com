@@ -107,6 +107,7 @@ const HeroSection = () => {
                     alt="David Asaf - AI Product Engineer in Charlotte, NC"
                     className="w-24 h-24 rounded-full object-cover border-4 border-primary/20"
                     loading="eager"
+                    fetchpriority="high"
                   />
                 </div>
                 <div className="space-y-4">
