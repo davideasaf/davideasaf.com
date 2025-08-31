@@ -5,6 +5,7 @@ import Navigation from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ANALYTICS_EVENTS, captureEvent, useObserveElementsOnce } from "@/lib/analytics";
 
 const projects = [
   {
@@ -89,6 +90,14 @@ const projects = [
 ];
 
 const Projects = () => {
+  useObserveElementsOnce(
+    "[data-project-card]",
+    ANALYTICS_EVENTS.PROJECT_CARD_VIEWED,
+    (el) => ({
+      project_id: (el as HTMLElement).dataset.projectId,
+      featured: (el as HTMLElement).dataset.featured === "true",
+    }),
+  );
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
@@ -118,8 +127,19 @@ const Projects = () => {
 
           <div className="grid md:grid-cols-2 gap-8">
             {projects.map((project) => (
-              <Link key={project.id} to={`/projects/${project.id}`}>
+              <Link
+                key={project.id}
+                to={`/projects/${project.id}`}
+                onClick={() =>
+                  captureEvent(ANALYTICS_EVENTS.PROJECT_CARD_CLICKED, {
+                    project_id: project.id,
+                  })
+                }
+              >
                 <Card
+                  data-project-card
+                  data-project-id={project.id}
+                  data-featured={project.featured}
                   className={`cursor-pointer transition-all duration-300 hover:shadow-elegant hover:scale-[1.02] ${
                     project.featured ? "ring-2 ring-primary/20" : ""
                   }`}
@@ -163,7 +183,13 @@ const Projects = () => {
                           variant="outline"
                           size="sm"
                           asChild
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            captureEvent(ANALYTICS_EVENTS.PROJECT_EXTERNAL_CLICKED, {
+                              project_id: project.id,
+                              target: "github",
+                            });
+                          }}
                         >
                           <a href={project.github} target="_blank" rel="noopener noreferrer">
                             <Github className="mr-2 h-3 w-3" />
@@ -176,7 +202,13 @@ const Projects = () => {
                           variant="outline"
                           size="sm"
                           asChild
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            captureEvent(ANALYTICS_EVENTS.PROJECT_EXTERNAL_CLICKED, {
+                              project_id: project.id,
+                              target: "demo",
+                            });
+                          }}
                         >
                           <a href={project.demo} target="_blank" rel="noopener noreferrer">
                             <ExternalLink className="mr-2 h-3 w-3" />

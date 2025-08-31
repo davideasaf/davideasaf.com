@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { ANALYTICS_EVENTS, captureEvent, useObserveElementsOnce } from "@/lib/analytics";
 
 const ProjectShowcase = () => {
   const projects = [
@@ -61,6 +62,15 @@ const ProjectShowcase = () => {
 
   const sectionId = "projects";
 
+  useObserveElementsOnce(
+    "[data-pj-card]",
+    ANALYTICS_EVENTS.PROJECT_CARD_VIEWED,
+    (el) => ({
+      project_id: (el as HTMLElement).dataset.pid,
+      featured: (el as HTMLElement).dataset.featured === "true",
+    }),
+  );
+
   return (
     <section id={sectionId} className="py-20 bg-gradient-subtle">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -79,6 +89,9 @@ const ProjectShowcase = () => {
           {projects.map((project) => (
             <Card
               key={project.id}
+              data-pj-card
+              data-pid={project.id}
+              data-featured={project.featured}
               className={`group relative overflow-hidden transition-all duration-300 hover:shadow-elegant ${project.featured ? "md:col-span-2 lg:col-span-1" : ""}`}
             >
               {project.featured && (
@@ -117,18 +130,43 @@ const ProjectShowcase = () => {
 
               <CardFooter className="flex justify-between">
                 <div className="flex space-x-2">
-                  <Button variant="outline" size="sm">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      captureEvent(ANALYTICS_EVENTS.PROJECT_EXTERNAL_CLICKED, {
+                        project_id: project.id,
+                        target: "github",
+                      })
+                    }
+                  >
                     <Github className="mr-2 h-4 w-4" />
                     Code
                   </Button>
                   {project.demo && (
-                    <Button variant="glow" size="sm">
+                    <Button
+                      variant="glow"
+                      size="sm"
+                      onClick={() =>
+                        captureEvent(ANALYTICS_EVENTS.PROJECT_EXTERNAL_CLICKED, {
+                          project_id: project.id,
+                          target: "demo",
+                        })
+                      }
+                    >
                       <ExternalLink className="mr-2 h-4 w-4" />
                       Demo
                     </Button>
                   )}
                 </div>
-                <Button variant="ghost" size="sm" className="text-primary hover:text-primary-glow">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-primary hover:text-primary-glow"
+                  onClick={() =>
+                    captureEvent(ANALYTICS_EVENTS.PROJECT_CARD_CLICKED, { project_id: project.id })
+                  }
+                >
                   Learn More →
                 </Button>
               </CardFooter>

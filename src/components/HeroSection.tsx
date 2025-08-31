@@ -5,6 +5,7 @@ import headshotImage from "@/assets/headshot.png";
 import heroImage from "@/assets/hero-bg.jpg";
 import { Button } from "@/components/ui/button";
 import { loadNeuralNotes } from "@/lib/content";
+import { ANALYTICS_EVENTS, captureEvent } from "@/lib/analytics";
 
 const HeroSection = () => {
   const [latestSlug, setLatestSlug] = useState<string | null>(null);
@@ -60,7 +61,15 @@ const HeroSection = () => {
             </div>
 
             <div className="flex flex-wrap gap-4">
-              <Button asChild variant="hero" size="lg" className="group">
+              <Button
+                asChild
+                variant="hero"
+                size="lg"
+                className="group"
+                onClick={() =>
+                  captureEvent(ANALYTICS_EVENTS.CTA_CLICKED, { cta_id: "view_my_work", page: "/" })
+                }
+              >
                 <Link to="/#projects">
                   View My Work
                   <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />

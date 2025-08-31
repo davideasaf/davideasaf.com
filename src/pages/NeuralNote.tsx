@@ -1,19 +1,20 @@
-import { ArrowLeft, Calendar, Clock, Tag, Volume2, Youtube } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Helmet } from "react-helmet-async";
-import { Link, useParams } from "react-router-dom";
 import Breadcrumb from "@/components/Breadcrumb";
 import Navigation from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { ANALYTICS_EVENTS, captureEvent, useScrollProgressMilestones } from "@/lib/analytics";
 import {
-  type ContentItem,
-  formatDate,
-  loadNeuralNotes,
-  type NeuralNoteMetaWithCalculated,
+    type ContentItem,
+    formatDate,
+    loadNeuralNotes,
+    type NeuralNoteMetaWithCalculated,
 } from "@/lib/content";
 import { computeReadingTimeFromDOM } from "@/lib/readingTime";
+import { ArrowLeft, Calendar, Clock, Tag, Volume2, Youtube } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
+import { Link, useParams } from "react-router-dom";
 
 const NeuralNote = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -69,6 +70,22 @@ const NeuralNote = () => {
       setComputedReadTime(null);
     }
   }, [loading, neuralNote]);
+
+  useEffect(() => {
+    if (!loading && neuralNote) {
+      captureEvent(ANALYTICS_EVENTS.NEURAL_NOTE_VIEWED, {
+        note_slug: neuralNote.slug,
+        read_time_meta: neuralNote.meta.readTime,
+        tags: neuralNote.meta.tags ?? [],
+      });
+    }
+  }, [loading, neuralNote]);
+
+  useScrollProgressMilestones(
+    ".markdown-content",
+    ANALYTICS_EVENTS.NEURAL_NOTE_READ_PROGRESS,
+    neuralNote ? { note_slug: neuralNote.slug } : undefined,
+  );
 
   if (loading) {
     return (
@@ -183,6 +200,12 @@ const NeuralNote = () => {
                             className="w-full h-full rounded-lg"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowFullScreen
+                            onLoad={() =>
+                              captureEvent(ANALYTICS_EVENTS.NEURAL_NOTE_MEDIA_INTERACTED, {
+                                note_slug: neuralNote.slug,
+                                media_type: "video_iframe_loaded",
+                              })
+                            }
                           />
                         </div>
                       </div>
@@ -194,7 +217,16 @@ const NeuralNote = () => {
                           <Volume2 className="h-5 w-5" />
                           <span className="font-medium">Listen to the audio version</span>
                         </div>
-                        <audio controls className="w-full">
+                        <audio
+                          controls
+                          className="w-full"
+                          onPlay={() =>
+                            captureEvent(ANALYTICS_EVENTS.NEURAL_NOTE_MEDIA_INTERACTED, {
+                              note_slug: neuralNote.slug,
+                              media_type: "audio_play",
+                            })
+                          }
+                        >
                           <source src={neuralNote.meta.audioUrl} type="audio/mpeg" />
                           <track kind="captions" srcLang="en" label="captions" />
                           Your browser does not support the audio element.
