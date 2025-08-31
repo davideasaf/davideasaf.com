@@ -1,7 +1,9 @@
-import { Brain, Code, Download, Rocket, Users } from "lucide-react";
+import { Brain, Code, Rocket, Users } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { ANALYTICS_EVENTS, captureEvent } from "@/lib/analytics";
 
 const AboutSection = () => {
   const skills = [
@@ -85,12 +87,18 @@ const AboutSection = () => {
             </div>
 
             <div className="flex flex-wrap gap-4">
-              <Button variant="hero" size="lg">
-                <Download className="mr-2 h-5 w-5" />
-                Download Resume
-              </Button>
-              <Button variant="outline_primary" size="lg">
-                Let's Collaborate
+              <Button
+                asChild
+                variant="outline_primary"
+                size="lg"
+                onClick={() =>
+                  captureEvent(ANALYTICS_EVENTS.CTA_CLICKED, {
+                    cta_id: "lets_collaborate",
+                    page: "/about",
+                  })
+                }
+              >
+                <Link to="/#contact">Let's Collaborate</Link>
               </Button>
             </div>
           </div>
