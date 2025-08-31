@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ANALYTICS_EVENTS, captureEvent } from "@/lib/analytics";
 
 const ContactSection = () => {
   const contactMethods = [
@@ -73,7 +74,16 @@ const ContactSection = () => {
                         <p className="text-sm text-muted-foreground mb-1">{method.description}</p>
                         <p className="text-sm font-medium text-primary">{method.value}</p>
                       </div>
-                      <Button variant="outline" size="sm" className="group-hover:border-primary">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="group-hover:border-primary"
+                        onClick={() =>
+                          captureEvent(ANALYTICS_EVENTS.CONTACT_METHOD_CLICKED, {
+                            method: method.title,
+                          })
+                        }
+                      >
                         {method.action}
                       </Button>
                     </div>
@@ -86,7 +96,18 @@ const ContactSection = () => {
               <h3 className="text-lg font-semibold">Follow My Journey</h3>
               <div className="flex space-x-4">
                 {socialLinks.map((link) => (
-                  <a key={link.label} href={link.url} target="_blank" rel="noopener noreferrer">
+                  <a
+                    key={link.label}
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() =>
+                      captureEvent(ANALYTICS_EVENTS.SOCIAL_CLICKED, {
+                        network: link.label.toLowerCase(),
+                        page: "/",
+                      })
+                    }
+                  >
                     <Button
                       variant="outline"
                       size="icon"
@@ -135,7 +156,19 @@ const ContactSection = () => {
                 />
               </div>
 
-              <Button className="w-full" variant="hero" size="lg">
+              <Button
+                className="w-full"
+                variant="hero"
+                size="lg"
+                onClick={() =>
+                  captureEvent(ANALYTICS_EVENTS.CONTACT_FORM_SUBMITTED, {
+                    has_name: Boolean((document.getElementById("name") as HTMLInputElement)?.value),
+                    has_email: Boolean((document.getElementById("email") as HTMLInputElement)?.value),
+                    has_subject: Boolean((document.getElementById("subject") as HTMLInputElement)?.value),
+                    has_message: Boolean((document.getElementById("message") as HTMLTextAreaElement)?.value),
+                  })
+                }
+              >
                 <Mail className="mr-2 h-5 w-5" />
                 Send Message
               </Button>

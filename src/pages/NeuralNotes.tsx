@@ -12,6 +12,7 @@ import {
   loadNeuralNotes,
   type NeuralNoteMetaWithCalculated,
 } from "@/lib/content";
+import { ANALYTICS_EVENTS, captureEvent } from "@/lib/analytics";
 
 const NeuralNotes = () => {
   const [neuralNotes, setNeuralNotes] = useState<ContentItem<NeuralNoteMetaWithCalculated>[]>([]);
@@ -33,6 +34,14 @@ const NeuralNotes = () => {
 
     loadContent();
   }, []);
+
+  useEffect(() => {
+    if (!loading) {
+      captureEvent(ANALYTICS_EVENTS.NEURAL_NOTES_LIST_VIEWED, {
+        count: neuralNotes.length,
+      });
+    }
+  }, [loading, neuralNotes.length]);
 
   if (loading) {
     return (
@@ -83,7 +92,15 @@ const NeuralNotes = () => {
 
           <div className="space-y-8">
             {neuralNotes.map((note) => (
-              <Link key={note.slug} to={`/neural-notes/${note.slug}`}>
+              <Link
+                key={note.slug}
+                to={`/neural-notes/${note.slug}`}
+                onClick={() =>
+                  captureEvent(ANALYTICS_EVENTS.NEURAL_NOTE_CARD_CLICKED, {
+                    note_slug: note.slug,
+                  })
+                }
+              >
                 <Card
                   className={`cursor-pointer transition-all duration-300 hover:shadow-elegant hover:scale-[1.01] ${
                     note.meta.featured ? "ring-2 ring-primary/20" : ""

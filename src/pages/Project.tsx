@@ -7,6 +7,7 @@ import Navigation from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ANALYTICS_EVENTS, captureEvent } from "@/lib/analytics";
 
 interface ProjectData {
   id: string;
@@ -135,6 +136,12 @@ const Project = () => {
     }
   }, [id]);
 
+  useEffect(() => {
+    if (project) {
+      captureEvent(ANALYTICS_EVENTS.PROJECT_DETAIL_VIEWED, { project_id: project.id });
+    }
+  }, [project]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
@@ -222,7 +229,15 @@ const Project = () => {
 
               <div className="flex gap-4">
                 {project.github && (
-                  <Button asChild>
+                  <Button
+                    asChild
+                    onClick={() =>
+                      captureEvent(ANALYTICS_EVENTS.PROJECT_DETAIL_EXTERNAL_CLICKED, {
+                        project_id: project.id,
+                        target: "github",
+                      })
+                    }
+                  >
                     <a href={project.github} target="_blank" rel="noopener noreferrer">
                       <Github className="mr-2 h-4 w-4" />
                       View Code
@@ -230,7 +245,16 @@ const Project = () => {
                   </Button>
                 )}
                 {project.demo && (
-                  <Button variant="outline" asChild>
+                  <Button
+                    variant="outline"
+                    asChild
+                    onClick={() =>
+                      captureEvent(ANALYTICS_EVENTS.PROJECT_DETAIL_EXTERNAL_CLICKED, {
+                        project_id: project.id,
+                        target: "demo",
+                      })
+                    }
+                  >
                     <a href={project.demo} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="mr-2 h-4 w-4" />
                       Live Demo

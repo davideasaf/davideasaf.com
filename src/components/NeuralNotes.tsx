@@ -9,6 +9,7 @@ import {
   loadNeuralNotes,
   type NeuralNoteMetaWithCalculated,
 } from "@/lib/content";
+import { ANALYTICS_EVENTS, captureEvent, useObserveElementsOnce } from "@/lib/analytics";
 
 const NeuralNotes = () => {
   const [notes, setNotes] = useState<ContentItem<NeuralNoteMetaWithCalculated>[]>([]);
@@ -24,6 +25,16 @@ const NeuralNotes = () => {
     };
     load();
   }, []);
+
+  useObserveElementsOnce(
+    "[data-note-card]",
+    ANALYTICS_EVENTS.NEURAL_NOTE_CARD_VIEWED,
+    (el) => ({
+      note_slug: (el as HTMLElement).dataset.slug,
+      featured: (el as HTMLElement).dataset.featured === "true",
+      tags: (el as HTMLElement).getAttribute("data-tags")?.split(",") ?? [],
+    }),
+  );
 
   const sectionId = "neural-notes";
 
@@ -48,6 +59,10 @@ const NeuralNotes = () => {
           {notes.map((note, index) => (
             <Card
               key={note.slug}
+              data-note-card
+              data-slug={note.slug}
+              data-featured={(note.meta.featured && index === 0).toString()}
+              data-tags={(note.meta.tags ?? []).join(",")}
               className={`group hover:shadow-elegant transition-all duration-300 ${note.meta.featured && index === 0 ? "lg:col-span-2 lg:row-span-2" : ""}`}
             >
               <CardHeader className="space-y-4">
@@ -128,7 +143,15 @@ const NeuralNotes = () => {
                   variant="ghost"
                   className="w-full group-hover:text-primary p-0 justify-start"
                 >
-                  <Link to={`/neural-notes/${note.slug}`}>
+                  <Link
+                    to={`/neural-notes/${note.slug}`}
+                    onClick={() =>
+                      captureEvent(ANALYTICS_EVENTS.NEURAL_NOTE_CARD_CLICKED, {
+                        note_slug: note.slug,
+                        position: index,
+                      })
+                    }
+                  >
                     Continue Reading
                     <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
                   </Link>

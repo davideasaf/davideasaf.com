@@ -3,6 +3,7 @@ import { type ComponentType, type SVGProps, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useActiveSection } from "@/hooks/use-active-section";
+import { ANALYTICS_EVENTS, captureEvent, getDeviceSource } from "@/lib/analytics";
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -12,6 +13,11 @@ const Navigation = () => {
   const activeSection = useActiveSection(sectionIds, 100);
 
   const goHome = () => {
+    captureEvent(ANALYTICS_EVENTS.NAV_CLICKED, {
+      target: "home",
+      source: getDeviceSource(),
+      current_path: location.pathname,
+    });
     if (location.pathname !== "/") {
       navigate("/");
     } else {
@@ -21,6 +27,11 @@ const Navigation = () => {
   };
 
   const goToHash = (sectionId: string) => {
+    captureEvent(ANALYTICS_EVENTS.NAV_CLICKED, {
+      target: sectionId,
+      source: getDeviceSource(),
+      current_path: location.pathname,
+    });
     if (location.pathname !== "/") {
       navigate(`/#${sectionId}`);
     } else {
