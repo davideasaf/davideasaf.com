@@ -88,6 +88,7 @@ const SidebarProvider = React.forwardRef<
             });
           } else {
             // Fallback for browsers without Cookie Store API.
+            // biome-ignore lint/suspicious/noDocumentCookie: Intentional, scoped fallback for legacy browsers.
             document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
           }
         } catch (_err) {
