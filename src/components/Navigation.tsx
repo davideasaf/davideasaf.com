@@ -80,6 +80,10 @@ const Navigation = () => {
                 <Link
                   key={item.id}
                   to={item.path}
+                  onMouseEnter={() => {
+                    if (item.path?.startsWith("/projects")) import("@/pages/Project");
+                    if (item.path?.startsWith("/neural-notes")) import("@/pages/NeuralNote");
+                  }}
                   className={`flex items-center space-x-1 text-sm font-medium transition-colors hover:text-primary ${
                     isActive ? "text-primary" : "text-muted-foreground"
                   }`}
@@ -129,6 +133,10 @@ const Navigation = () => {
                     key={item.id}
                     to={item.path}
                     onClick={() => setIsOpen(false)}
+                    onMouseEnter={() => {
+                      if (item.path?.startsWith("/projects")) import("@/pages/Project");
+                      if (item.path?.startsWith("/neural-notes")) import("@/pages/NeuralNote");
+                    }}
                     className={`flex items-center space-x-2 px-3 py-2 rounded-md text-sm font-medium transition-colors hover:text-primary hover:bg-accent ${
                       isActive ? "text-primary bg-accent" : "text-muted-foreground"
                     }`}

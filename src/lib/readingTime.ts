@@ -2,6 +2,16 @@ import React from "react";
 import ReactDOMServer from "react-dom/server";
 import { calculateReadingTime } from "./config";
 
+// Synchronous, lightweight estimator to avoid awaiting config during render.
+// Keep simple and stable for UI; use for list pages and precomputed meta.
+const WORDS_PER_MINUTE_SYNC = 200;
+
+export function readingTimeFromText(text: string): string {
+  const words = (text ?? "").trim().split(/\s+/).filter(Boolean).length;
+  const minutes = Math.max(1, Math.round(words / WORDS_PER_MINUTE_SYNC));
+  return `${minutes} min read`;
+}
+
 // Utility: remove YAML frontmatter if present
 export function stripFrontMatter(raw: string): string {
   return raw.replace(/^---[\s\S]*?---\s*/, "");

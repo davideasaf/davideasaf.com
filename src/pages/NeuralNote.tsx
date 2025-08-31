@@ -11,7 +11,7 @@ import { ANALYTICS_EVENTS, captureEvent, useScrollProgressMilestones } from "@/l
 import {
   type ContentItem,
   formatDate,
-  loadNeuralNotes,
+  getNeuralNoteBySlugSync,
   type NeuralNoteMetaWithCalculated,
 } from "@/lib/content";
 import { computeReadingTimeFromDOM } from "@/lib/readingTime";
@@ -21,33 +21,19 @@ const NeuralNote = () => {
   const [neuralNote, setNeuralNote] = useState<ContentItem<NeuralNoteMetaWithCalculated> | null>(
     null,
   );
-  const [loading, setLoading] = useState(true);
+  const [loading, _setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [computedReadTime, setComputedReadTime] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadNote = async () => {
-      try {
-        setLoading(true);
-        const notes = await loadNeuralNotes();
-        const note = notes.find((n) => n.slug === slug);
-
-        if (!note) {
-          setError("Neural note not found");
-          return;
-        }
-
-        setNeuralNote(note);
-      } catch (err) {
-        console.error("Error loading neural note:", err);
-        setError("Failed to load neural note");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (slug) {
-      loadNote();
+    if (!slug) return;
+    const note = getNeuralNoteBySlugSync(slug);
+    if (!note) {
+      setError("Neural note not found");
+      setNeuralNote(null);
+    } else {
+      setError(null);
+      setNeuralNote(note);
     }
   }, [slug]);
 
@@ -87,23 +73,7 @@ const NeuralNote = () => {
     neuralNote ? { note_slug: neuralNote.slug } : undefined,
   );
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-background">
-        <Navigation />
-        <div className="pt-20 pb-12">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-center min-h-[400px]">
-              <div className="text-center">
-                <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-muted-foreground">Loading Neural Note...</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // no loading state — render immediately or show error
 
   if (error || !neuralNote) {
     return (

@@ -1,6 +1,26 @@
 import posthog from "posthog-js";
 import { useEffect } from "react";
 
+export function initAnalytics(): void {
+  if (typeof window === "undefined") return;
+  const runner = () => {
+    import("posthog-js").then(({ default: ph }) => {
+      ph.init(import.meta.env.VITE_POSTHOG_KEY || "", {
+        api_host: "https://app.posthog.com",
+        capture_pageview: false,
+        autocapture: false,
+      });
+      ph.capture("$pageview");
+    });
+  };
+  if ("requestIdleCallback" in window) {
+    // @ts-expect-error
+    requestIdleCallback(runner);
+  } else {
+    setTimeout(runner, 1200);
+  }
+}
+
 export const ANALYTICS_EVENTS = {
   SECTION_VIEWED: "section_viewed",
   NAV_CLICKED: "nav_clicked",
