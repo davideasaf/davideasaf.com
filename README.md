@@ -87,8 +87,84 @@ git push origin feature/new-neural-note
 - **UI Components**: shadcn/ui with custom variants
 - **Build Tool**: Vite with vite-imagetools for image optimization
 - **Content**: Markdown with YAML frontmatter (parsed with front-matter)
+- **Code Quality**: Biome for linting, formatting, and import organization
+- **Git Hooks**: Pre-commit hooks for automated code quality checks
 - **Image Optimization**: Automatic WebP conversion and responsive sizing
 - **Deployment**: Lovable (or any static host)
+
+## 👨‍💻 Development Setup
+
+### Prerequisites
+
+- Node.js 20+ and npm
+- Git
+- Pre-commit (for code quality hooks)
+
+### Installation
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/your-username/davideasaf.com
+   cd davideasaf.com
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Install pre-commit** (if not already installed):
+   ```bash
+   pipx install pre-commit
+   ```
+
+4. **Set up pre-commit hooks**:
+   ```bash
+   pre-commit install
+   ```
+
+5. **Start development server**:
+   ```bash
+   npm run dev
+   ```
+
+### Development Commands
+
+- `npm run dev` - Start development server on port 8080
+- `npm run build` - Production build
+- `npm run build:dev` - Development build with source maps
+- `npm run lint` - Run Biome linter
+- `npm run format` - Format code with Biome
+- `npm run check` - Run Biome checks (lint + format)
+- `npm run fix` - Auto-fix Biome issues
+
+### Code Quality
+
+This project uses automated code quality checks:
+
+- **Pre-commit hooks**: Automatically run Biome checks on staged files before commit
+- **CI/CD validation**: GitHub Actions runs the same checks on pull requests
+- **Biome configuration**: Enforces 2-space indentation, double quotes, 100 line width
+
+#### Bypassing Hooks
+
+In emergencies, you can bypass pre-commit hooks:
+```bash
+git commit --no-verify -m "Emergency commit"
+```
+
+#### Manual Code Quality Checks
+
+Run quality checks manually:
+```bash
+# Check all files
+pre-commit run --all-files
+
+# Run specific Biome commands
+npm run check    # Check and auto-fix
+npm run lint     # Lint only
+npm run format   # Format only
+```
 
 ## 📱 Sections
 
