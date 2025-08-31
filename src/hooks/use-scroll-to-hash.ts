@@ -64,10 +64,7 @@ export const useScrollToHash = (options: ScrollToHashOptions = {}) => {
             return;
           }
           attempts++;
-          timeoutId = setTimeout(
-            scheduleScroll,
-            Math.min(100 * attempts, 500)
-          );
+          timeoutId = setTimeout(scheduleScroll, Math.min(100 * attempts, 500));
         });
       };
 

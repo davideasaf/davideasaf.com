@@ -10,9 +10,7 @@ interface MdxModuleWithFrontmatter<TMeta> {
 
 type RawLoader = () => Promise<string>;
 
-const parseFrontmatterYaml = <TMeta extends object>(
-  raw: string | undefined,
-): Partial<TMeta> => {
+const parseFrontmatterYaml = <TMeta extends object>(raw: string | undefined): Partial<TMeta> => {
   if (!raw) return {};
   const match = raw.match(/^---\s*([\s\S]*?)\s*---/);
   if (!match) return {};
@@ -61,9 +59,7 @@ export interface ContentItem<T = NeuralNoteMetaWithCalculated | ProjectMeta> {
 }
 
 // Load Neural Notes from MDX files
-export async function loadNeuralNotes(): Promise<
-  ContentItem<NeuralNoteMetaWithCalculated>[]
-> {
+export async function loadNeuralNotes(): Promise<ContentItem<NeuralNoteMetaWithCalculated>[]> {
   try {
     // Import MDX components (eager for routing/build-time awareness)
     const modules = import.meta.glob("/content/neural-notes/*.mdx", {
@@ -112,9 +108,7 @@ export async function loadNeuralNotes(): Promise<
             : [];
 
         const normalizedMeta: NeuralNoteMetaWithCalculated = {
-          title:
-            fm.title ??
-            slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+          title: fm.title ?? slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
           excerpt: fm.excerpt ?? "",
           date: fm.date ?? "2024-01-01",
           author: fm.author ?? "David Asaf",
@@ -137,10 +131,7 @@ export async function loadNeuralNotes(): Promise<
     );
 
     // Sort by date (newest first)
-    return posts.sort(
-      (a, b) =>
-        new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime(),
-    );
+    return posts.sort((a, b) => new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime());
   } catch (error) {
     console.error("Error loading neural notes:", error);
     return [];
@@ -192,8 +183,7 @@ export async function loadProjects(): Promise<ContentItem<ProjectMeta>[]> {
 
     // Sort by date (newest first)
     return projects.sort(
-      (a, b) =>
-        new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime(),
+      (a, b) => new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime(),
     );
   } catch (error) {
     console.error("Error loading projects:", error);
@@ -215,9 +205,7 @@ export async function getNeuralNoteBySlug(
 }
 
 // Get a specific project by slug
-export async function getProjectBySlug(
-  slug: string,
-): Promise<ContentItem<ProjectMeta> | null> {
+export async function getProjectBySlug(slug: string): Promise<ContentItem<ProjectMeta> | null> {
   try {
     const projects = await loadProjects();
     return projects.find((project) => project.slug === slug) || null;

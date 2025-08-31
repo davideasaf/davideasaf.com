@@ -1,12 +1,12 @@
+import { ArrowLeft, Calendar, ExternalLink, Github, Tag } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
-import Navigation from "@/components/Navigation";
+import { Link, useParams } from "react-router-dom";
 import Breadcrumb from "@/components/Breadcrumb";
+import Navigation from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Github, ExternalLink, Calendar, Tag } from "lucide-react";
 
 interface ProjectData {
   id: string;
@@ -26,8 +26,10 @@ const projects: ProjectData[] = [
   {
     id: "neural-content-generator",
     title: "Neural Content Generator",
-    description: "An advanced AI-powered content generation system that leverages transformer models to create high-quality, contextually relevant content across multiple domains.",
-    longDescription: "This project represents a breakthrough in automated content creation, utilizing state-of-the-art language models to generate compelling, coherent, and contextually appropriate content. The system incorporates advanced prompt engineering techniques, fine-tuning methodologies, and multi-modal capabilities to deliver professional-grade content at scale.",
+    description:
+      "An advanced AI-powered content generation system that leverages transformer models to create high-quality, contextually relevant content across multiple domains.",
+    longDescription:
+      "This project represents a breakthrough in automated content creation, utilizing state-of-the-art language models to generate compelling, coherent, and contextually appropriate content. The system incorporates advanced prompt engineering techniques, fine-tuning methodologies, and multi-modal capabilities to deliver professional-grade content at scale.",
     tags: ["Python", "Transformers", "OpenAI", "FastAPI", "React"],
     github: "https://github.com/davideasaf/neural-content-generator",
     demo: "https://neural-content-demo.vercel.app",
@@ -39,14 +41,16 @@ const projects: ProjectData[] = [
       "Context-aware prompt engineering",
       "Real-time content optimization",
       "API-first architecture",
-      "Scalable deployment pipeline"
-    ]
+      "Scalable deployment pipeline",
+    ],
   },
   {
     id: "agentic-workflow-orchestrator",
     title: "Agentic Workflow Orchestrator",
-    description: "A sophisticated orchestration platform for managing complex AI agent workflows with real-time monitoring and adaptive task distribution.",
-    longDescription: "Built to address the challenges of coordinating multiple AI agents in enterprise environments, this orchestrator provides intelligent task distribution, conflict resolution, and performance optimization across agent networks.",
+    description:
+      "A sophisticated orchestration platform for managing complex AI agent workflows with real-time monitoring and adaptive task distribution.",
+    longDescription:
+      "Built to address the challenges of coordinating multiple AI agents in enterprise environments, this orchestrator provides intelligent task distribution, conflict resolution, and performance optimization across agent networks.",
     tags: ["TypeScript", "Node.js", "Docker", "Kubernetes", "Redis"],
     github: "https://github.com/davideasaf/agentic-orchestrator",
     featured: true,
@@ -57,14 +61,16 @@ const projects: ProjectData[] = [
       "Real-time performance monitoring",
       "Scalable architecture",
       "Conflict resolution algorithms",
-      "Enterprise-grade security"
-    ]
+      "Enterprise-grade security",
+    ],
   },
   {
     id: "llm-fine-tuning-toolkit",
     title: "LLM Fine-tuning Toolkit",
-    description: "A comprehensive toolkit for fine-tuning large language models with efficient training pipelines and evaluation frameworks.",
-    longDescription: "This toolkit simplifies the complex process of fine-tuning LLMs for domain-specific applications, providing optimized training strategies, evaluation metrics, and deployment utilities.",
+    description:
+      "A comprehensive toolkit for fine-tuning large language models with efficient training pipelines and evaluation frameworks.",
+    longDescription:
+      "This toolkit simplifies the complex process of fine-tuning LLMs for domain-specific applications, providing optimized training strategies, evaluation metrics, and deployment utilities.",
     tags: ["Python", "PyTorch", "Hugging Face", "CUDA", "MLOps"],
     github: "https://github.com/davideasaf/llm-fine-tuning",
     date: "2023-11",
@@ -74,14 +80,16 @@ const projects: ProjectData[] = [
       "Comprehensive evaluation suite",
       "Memory optimization techniques",
       "Multi-GPU support",
-      "Automated hyperparameter tuning"
-    ]
+      "Automated hyperparameter tuning",
+    ],
   },
   {
     id: "intelligent-code-reviewer",
     title: "Intelligent Code Reviewer",
-    description: "An AI-powered code review system that provides contextual feedback, security analysis, and performance optimization suggestions.",
-    longDescription: "Leveraging advanced static analysis and machine learning techniques, this system provides intelligent code review capabilities that go beyond traditional linting to offer architectural insights and optimization recommendations.",
+    description:
+      "An AI-powered code review system that provides contextual feedback, security analysis, and performance optimization suggestions.",
+    longDescription:
+      "Leveraging advanced static analysis and machine learning techniques, this system provides intelligent code review capabilities that go beyond traditional linting to offer architectural insights and optimization recommendations.",
     tags: ["Python", "JavaScript", "AST", "Machine Learning", "CI/CD"],
     github: "https://github.com/davideasaf/intelligent-reviewer",
     date: "2023-09",
@@ -91,9 +99,9 @@ const projects: ProjectData[] = [
       "Security vulnerability detection",
       "Performance optimization hints",
       "Multi-language support",
-      "CI/CD integration"
-    ]
-  }
+      "CI/CD integration",
+    ],
+  },
 ];
 
 const Project = () => {
@@ -106,7 +114,7 @@ const Project = () => {
     const loadProject = () => {
       try {
         setLoading(true);
-        const foundProject = projects.find(p => p.id === id);
+        const foundProject = projects.find((p) => p.id === id);
 
         if (!foundProject) {
           setError("Project not found");
@@ -182,14 +190,10 @@ const Project = () => {
           <Breadcrumb
             items={[
               { label: "Projects", href: "/projects" },
-              { label: project?.title || "Loading..." }
+              { label: project?.title || "Loading..." },
             ]}
           />
-          <Button
-            variant="ghost"
-            className="mb-8"
-            asChild
-          >
+          <Button variant="ghost" className="mb-8" asChild>
             <Link to="/projects">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Projects

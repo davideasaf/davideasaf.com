@@ -138,10 +138,7 @@ export async function calculateReadingTime(content: string): Promise<string> {
     .trim()
     .split(/\s+/)
     .filter((word) => word.length > 0).length;
-  const safeWpm =
-    Number.isFinite(wordsPerMinute) && wordsPerMinute > 0
-      ? wordsPerMinute
-      : 200;
+  const safeWpm = Number.isFinite(wordsPerMinute) && wordsPerMinute > 0 ? wordsPerMinute : 200;
   const rawMinutes = wordCount > 0 ? wordCount / safeWpm : 1;
   const minutes = Math.max(1, Math.ceil(rawMinutes));
 

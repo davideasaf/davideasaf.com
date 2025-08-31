@@ -1,9 +1,9 @@
+import { Calendar, Github, Linkedin, Mail, MessageSquare, Twitter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Mail, MessageSquare, Calendar, Github, Linkedin, Twitter } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 const ContactSection = () => {
   const contactMethods = [
@@ -12,22 +12,22 @@ const ContactSection = () => {
       title: "Email",
       description: "Drop me a line anytime",
       value: "david@davidasaf.dev",
-      action: "Send Email"
+      action: "Send Email",
     },
     {
       icon: MessageSquare,
       title: "Let's Chat",
       description: "Schedule a conversation",
       value: "30-minute call",
-      action: "Book Call"
+      action: "Book Call",
     },
     {
       icon: Calendar,
       title: "Consulting",
       description: "AI strategy & development",
       value: "Available for projects",
-      action: "Discuss Project"
-    }
+      action: "Discuss Project",
+    },
   ];
 
   const socialLinks = [
@@ -46,8 +46,8 @@ const ContactSection = () => {
             </span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Whether you have a project in mind, want to discuss AI opportunities, 
-            or just want to connect, I'd love to hear from you.
+            Whether you have a project in mind, want to discuss AI opportunities, or just want to
+            connect, I'd love to hear from you.
           </p>
         </div>
 
@@ -56,7 +56,10 @@ const ContactSection = () => {
           <div className="space-y-8">
             <div className="grid gap-6">
               {contactMethods.map((method, index) => (
-                <Card key={index} className="group hover:shadow-elegant transition-all duration-300">
+                <Card
+                  key={index}
+                  className="group hover:shadow-elegant transition-all duration-300"
+                >
                   <CardContent className="p-6">
                     <div className="flex items-center space-x-4">
                       <div className="flex-shrink-0 w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center group-hover:shadow-glow transition-all duration-300">
@@ -66,12 +69,8 @@ const ContactSection = () => {
                         <h3 className="text-lg font-semibold group-hover:text-primary transition-colors">
                           {method.title}
                         </h3>
-                        <p className="text-sm text-muted-foreground mb-1">
-                          {method.description}
-                        </p>
-                        <p className="text-sm font-medium text-primary">
-                          {method.value}
-                        </p>
+                        <p className="text-sm text-muted-foreground mb-1">{method.description}</p>
+                        <p className="text-sm font-medium text-primary">{method.value}</p>
                       </div>
                       <Button variant="outline" size="sm" className="group-hover:border-primary">
                         {method.action}
@@ -87,7 +86,11 @@ const ContactSection = () => {
               <div className="flex space-x-4">
                 {socialLinks.map((link, index) => (
                   <a key={index} href={link.url} target="_blank" rel="noopener noreferrer">
-                    <Button variant="outline" size="icon" className="hover:border-primary hover:text-primary">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="hover:border-primary hover:text-primary"
+                    >
                       <link.icon className="h-5 w-5" />
                     </Button>
                   </a>
@@ -120,8 +123,8 @@ const ContactSection = () => {
 
               <div className="space-y-2">
                 <Label htmlFor="message">Message</Label>
-                <Textarea 
-                  id="message" 
+                <Textarea
+                  id="message"
                   placeholder="Tell me about your project or idea..."
                   className="min-h-[120px] resize-none"
                 />
