@@ -1,4 +1,3 @@
-import * as React from "react";
 
 type Source = { srcset: string; type: string; sizes?: string };
 type PictureData = { sources: Source[]; img: { src: string; width: number; height: number } };

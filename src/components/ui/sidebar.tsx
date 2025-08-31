@@ -79,7 +79,7 @@ const SidebarProvider = React.forwardRef<
         try {
           // @ts-expect-error: cookieStore is not yet in TS lib for all targets
           if (window.cookieStore && typeof window.cookieStore.set === "function") {
-            // biome-ignore lint/suspicious/noDocumentCookie: Using Cookie Store API when available.
+            // Using Cookie Store API when available.
             window.cookieStore.set({
               name: SIDEBAR_COOKIE_NAME,
               value: String(openState),
@@ -87,12 +87,12 @@ const SidebarProvider = React.forwardRef<
               maxAge: SIDEBAR_COOKIE_MAX_AGE,
             });
           } else {
-            // biome-ignore lint/suspicious/noDocumentCookie: Fallback for browsers without Cookie Store API.
+            // Fallback for browsers without Cookie Store API.
             document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
           }
         } catch (_err) {
-          // biome-ignore lint/suspicious/noConsoleLog: Log once in dev if cookie persistence fails.
-          console.log("Sidebar cookie persistence failed; proceeding without persistence");
+          // Log once in dev if cookie persistence fails.
+          console.error("Sidebar cookie persistence failed; proceeding without persistence");
         }
       },
       [setOpenProp, open],

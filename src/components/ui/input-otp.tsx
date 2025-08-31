@@ -61,7 +61,8 @@ const InputOTPSeparator = React.forwardRef<
   React.ComponentPropsWithoutRef<"div">
 >(({ ...props }, ref) => (
   // biome-ignore lint/a11y/useSemanticElements: Visual separator is decorative here.
-  <div ref={ref} role="separator" aria-valuenow={0} {...props}>
+  // biome-ignore lint/a11y/useFocusableInteractive: Separator is not interactive; allow non-focusable.
+  <div ref={ref} role="separator" {...props}>
     <Dot />
   </div>
 ));
