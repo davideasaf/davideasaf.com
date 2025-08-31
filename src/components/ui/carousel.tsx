@@ -120,6 +120,7 @@ const Carousel = React.forwardRef<
         ref={ref}
         onKeyDownCapture={handleKeyDown}
         className={cn("relative", className)}
+        // biome-ignore lint/a11y/useAriaPropsSupportedByRole: roledescription used for AT context.
         aria-roledescription="carousel"
         {...props}
       >
@@ -158,6 +159,7 @@ const CarouselItem = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLD
     return (
       <fieldset
         ref={ref}
+        // biome-ignore lint/a11y/useAriaPropsSupportedByRole: roledescription used for AT context.
         aria-roledescription="slide"
         className={cn(
           "min-w-0 shrink-0 grow-0 basis-full",
