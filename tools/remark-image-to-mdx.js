@@ -31,7 +31,7 @@ function createMdxJsxAttributeValueExpression(value) {
   };
 }
 
-export default function remarkImageToMdx(opts = {}) {
+export default function remarkImageToMdx(_opts = {}) {
   const defaults = {
     widths: [320, 640, 960, 1280],
     formats: ["avif", "webp", "jpg"],
@@ -66,7 +66,7 @@ export default function remarkImageToMdx(opts = {}) {
             .filter(Boolean)
         : [];
 
-  return (tree, file) => {
+  return (tree, _file) => {
     const imports = [];
     let counter = 0;
 
@@ -144,7 +144,7 @@ export default function remarkImageToMdx(opts = {}) {
       });
 
       // Image imports
-      imports.forEach((importStatement, index) => {
+      imports.forEach((importStatement, _index) => {
         const match = importStatement.match(/import\s+(\w+)\s+from\s+['"]([^'"]+)['"];?/);
         if (match) {
           const [, varName, importPath] = match;

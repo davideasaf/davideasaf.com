@@ -246,8 +246,8 @@ const Project = () => {
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2">
-                  {project.keyFeatures.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-2">
+                  {project.keyFeatures.map((feature) => (
+                    <li key={feature} className="flex items-start gap-2">
                       <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
                       <span>{feature}</span>
                     </li>

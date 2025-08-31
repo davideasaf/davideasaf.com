@@ -219,28 +219,34 @@ All colors MUST be HSL.
 
 /* Syntax highlighting override for dark theme */
 .hljs {
+  /* biome-ignore lint/complexity/noImportantStyles: Override third-party defaults for dark theme. */
   background: hsl(var(--card)) !important;
+  /* biome-ignore lint/complexity/noImportantStyles: Override third-party defaults for dark theme. */
   color: hsl(var(--foreground)) !important;
 }
 
 .hljs-comment,
 .hljs-quote {
+  /* biome-ignore lint/complexity/noImportantStyles: Override third-party defaults for dark theme. */
   color: hsl(var(--muted-foreground)) !important;
 }
 
 .hljs-keyword,
 .hljs-selector-tag,
 .hljs-type {
+  /* biome-ignore lint/complexity/noImportantStyles: Override third-party defaults for dark theme. */
   color: hsl(var(--primary)) !important;
 }
 
 .hljs-string,
 .hljs-number {
+  /* biome-ignore lint/complexity/noImportantStyles: Override third-party defaults for dark theme. */
   color: hsl(var(--primary-glow)) !important;
 }
 
 .hljs-variable,
 .hljs-template-variable {
+  /* biome-ignore lint/complexity/noImportantStyles: Override third-party defaults for dark theme. */
   color: hsl(var(--foreground)) !important;
 }
 

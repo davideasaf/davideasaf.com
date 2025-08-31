@@ -1,4 +1,4 @@
-import * as React from "react";
+ 
 import { Picture } from "./Picture";
 
 type PictureSource = { srcset: string; type: string; sizes?: string };
