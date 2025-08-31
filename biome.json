@@ -17,20 +17,7 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
-      "correctness": {
-        "noUnusedImports": "off",
-        "noUnusedVariables": "off",
-        "useUniqueElementIds": "off",
-        "noNestedComponentDefinitions": "off"
-      },
-      "suspicious": {
-        "noArrayIndexKey": "off",
-        "noExplicitAny": "warn"
-      },
-      "a11y": {
-        "useFocusableInteractive": "off"
-      }
+      "recommended": true
     }
   },
   "javascript": {
@@ -55,6 +42,14 @@
         "enabled": false
       },
       "includes": ["dist/**"]
+    },
+    {
+      "includes": ["**/*.css"],
+      "linter": {
+        "rules": {
+          "suspicious": { "noUnknownAtRules": "off" }
+        }
+      }
     }
   ]
 }

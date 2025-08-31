@@ -11,7 +11,7 @@ interface BreadcrumbProps {
 }
 
 const Breadcrumb = ({ items }: BreadcrumbProps) => {
-  const location = useLocation();
+  const _location = useLocation();
 
   return (
     <nav
@@ -28,7 +28,7 @@ const Breadcrumb = ({ items }: BreadcrumbProps) => {
       </Link>
 
       {items.map((item, index) => (
-        <div key={index} className="flex items-center space-x-2">
+        <div key={`${item.label}-${item.href ?? index}`} className="flex items-center space-x-2">
           <ChevronRight className="h-4 w-4" />
           {item.href && index < items.length - 1 ? (
             <Link to={item.href} className="hover:text-primary transition-colors">

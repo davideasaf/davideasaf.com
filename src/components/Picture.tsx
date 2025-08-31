@@ -20,9 +20,10 @@ export function Picture({
 }) {
   return (
     <picture className={className}>
-      {data.sources.map((s, i) => (
-        <source key={i} srcSet={s.srcset} type={s.type} sizes={s.sizes ?? sizes} />
-      ))}
+      {data.sources.map((s) => {
+        const key = `${s.type}:${s.srcset}`;
+        return <source key={key} srcSet={s.srcset} type={s.type} sizes={s.sizes ?? sizes} />;
+      })}
       <img
         src={data.img.src}
         width={data.img.width}

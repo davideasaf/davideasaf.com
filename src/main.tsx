@@ -2,4 +2,10 @@ import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-createRoot(document.getElementById("root")!).render(<App />);
+const rootEl = document.getElementById("root");
+if (rootEl) {
+  createRoot(rootEl).render(<App />);
+} else {
+  // biome-ignore lint/suspicious/noConsoleLog: Root element missing is critical and should log in dev.
+  console.error("Root element #root not found");
+}

@@ -55,9 +55,9 @@ const ContactSection = () => {
           {/* Contact Methods */}
           <div className="space-y-8">
             <div className="grid gap-6">
-              {contactMethods.map((method, index) => (
+              {contactMethods.map((method) => (
                 <Card
-                  key={index}
+                  key={`${method.title}:${method.action}`}
                   className="group hover:shadow-elegant transition-all duration-300"
                 >
                   <CardContent className="p-6">
@@ -84,8 +84,8 @@ const ContactSection = () => {
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Follow My Journey</h3>
               <div className="flex space-x-4">
-                {socialLinks.map((link, index) => (
-                  <a key={index} href={link.url} target="_blank" rel="noopener noreferrer">
+                {socialLinks.map((link) => (
+                  <a key={link.label} href={link.url} target="_blank" rel="noopener noreferrer">
                     <Button
                       variant="outline"
                       size="icon"
