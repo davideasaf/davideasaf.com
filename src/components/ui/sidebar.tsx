@@ -75,8 +75,25 @@ const SidebarProvider = React.forwardRef<
           _setOpen(openState);
         }
 
-        // This sets the cookie to keep the sidebar state.
-        document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+        // Persist state using Cookie Store API when available, with a document.cookie fallback.
+        try {
+          // @ts-expect-error: cookieStore is not yet in TS lib for all targets
+          if (window.cookieStore && typeof window.cookieStore.set === "function") {
+            // biome-ignore lint/suspicious/noDocumentCookie: Using Cookie Store API when available.
+            window.cookieStore.set({
+              name: SIDEBAR_COOKIE_NAME,
+              value: String(openState),
+              path: "/",
+              maxAge: SIDEBAR_COOKIE_MAX_AGE,
+            });
+          } else {
+            // biome-ignore lint/suspicious/noDocumentCookie: Fallback for browsers without Cookie Store API.
+            document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+          }
+        } catch (_err) {
+          // biome-ignore lint/suspicious/noConsoleLog: Log once in dev if cookie persistence fails.
+          console.log("Sidebar cookie persistence failed; proceeding without persistence");
+        }
       },
       [setOpenProp, open],
     );
@@ -84,7 +101,7 @@ const SidebarProvider = React.forwardRef<
     // Helper to toggle the sidebar.
     const toggleSidebar = React.useCallback(() => {
       return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open);
-    }, [isMobile, setOpen, setOpenMobile]);
+    }, [isMobile, setOpen]);
 
     // Adds a keyboard shortcut to toggle the sidebar.
     React.useEffect(() => {
@@ -113,7 +130,7 @@ const SidebarProvider = React.forwardRef<
         setOpenMobile,
         toggleSidebar,
       }),
-      [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar],
+      [state, open, setOpen, isMobile, openMobile, toggleSidebar],
     );
 
     return (

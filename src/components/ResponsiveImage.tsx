@@ -1,6 +1,22 @@
 import * as React from "react";
 import { Picture } from "./Picture";
 
+type PictureSource = { srcset: string; type: string; sizes?: string };
+type ResponsiveImageData = {
+  sources?: PictureSource[] | Record<string, string>;
+  img?: { src: string; width?: number; height?: number };
+  src?: string;
+};
+
+type ResponsiveImageProps = {
+  data: ResponsiveImageData | string;
+  alt: string;
+  sizes?: string;
+  loading?: "lazy" | "eager";
+  decoding?: "async" | "auto" | "sync";
+  className?: string;
+};
+
 export function ResponsiveImage({
   data,
   alt,
@@ -8,7 +24,7 @@ export function ResponsiveImage({
   loading = "lazy",
   decoding = "async",
   className,
-}: any) {
+}: ResponsiveImageProps) {
   // Debug: log the data structure (remove in production)
   // console.log('ResponsiveImage received data:', data)
   // console.log('Sources type:', typeof data?.sources, data?.sources)
@@ -28,8 +44,14 @@ export function ResponsiveImage({
   }
 
   // Convert sources object to array if needed
-  let normalizedData = data;
-  if (data.sources && !Array.isArray(data.sources)) {
+  let normalizedData = data as ResponsiveImageData;
+  if (
+    typeof data === "object" &&
+    data !== null &&
+    "sources" in data &&
+    data.sources &&
+    !Array.isArray(data.sources)
+  ) {
     // Convert object to array format expected by Picture component
     const sourcesArray = Object.entries(data.sources).map(([format, srcset]) => ({
       srcset: srcset as string,
