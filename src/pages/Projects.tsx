@@ -1,4 +1,4 @@
-import { ArrowLeft, Calendar, ExternalLink, Github, Tag } from "lucide-react";
+import { ArrowLeft, Calendar, ExternalLink, Github } from "lucide-react";
 import { useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";

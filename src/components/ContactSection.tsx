@@ -1,4 +1,4 @@
-import { Calendar, Github, Linkedin, Mail, MessageSquare, Twitter } from "lucide-react";
+import { Calendar, Github, Linkedin, Mail, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -36,6 +36,7 @@ const ContactSection = () => {
   ];
 
   return (
+    // biome-ignore lint/correctness/useUniqueElementIds: Page-level section rendered once per page.
     <section id="contact" className="py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
@@ -108,21 +109,25 @@ const ContactSection = () => {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Name</Label>
+                  {/* biome-ignore lint/correctness/useUniqueElementIds: Single form instance on page. */}
                   <Input id="name" placeholder="Your name" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
+                  {/* biome-ignore lint/correctness/useUniqueElementIds: Single form instance on page. */}
                   <Input id="email" type="email" placeholder="your@email.com" />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="subject">Subject</Label>
+                {/* biome-ignore lint/correctness/useUniqueElementIds: Single form instance on page. */}
                 <Input id="subject" placeholder="What's this about?" />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="message">Message</Label>
+                {/* biome-ignore lint/correctness/useUniqueElementIds: Single form instance on page. */}
                 <Textarea
                   id="message"
                   placeholder="Tell me about your project or idea..."
