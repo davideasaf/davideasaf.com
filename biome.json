@@ -55,15 +55,6 @@
         "enabled": false
       },
       "includes": ["dist/**"]
-    },
-    {
-      "includes": ["dist/**"],
-      "linter": {
-        "enabled": false
-      },
-      "formatter": {
-        "enabled": false
-      }
     }
   ]
 }
