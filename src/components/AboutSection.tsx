@@ -1,7 +1,7 @@
+import { Brain, Code, Download, Rocket, Users } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Brain, Code, Download, Rocket, Users } from "lucide-react";
 
 const AboutSection = () => {
   const skills = [
