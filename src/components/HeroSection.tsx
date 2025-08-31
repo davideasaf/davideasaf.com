@@ -4,8 +4,8 @@ import { Link } from "react-router-dom";
 import headshotImage from "@/assets/headshot.png";
 import heroImage from "@/assets/hero-bg.jpg";
 import { Button } from "@/components/ui/button";
-import { loadNeuralNotes } from "@/lib/content";
 import { ANALYTICS_EVENTS, captureEvent } from "@/lib/analytics";
+import { loadNeuralNotes } from "@/lib/content";
 
 const HeroSection = () => {
   const [latestSlug, setLatestSlug] = useState<string | null>(null);

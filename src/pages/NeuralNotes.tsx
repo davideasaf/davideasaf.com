@@ -6,13 +6,13 @@ import Navigation from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ANALYTICS_EVENTS, captureEvent } from "@/lib/analytics";
 import {
   type ContentItem,
   formatDate,
   loadNeuralNotes,
   type NeuralNoteMetaWithCalculated,
 } from "@/lib/content";
-import { ANALYTICS_EVENTS, captureEvent } from "@/lib/analytics";
 
 const NeuralNotes = () => {
   const [neuralNotes, setNeuralNotes] = useState<ContentItem<NeuralNoteMetaWithCalculated>[]>([]);

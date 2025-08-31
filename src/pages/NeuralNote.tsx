@@ -1,3 +1,7 @@
+import { ArrowLeft, Calendar, Clock, Tag, Volume2, Youtube } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
+import { Link, useParams } from "react-router-dom";
 import Breadcrumb from "@/components/Breadcrumb";
 import Navigation from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
@@ -5,16 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ANALYTICS_EVENTS, captureEvent, useScrollProgressMilestones } from "@/lib/analytics";
 import {
-    type ContentItem,
-    formatDate,
-    loadNeuralNotes,
-    type NeuralNoteMetaWithCalculated,
+  type ContentItem,
+  formatDate,
+  loadNeuralNotes,
+  type NeuralNoteMetaWithCalculated,
 } from "@/lib/content";
 import { computeReadingTimeFromDOM } from "@/lib/readingTime";
-import { ArrowLeft, Calendar, Clock, Tag, Volume2, Youtube } from "lucide-react";
-import { useEffect, useState } from "react";
-import { Helmet } from "react-helmet-async";
-import { Link, useParams } from "react-router-dom";
 
 const NeuralNote = () => {
   const { slug } = useParams<{ slug: string }>();

@@ -62,14 +62,10 @@ const ProjectShowcase = () => {
 
   const sectionId = "projects";
 
-  useObserveElementsOnce(
-    "[data-pj-card]",
-    ANALYTICS_EVENTS.PROJECT_CARD_VIEWED,
-    (el) => ({
-      project_id: (el as HTMLElement).dataset.pid,
-      featured: (el as HTMLElement).dataset.featured === "true",
-    }),
-  );
+  useObserveElementsOnce("[data-pj-card]", ANALYTICS_EVENTS.PROJECT_CARD_VIEWED, (el) => ({
+    project_id: (el as HTMLElement).dataset.pid,
+    featured: (el as HTMLElement).dataset.featured === "true",
+  }));
 
   return (
     <section id={sectionId} className="py-20 bg-gradient-subtle">

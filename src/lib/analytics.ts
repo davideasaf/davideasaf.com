@@ -21,13 +21,9 @@ export const ANALYTICS_EVENTS = {
   CONTACT_FORM_SUBMITTED: "contact_form_submitted",
 } as const;
 
-export type AnalyticsEventName =
-  (typeof ANALYTICS_EVENTS)[keyof typeof ANALYTICS_EVENTS] | string;
+export type AnalyticsEventName = (typeof ANALYTICS_EVENTS)[keyof typeof ANALYTICS_EVENTS] | string;
 
-export function captureEvent(
-  name: AnalyticsEventName,
-  props?: Record<string, unknown>,
-): void {
+export function captureEvent(name: AnalyticsEventName, props?: Record<string, unknown>): void {
   try {
     if (typeof window === "undefined") return;
     if (!posthog || typeof posthog.capture !== "function") return;
@@ -135,7 +131,10 @@ export function useScrollProgressMilestones(
     const compute = () => {
       if (!el) return;
       const rect = el.getBoundingClientRect();
-      const viewportBottom = Math.min(window.innerHeight, Math.max(0, window.innerHeight - Math.max(0, rect.top)));
+      const viewportBottom = Math.min(
+        window.innerHeight,
+        Math.max(0, window.innerHeight - Math.max(0, rect.top)),
+      );
       const scrolledWithin = viewportBottom + Math.max(0, -rect.top);
       const progress = Math.round(
         Math.max(0, Math.min(100, (scrolledWithin / Math.max(1, rect.height)) * 100)),
@@ -166,5 +165,3 @@ export function useScrollProgressMilestones(
     };
   }, [targetSelector, eventName, baseProps, milestones]);
 }
-
-
