@@ -65,6 +65,39 @@ git rebase origin/main
 2. Open a draft PR via GitHub CLI with a Model & Config section.
 3. Wait for CI to pass, then mark PR ready.
 
+### Completion & Finalization Checklist
+
+Before marking the PR ready for review, ensure the worktree is fully clean and all checks pass:
+
+- Clean git status (no uncommitted changes):
+
+  ```bash
+  git status --porcelain
+  ```
+
+  The output should be empty. If not, stage and commit remaining changes, then push:
+
+  ```bash
+  git add -A
+  git commit -m "[agent] Finalize: clean status before PR"
+  git push
+  ```
+
+- Lint/format and verify:
+
+  ```bash
+  npm run fix   # auto-fix issues (biome write)
+  npm run check # verify no remaining lint/type/format issues
+  ```
+
+  If `npm run check` fails:
+
+  - Read the errors and make a short plan to resolve them (do not disable rules unless explicitly approved).
+  - Implement fixes, re-run `npm run fix`, then `npm run check` until clean.
+  - Commit and push the fixes so the PR reflects the final state.
+
+Only when the status is clean, all changes are pushed, and checks pass, mark the PR ready.
+
 ### Ready-to-Use Script
 
 Use `scripts/dev_agent.sh` (added in this repo) to automate the entire flow including worktree creation under the sibling root, push, and draft PR creation with model disclosure.
