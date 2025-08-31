@@ -1,4 +1,4 @@
-import { Calendar, Github, Linkedin, Mail, MessageSquare } from "lucide-react";
+import { Calendar, Github, Linkedin, Mail, MessageSquare, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -9,19 +9,19 @@ import { ANALYTICS_EVENTS, captureEvent } from "@/lib/analytics";
 const ContactSection = () => {
   const contactMethods = [
     {
-      icon: Mail,
-      title: "Email",
-      description: "Quick questions or general inquiries",
-    },
-    {
       icon: MessageSquare,
-      title: "Let's Chat",
-      description: "Schedule a conversation about your ideas",
+      title: "Coffee Chat",
+      description: "Share your ideas and I'll bring mine.",
     },
     {
       icon: Calendar,
-      title: "Consulting",
-      description: "AI strategy & development projects",
+      title: "Consulting & Advisory",
+      description: "AI strategy, prototypes, and delivery. Get a proposal.",
+    },
+    {
+      icon: Users,
+      title: "Workshops & Team Enablement",
+      description: "Hands-on sessions: AI use-cases, CI/CD acceleration, best practices.",
     },
   ];
 
@@ -36,14 +36,13 @@ const ContactSection = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-5xl font-bold mb-6">
-            Let's Build Something{" "}
+            From Ideas to Impact:{" "}
             <span className="bg-gradient-primary bg-clip-text text-transparent">
-              Amazing Together
+              Let's Build What's Next
             </span>
           </h2>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Whether you have a project in mind, want to discuss AI opportunities, or just want to
-            connect, I'd love to hear from you.
+            Have a project, an idea, or just a question? I'd love to connect.
           </p>
         </div>
 
@@ -132,7 +131,7 @@ const ContactSection = () => {
                 {/* biome-ignore lint/correctness/useUniqueElementIds: Single form instance on page. */}
                 <Textarea
                   id="message"
-                  placeholder="Whether it's a quick question, scheduling a chat, or discussing a project - I'd love to hear from you..."
+                  placeholder="Tell me about your project, idea, or question—I'll get back within 24 hours."
                   className="min-h-[120px] resize-none"
                 />
               </div>
@@ -157,11 +156,11 @@ const ContactSection = () => {
                 }
               >
                 <Mail className="mr-2 h-5 w-5" />
-                Send Message
+                Start the Conversation
               </Button>
 
               <p className="text-xs text-muted-foreground text-center">
-                I typically respond within 24 hours. Looking forward to connecting!
+                You'll usually hear back from me within 24 hours.
               </p>
             </CardContent>
           </Card>
