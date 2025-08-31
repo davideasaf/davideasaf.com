@@ -6,6 +6,6 @@ const rootEl = document.getElementById("root");
 if (rootEl) {
   createRoot(rootEl).render(<App />);
 } else {
-  // biome-ignore lint/suspicious/noConsoleLog: Root element missing is critical and should log in dev.
+  // biome-ignore lint: Root element missing is critical and should log in dev.
   console.error("Root element #root not found");
 }
