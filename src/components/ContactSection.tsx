@@ -11,23 +11,17 @@ const ContactSection = () => {
     {
       icon: Mail,
       title: "Email",
-      description: "Drop me a line anytime",
-      value: "david@davidasaf.dev",
-      action: "Send Email",
+      description: "Quick questions or general inquiries",
     },
     {
       icon: MessageSquare,
       title: "Let's Chat",
-      description: "Schedule a conversation",
-      value: "30-minute call",
-      action: "Book Call",
+      description: "Schedule a conversation about your ideas",
     },
     {
       icon: Calendar,
       title: "Consulting",
-      description: "AI strategy & development",
-      value: "Available for projects",
-      action: "Discuss Project",
+      description: "AI strategy & development projects",
     },
   ];
 
@@ -56,40 +50,27 @@ const ContactSection = () => {
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Contact Methods */}
           <div className="space-y-8">
-            <div className="grid gap-6">
-              {contactMethods.map((method) => (
-                <Card
-                  key={`${method.title}:${method.action}`}
-                  className="group hover:shadow-elegant transition-all duration-300"
-                >
-                  <CardContent className="p-6">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex-shrink-0 w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center group-hover:shadow-glow transition-all duration-300">
-                        <method.icon className="h-6 w-6 text-primary-foreground" />
+            <div>
+              <h3 className="text-lg font-semibold mb-6 text-center lg:text-left">
+                Here are a few reasons you might want to reach out:
+              </h3>
+              <div className="grid gap-6">
+                {contactMethods.map((method) => (
+                  <Card key={method.title} className="border">
+                    <CardContent className="p-6">
+                      <div className="flex items-start space-x-4">
+                        <div className="flex-shrink-0 w-12 h-12 bg-gradient-primary rounded-full flex items-center justify-center">
+                          <method.icon className="h-6 w-6 text-primary-foreground" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold">{method.title}</h3>
+                          <p className="text-muted-foreground">{method.description}</p>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold group-hover:text-primary transition-colors">
-                          {method.title}
-                        </h3>
-                        <p className="text-sm text-muted-foreground mb-1">{method.description}</p>
-                        <p className="text-sm font-medium text-primary">{method.value}</p>
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="group-hover:border-primary"
-                        onClick={() =>
-                          captureEvent(ANALYTICS_EVENTS.CONTACT_METHOD_CLICKED, {
-                            method: method.title,
-                          })
-                        }
-                      >
-                        {method.action}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -151,7 +132,7 @@ const ContactSection = () => {
                 {/* biome-ignore lint/correctness/useUniqueElementIds: Single form instance on page. */}
                 <Textarea
                   id="message"
-                  placeholder="Tell me about your project or idea..."
+                  placeholder="Whether it's a quick question, scheduling a chat, or discussing a project - I'd love to hear from you..."
                   className="min-h-[120px] resize-none"
                 />
               </div>

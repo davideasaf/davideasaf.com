@@ -1,4 +1,4 @@
-import { ArrowRight, Github, Linkedin, Mail } from "lucide-react";
+import { ArrowRight, Github, Linkedin } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import headshotImage from "@/assets/headshot.png";
@@ -94,9 +94,6 @@ const HeroSection = () => {
                     <Linkedin className="h-5 w-5" />
                   </Button>
                 </a>
-                <Button variant="ghost" size="icon" className="hover:text-primary">
-                  <Mail className="h-5 w-5" />
-                </Button>
               </div>
             </div>
           </div>
