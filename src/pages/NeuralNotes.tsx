@@ -156,15 +156,6 @@ const NeuralNotes = () => {
               </Link>
             ))}
           </div>
-
-          <div className="text-center mt-16">
-            <p className="text-muted-foreground mb-6">
-              More neural notes coming soon. Subscribe to stay updated on the latest insights.
-            </p>
-            <Button asChild variant="outline" size="lg">
-              <a href="mailto:david@davidasaf.com">Subscribe for Updates</a>
-            </Button>
-          </div>
         </div>
       </div>
     </div>

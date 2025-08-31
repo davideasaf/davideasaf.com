@@ -34,6 +34,8 @@ export interface NeuralNoteMeta {
   videoUrl?: string;
   audioUrl?: string;
   videoTitle?: string;
+  draft?: boolean;
+  editorTodos?: string[];
 }
 
 // Extended interface that includes calculated fields
@@ -50,6 +52,8 @@ export interface ProjectMeta {
   demo?: string;
   featured: boolean;
   image?: string;
+  draft?: boolean;
+  editorTodos?: string[];
 }
 
 export interface ContentItem<T = NeuralNoteMetaWithCalculated | ProjectMeta> {
@@ -106,6 +110,12 @@ export async function loadNeuralNotes(): Promise<ContentItem<NeuralNoteMetaWithC
           : typeof rawTags === "string" && rawTags.trim().length > 0
             ? [rawTags.trim()]
             : [];
+        const rawEditorTodos: unknown = (fm as unknown as { editorTodos?: unknown }).editorTodos;
+        const normalizedEditorTodos: string[] = Array.isArray(rawEditorTodos)
+          ? (rawEditorTodos as unknown[]).map((t) => String(t)).filter(Boolean)
+          : typeof rawEditorTodos === "string" && rawEditorTodos.trim().length > 0
+            ? [rawEditorTodos.trim()]
+            : [];
 
         const normalizedMeta: NeuralNoteMetaWithCalculated = {
           title: fm.title ?? slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
@@ -119,6 +129,8 @@ export async function loadNeuralNotes(): Promise<ContentItem<NeuralNoteMetaWithC
           videoUrl: fm.videoUrl,
           audioUrl: fm.audioUrl,
           videoTitle: fm.videoTitle,
+          draft: Boolean((fm as unknown as { draft?: unknown }).draft),
+          editorTodos: normalizedEditorTodos,
           readTime: configuredReadTime,
         };
 
@@ -130,8 +142,10 @@ export async function loadNeuralNotes(): Promise<ContentItem<NeuralNoteMetaWithC
       }),
     );
 
-    // Sort by date (newest first)
-    return posts.sort((a, b) => new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime());
+    // Exclude drafts and sort by date (newest first)
+    return posts
+      .filter((p) => !p.meta.draft)
+      .sort((a, b) => new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime());
   } catch (error) {
     console.error("Error loading neural notes:", error);
     return [];
@@ -173,18 +187,45 @@ export async function loadProjects(): Promise<ContentItem<ProjectMeta>[]> {
         // Extract slug from filename
         const slug = path.split("/").pop()?.replace(".mdx", "") || "";
 
+        const fm = (meta ?? {}) as Partial<ProjectMeta>;
+        const rawTags: unknown = (fm as unknown as { tags?: unknown }).tags;
+        const normalizedTags: string[] = Array.isArray(rawTags)
+          ? (rawTags as unknown[]).map((t) => String(t)).filter(Boolean)
+          : typeof rawTags === "string" && rawTags.trim().length > 0
+            ? [rawTags.trim()]
+            : [];
+        const rawEditorTodos: unknown = (fm as unknown as { editorTodos?: unknown }).editorTodos;
+        const normalizedEditorTodos: string[] = Array.isArray(rawEditorTodos)
+          ? (rawEditorTodos as unknown[]).map((t) => String(t)).filter(Boolean)
+          : typeof rawEditorTodos === "string" && rawEditorTodos.trim().length > 0
+            ? [rawEditorTodos.trim()]
+            : [];
+
+        const normalizedMeta: ProjectMeta = {
+          title: fm.title ?? slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
+          description: fm.description ?? "",
+          date: fm.date ?? "2024-01-01",
+          tags: normalizedTags,
+          github: fm.github,
+          demo: fm.demo,
+          featured: Boolean(fm.featured),
+          image: fm.image,
+          draft: Boolean((fm as unknown as { draft?: unknown }).draft),
+          editorTodos: normalizedEditorTodos,
+        };
+
         return {
           slug,
-          meta: (meta ?? {}) as ProjectMeta,
+          meta: normalizedMeta,
           content: MDXContent,
         };
       }),
     );
 
-    // Sort by date (newest first)
-    return projects.sort(
-      (a, b) => new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime(),
-    );
+    // Exclude drafts and sort by date (newest first)
+    return projects
+      .filter((p) => !p.meta.draft)
+      .sort((a, b) => new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime());
   } catch (error) {
     console.error("Error loading projects:", error);
     return [];
