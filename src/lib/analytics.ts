@@ -1,15 +1,20 @@
-import posthog from "posthog-js";
 import { useEffect } from "react";
 
 export function initAnalytics(): void {
   if (typeof window === "undefined") return;
+  // Avoid duplicate init in Strict Mode/HMR
+  if ((window as unknown as { __PH_INIT_DONE?: boolean }).__PH_INIT_DONE) return;
   const runner = () => {
+    const key = (import.meta.env.VITE_PUBLIC_POSTHOG_KEY || "").trim();
+    const host = import.meta.env.VITE_PUBLIC_POSTHOG_HOST || "https://app.posthog.com";
+    if (!key) return; // do not initialize without a token
     import("posthog-js").then(({ default: ph }) => {
-      ph.init(import.meta.env.VITE_POSTHOG_KEY || "", {
-        api_host: "https://app.posthog.com",
+      ph.init(key, {
+        api_host: host,
         capture_pageview: false,
         autocapture: false,
       });
+      (window as unknown as { __PH_INIT_DONE?: boolean }).__PH_INIT_DONE = true;
       ph.capture("$pageview");
     });
   };
@@ -46,12 +51,17 @@ export type AnalyticsEventName = (typeof ANALYTICS_EVENTS)[keyof typeof ANALYTIC
 export function captureEvent(name: AnalyticsEventName, props?: Record<string, unknown>): void {
   try {
     if (typeof window === "undefined") return;
-    if (!posthog || typeof posthog.capture !== "function") return;
+    const ph = (
+      window as unknown as {
+        posthog?: { capture?: (n: string, p?: Record<string, unknown>) => void };
+      }
+    ).posthog;
+    if (!ph || typeof ph.capture !== "function") return;
     const merged = {
       page: window.location?.pathname,
       ...props,
     };
-    posthog.capture(name, merged);
+    ph.capture(name, merged);
   } catch {
     // noop
   }
