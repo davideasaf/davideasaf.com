@@ -1,0 +1,10 @@
+repos:
+  - repo: local
+    hooks:
+      - id: biome-check
+        name: Biome check (format, lint, organize imports)
+        entry: npx @biomejs/biome check --write --files-ignore-unknown=true --no-errors-on-unmatched
+        language: system
+        types: [text]
+        files: "\\.(jsx?|tsx?|c(js|ts)|m(js|ts)|d\\.(ts|cts|mts)|jsonc?|css)$"
+        pass_filenames: true
