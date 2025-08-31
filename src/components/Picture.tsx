@@ -1,21 +1,22 @@
-import * as React from 'react'
+import * as React from "react";
 
-type Source = { srcset: string; type: string; sizes?: string }
-type PictureData = { sources: Source[]; img: { src: string; width: number; height: number } }
+type Source = { srcset: string; type: string; sizes?: string };
+type PictureData = { sources: Source[]; img: { src: string; width: number; height: number } };
 
 export function Picture({
-  data, alt,
-  sizes = '100vw',
-  loading = 'lazy',
-  decoding = 'async',
+  data,
+  alt,
+  sizes = "100vw",
+  loading = "lazy",
+  decoding = "async",
   className,
 }: {
-  data: PictureData
-  alt: string
-  sizes?: string
-  loading?: 'lazy'|'eager'
-  decoding?: 'async'|'auto'|'sync'
-  className?: string
+  data: PictureData;
+  alt: string;
+  sizes?: string;
+  loading?: "lazy" | "eager";
+  decoding?: "async" | "auto" | "sync";
+  className?: string;
 }) {
   return (
     <picture className={className}>
@@ -31,5 +32,5 @@ export function Picture({
         decoding={decoding}
       />
     </picture>
-  )
+  );
 }

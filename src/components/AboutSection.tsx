@@ -1,36 +1,53 @@
+import { Brain, Code, Download, Rocket, Users } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Brain, Code, Rocket, Users, Download } from "lucide-react";
 
 const AboutSection = () => {
   const skills = [
-    "Generative AI", "Machine Learning", "Python", "TypeScript", "React", "Node.js",
-    "TensorFlow", "PyTorch", "OpenAI API", "Langchain", "Vector Databases", "FastAPI",
-    "Docker", "Kubernetes", "AWS", "GCP", "MLOps", "Prompt Engineering"
+    "Generative AI",
+    "Machine Learning",
+    "Python",
+    "TypeScript",
+    "React",
+    "Node.js",
+    "TensorFlow",
+    "PyTorch",
+    "OpenAI API",
+    "Langchain",
+    "Vector Databases",
+    "FastAPI",
+    "Docker",
+    "Kubernetes",
+    "AWS",
+    "GCP",
+    "MLOps",
+    "Prompt Engineering",
   ];
 
   const highlights = [
     {
       icon: Brain,
       title: "AI Research & Development",
-      description: "Specializing in generative AI applications, from concept to production deployment."
+      description:
+        "Specializing in generative AI applications, from concept to production deployment.",
     },
     {
       icon: Code,
       title: "Full-Stack Engineering",
-      description: "Building end-to-end AI-powered applications with modern web technologies."
+      description: "Building end-to-end AI-powered applications with modern web technologies.",
     },
     {
       icon: Rocket,
       title: "Product Innovation",
-      description: "Translating cutting-edge AI research into practical, user-centered products."
+      description: "Translating cutting-edge AI research into practical, user-centered products.",
     },
     {
       icon: Users,
       title: "Team Leadership",
-      description: "Leading cross-functional teams to deliver AI solutions that drive business impact."
-    }
+      description:
+        "Leading cross-functional teams to deliver AI solutions that drive business impact.",
+    },
   ];
 
   return (
@@ -46,14 +63,15 @@ const AboutSection = () => {
                 </span>
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                I'm David Asaf, a passionate AI Product Engineer specializing in agentic workflows 
-                and generative AI systems. I focus on bridging the gap between cutting-edge AI research 
-                and practical business applications that deliver real value.
+                I'm David Asaf, a passionate AI Product Engineer specializing in agentic workflows
+                and generative AI systems. I focus on bridging the gap between cutting-edge AI
+                research and practical business applications that deliver real value.
               </p>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                My expertise lies in orchestrating AI agents, designing human-AI collaboration patterns, 
-                and rethinking traditional development methodologies for the AI era. I believe we're at 
-                an inflection point where the right approach to AI can accelerate teams dramatically.
+                My expertise lies in orchestrating AI agents, designing human-AI collaboration
+                patterns, and rethinking traditional development methodologies for the AI era. I
+                believe we're at an inflection point where the right approach to AI can accelerate
+                teams dramatically.
               </p>
             </div>
 
@@ -88,9 +106,7 @@ const AboutSection = () => {
                       <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
                         {highlight.title}
                       </h3>
-                      <p className="text-muted-foreground">
-                        {highlight.description}
-                      </p>
+                      <p className="text-muted-foreground">{highlight.description}</p>
                     </div>
                   </div>
                 </CardContent>

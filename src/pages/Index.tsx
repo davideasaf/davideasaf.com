@@ -1,9 +1,9 @@
-import Navigation from "@/components/Navigation";
-import HeroSection from "@/components/HeroSection";
 import AboutSection from "@/components/AboutSection";
-import ProjectShowcase from "@/components/ProjectShowcase";
-import NeuralNotes from "@/components/NeuralNotes";
 import ContactSection from "@/components/ContactSection";
+import HeroSection from "@/components/HeroSection";
+import Navigation from "@/components/Navigation";
+import NeuralNotes from "@/components/NeuralNotes";
+import ProjectShowcase from "@/components/ProjectShowcase";
 
 const Index = () => {
   return (

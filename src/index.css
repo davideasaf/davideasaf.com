@@ -22,7 +22,7 @@ All colors MUST be HSL.
     --primary-foreground: 0 0% 100%;
     --primary-glow: 33 100% 60%;
     --primary-dark: 20 85% 45%;
-    
+
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
 
@@ -41,12 +41,17 @@ All colors MUST be HSL.
 
     /* Design system tokens */
     --gradient-primary: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary-glow)));
-    --gradient-hero: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 50%, hsl(var(--primary-dark)) 100%);
+    --gradient-hero: linear-gradient(
+      135deg,
+      hsl(var(--primary)) 0%,
+      hsl(var(--primary-glow)) 50%,
+      hsl(var(--primary-dark)) 100%
+    );
     --gradient-subtle: linear-gradient(180deg, hsl(var(--background)), hsl(var(--accent)));
-    
+
     --shadow-glow: 0 0 40px hsl(var(--primary) / 0.3);
     --shadow-elegant: 0 10px 30px -10px hsl(var(--primary) / 0.2);
-    
+
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
@@ -134,10 +139,18 @@ All colors MUST be HSL.
   line-height: 1.25;
 }
 
-.markdown-content h1 { @apply text-3xl; }
-.markdown-content h2 { @apply text-2xl; }
-.markdown-content h3 { @apply text-xl; }
-.markdown-content h4 { @apply text-lg; }
+.markdown-content h1 {
+  @apply text-3xl;
+}
+.markdown-content h2 {
+  @apply text-2xl;
+}
+.markdown-content h3 {
+  @apply text-xl;
+}
+.markdown-content h4 {
+  @apply text-lg;
+}
 
 .markdown-content p {
   @apply mb-4 leading-7;
@@ -188,11 +201,11 @@ All colors MUST be HSL.
 /* Code blocks */
 .markdown-content pre {
   @apply bg-card border border-border rounded-lg p-4 overflow-x-auto mb-4;
-  font-family: 'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: "JetBrains Mono", "Monaco", "Menlo", "Ubuntu Mono", monospace;
 }
 
 .markdown-content code {
-  font-family: 'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-family: "JetBrains Mono", "Monaco", "Menlo", "Ubuntu Mono", monospace;
   @apply text-sm;
 }
 

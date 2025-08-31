@@ -27,7 +27,7 @@ export default defineConfig(({ mode }) => ({
         // Export YAML frontmatter as `export const frontmatter = {...}`
         [remarkMdxFrontmatter, { name: "frontmatter" }],
       ],
-      providerImportSource: "@mdx-js/react"
+      providerImportSource: "@mdx-js/react",
     }),
     react(),
     mode === "development" && componentTagger(),
@@ -35,10 +35,7 @@ export default defineConfig(({ mode }) => ({
     imagetools({
       defaultDirectives: (url) => {
         // Smart defaults for blog and content images
-        if (
-          url.pathname.includes("/blog/") ||
-          url.pathname.includes("/projects/")
-        ) {
+        if (url.pathname.includes("/blog/") || url.pathname.includes("/projects/")) {
           return new URLSearchParams({
             format: "webp;jpg",
             w: "400;800;1200",

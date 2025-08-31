@@ -32,5 +32,3 @@ export async function computeReadingTimeFromDOM(element: Element): Promise<strin
   const html = (element as HTMLElement).innerHTML || element.textContent || "";
   return calculateReadingTime(html);
 }
-
-
