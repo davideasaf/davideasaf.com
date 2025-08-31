@@ -34,10 +34,13 @@ export interface SiteConfig {
 }
 
 // Load and parse configuration from YAML file
+// Cache is scoped to module but reset on HMR in development to avoid stale config
 let config: SiteConfig | null = null;
 
 export async function loadConfig(): Promise<SiteConfig> {
-  if (config) return config;
+  // In development, avoid returning a stale cached config across HMR boundaries
+  // Only cache aggressively in production
+  if (config && import.meta.env.PROD) return config;
 
   try {
     // Import the YAML file as raw text
@@ -152,5 +155,15 @@ export function formatDate(dateString: string): string {
     year: "numeric",
     month: "long",
     day: "numeric",
+  });
+}
+
+// HMR: reset config cache on hot updates in development to avoid stale data
+if (import.meta && import.meta.hot) {
+  import.meta.hot.accept(() => {
+    config = null;
+  });
+  import.meta.hot.dispose(() => {
+    config = null;
   });
 }

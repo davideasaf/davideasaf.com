@@ -2,25 +2,19 @@ import Navigation from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+    Card,
+    CardContent,
+    CardDescription,
+    CardHeader,
+    CardTitle,
 } from "@/components/ui/card";
 import {
-  type ContentItem,
-  formatDate,
-  loadNeuralNotes,
-  type NeuralNoteMetaWithCalculated,
+    type ContentItem,
+    formatDate,
+    loadNeuralNotes,
+    type NeuralNoteMetaWithCalculated,
 } from "@/lib/content";
-import {
-  Calendar,
-  Clock,
-  Tag,
-  Volume2,
-  Youtube,
-} from "lucide-react";
+import { Calendar, Clock, Volume2, Youtube } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
@@ -66,8 +60,6 @@ const NeuralNotes = () => {
 		);
 	}
 
-	
-
 	return (
 		<div className="min-h-screen bg-background">
 			<Helmet>
@@ -106,64 +98,63 @@ const NeuralNotes = () => {
 
 					<div className="space-y-8">
 						{neuralNotes.map((note) => (
-							<Link to={`/neural-notes/${note.slug}`}>
+							<Link key={note.slug} to={`/neural-notes/${note.slug}`}>
 								<Card
-									key={note.slug}
 									className={`cursor-pointer transition-all duration-300 hover:shadow-elegant hover:scale-[1.01] ${
 										note.meta.featured ? "ring-2 ring-primary/20" : ""
 									}`}
 								>
-								<CardHeader>
-									<div className="flex items-start justify-between gap-4">
-										<div className="space-y-3 flex-1">
-											<div className="flex items-center gap-3 flex-wrap">
-												<CardTitle className="text-2xl">
-													{note.meta.title}
-												</CardTitle>
-												{note.meta.featured && (
-													<Badge variant="default">Featured</Badge>
-												)}
-											</div>
-
-											<div className="flex items-center gap-4 text-muted-foreground text-sm flex-wrap">
-												<div className="flex items-center gap-2">
-													<Calendar className="h-4 w-4" />
-													{formatDate(note.meta.date)}
+									<CardHeader>
+										<div className="flex items-start justify-between gap-4">
+											<div className="space-y-3 flex-1">
+												<div className="flex items-center gap-3 flex-wrap">
+													<CardTitle className="text-2xl">
+														{note.meta.title}
+													</CardTitle>
+													{note.meta.featured && (
+														<Badge variant="default">Featured</Badge>
+													)}
 												</div>
-												<div className="flex items-center gap-2">
-													<Clock className="h-4 w-4" />
-													{note.meta.readTime}
-												</div>
-												{note.meta.videoUrl && (
-													<div className="flex items-center gap-2 text-primary">
-														<Youtube className="h-4 w-4" />
-														<span>Video available</span>
-													</div>
-												)}
-												{note.meta.audioUrl && (
-													<div className="flex items-center gap-2 text-primary">
-														<Volume2 className="h-4 w-4" />
-														<span>Audio available</span>
-													</div>
-												)}
-											</div>
 
-											<CardDescription className="text-base leading-relaxed">
-												{note.meta.excerpt}
-											</CardDescription>
+												<div className="flex items-center gap-4 text-muted-foreground text-sm flex-wrap">
+													<div className="flex items-center gap-2">
+														<Calendar className="h-4 w-4" />
+														{formatDate(note.meta.date)}
+													</div>
+													<div className="flex items-center gap-2">
+														<Clock className="h-4 w-4" />
+														{note.meta.readTime}
+													</div>
+													{note.meta.videoUrl && (
+														<div className="flex items-center gap-2 text-primary">
+															<Youtube className="h-4 w-4" />
+															<span>Video available</span>
+														</div>
+													)}
+													{note.meta.audioUrl && (
+														<div className="flex items-center gap-2 text-primary">
+															<Volume2 className="h-4 w-4" />
+															<span>Audio available</span>
+														</div>
+													)}
+												</div>
+
+												<CardDescription className="text-base leading-relaxed">
+													{note.meta.excerpt}
+												</CardDescription>
+											</div>
 										</div>
-									</div>
-								</CardHeader>
-								<CardContent className="space-y-4">
-									<div className="flex flex-wrap gap-2">
-										{(note.meta.tags ?? []).map((tag) => (
-											<Badge key={tag} variant="outline" className="text-xs">
-												{tag}
-											</Badge>
-										))}
-									</div>
-								</CardContent>
-							</Card>
+									</CardHeader>
+									<CardContent className="space-y-4">
+										<div className="flex flex-wrap gap-2">
+											{(note.meta.tags ?? []).map((tag) => (
+												<Badge key={tag} variant="outline" className="text-xs">
+													{tag}
+												</Badge>
+											))}
+										</div>
+									</CardContent>
+								</Card>
 							</Link>
 						))}
 					</div>
