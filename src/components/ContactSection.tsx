@@ -163,9 +163,15 @@ const ContactSection = () => {
                 onClick={() =>
                   captureEvent(ANALYTICS_EVENTS.CONTACT_FORM_SUBMITTED, {
                     has_name: Boolean((document.getElementById("name") as HTMLInputElement)?.value),
-                    has_email: Boolean((document.getElementById("email") as HTMLInputElement)?.value),
-                    has_subject: Boolean((document.getElementById("subject") as HTMLInputElement)?.value),
-                    has_message: Boolean((document.getElementById("message") as HTMLTextAreaElement)?.value),
+                    has_email: Boolean(
+                      (document.getElementById("email") as HTMLInputElement)?.value,
+                    ),
+                    has_subject: Boolean(
+                      (document.getElementById("subject") as HTMLInputElement)?.value,
+                    ),
+                    has_message: Boolean(
+                      (document.getElementById("message") as HTMLTextAreaElement)?.value,
+                    ),
                   })
                 }
               >

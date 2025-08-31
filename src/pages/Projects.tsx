@@ -90,14 +90,10 @@ const projects = [
 ];
 
 const Projects = () => {
-  useObserveElementsOnce(
-    "[data-project-card]",
-    ANALYTICS_EVENTS.PROJECT_CARD_VIEWED,
-    (el) => ({
-      project_id: (el as HTMLElement).dataset.projectId,
-      featured: (el as HTMLElement).dataset.featured === "true",
-    }),
-  );
+  useObserveElementsOnce("[data-project-card]", ANALYTICS_EVENTS.PROJECT_CARD_VIEWED, (el) => ({
+    project_id: (el as HTMLElement).dataset.projectId,
+    featured: (el as HTMLElement).dataset.featured === "true",
+  }));
   return (
     <div className="min-h-screen bg-background">
       <Helmet>

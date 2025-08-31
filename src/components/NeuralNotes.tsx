@@ -4,12 +4,12 @@ import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ANALYTICS_EVENTS, captureEvent, useObserveElementsOnce } from "@/lib/analytics";
 import {
   type ContentItem,
   loadNeuralNotes,
   type NeuralNoteMetaWithCalculated,
 } from "@/lib/content";
-import { ANALYTICS_EVENTS, captureEvent, useObserveElementsOnce } from "@/lib/analytics";
 
 const NeuralNotes = () => {
   const [notes, setNotes] = useState<ContentItem<NeuralNoteMetaWithCalculated>[]>([]);
@@ -26,15 +26,11 @@ const NeuralNotes = () => {
     load();
   }, []);
 
-  useObserveElementsOnce(
-    "[data-note-card]",
-    ANALYTICS_EVENTS.NEURAL_NOTE_CARD_VIEWED,
-    (el) => ({
-      note_slug: (el as HTMLElement).dataset.slug,
-      featured: (el as HTMLElement).dataset.featured === "true",
-      tags: (el as HTMLElement).getAttribute("data-tags")?.split(",") ?? [],
-    }),
-  );
+  useObserveElementsOnce("[data-note-card]", ANALYTICS_EVENTS.NEURAL_NOTE_CARD_VIEWED, (el) => ({
+    note_slug: (el as HTMLElement).dataset.slug,
+    featured: (el as HTMLElement).dataset.featured === "true",
+    tags: (el as HTMLElement).getAttribute("data-tags")?.split(",") ?? [],
+  }));
 
   const sectionId = "neural-notes";
 
