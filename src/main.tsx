@@ -16,7 +16,7 @@ if (rootEl) {
       }}
     >
       <App />
-    </PostHogProvider>
+    </PostHogProvider>,
   );
 } else {
   console.error("Root element #root not found");
