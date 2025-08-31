@@ -51,6 +51,7 @@ const AboutSection = () => {
   ];
 
   return (
+    // biome-ignore lint/correctness/useUniqueElementIds: Page-level section rendered once per page.
     <section id="about" className="py-20 bg-gradient-subtle">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
@@ -95,8 +96,11 @@ const AboutSection = () => {
           </div>
 
           <div className="space-y-6">
-            {highlights.map((highlight, index) => (
-              <Card key={index} className="group hover:shadow-elegant transition-all duration-300">
+            {highlights.map((highlight) => (
+              <Card
+                key={`${highlight.title}:${highlight.description}`}
+                className="group hover:shadow-elegant transition-all duration-300"
+              >
                 <CardContent className="p-6">
                   <div className="flex items-start space-x-4">
                     <div className="flex-shrink-0 w-12 h-12 bg-gradient-primary rounded-lg flex items-center justify-center group-hover:shadow-glow transition-all duration-300">

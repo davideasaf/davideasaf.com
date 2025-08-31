@@ -1,5 +1,4 @@
-import { ArrowLeft, Calendar, ExternalLink, Github } from "lucide-react";
-import { useState } from "react";
+import { Calendar, ExternalLink, Github } from "lucide-react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import Navigation from "@/components/Navigation";
