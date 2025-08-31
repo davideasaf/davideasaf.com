@@ -108,7 +108,7 @@ const projects: ProjectData[] = [
 const Project = () => {
   const { id } = useParams<{ id: string }>();
   const [project, setProject] = useState<ProjectData | null>(null);
-  const [loading, _setLoading] = useState(false);
+  const [_loading, _setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
