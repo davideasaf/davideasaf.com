@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Helmet } from "react-helmet-async";
 import AboutSection from "@/components/AboutSection";
 import ContactSection from "@/components/ContactSection";
 import HeroSection from "@/components/HeroSection";
@@ -14,6 +15,10 @@ const Index = () => {
   }, []);
   return (
     <div className="min-h-screen">
+      <Helmet>
+        <meta property="og:image" content="/assets/hero-bg-1200.jpg" />
+        <meta name="twitter:image" content="/assets/hero-bg-1200.jpg" />
+      </Helmet>
       <Navigation />
       <HeroSection />
       <AboutSection />

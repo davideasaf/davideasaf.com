@@ -327,4 +327,4 @@ export async function getProjectBySlug(slug: string): Promise<ContentItem<Projec
 }
 
 // Re-export the config-based functions for backward compatibility
-export { calculateReadingTime, formatDate } from "./config";
+export { calculateReadingTime, formatDate, getNeuralNoteOgImage } from "./config";
