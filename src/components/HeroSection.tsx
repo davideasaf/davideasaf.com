@@ -1,7 +1,7 @@
 import { ArrowRight, Github, Linkedin } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import headshotImage from "@/assets/headshot.png?width=200&height=200&fit=crop&crop=center";
+import headshotImage from "@/assets/headshot.png";
 import heroImage from "@/assets/hero-bg.jpg";
 import { Button } from "@/components/ui/button";
 import { ANALYTICS_EVENTS, captureEvent } from "@/lib/analytics";
@@ -101,11 +101,11 @@ const HeroSection = () => {
           <div className="relative">
             <div className="relative z-10 bg-card rounded-2xl p-8 shadow-elegant border">
               <div className="flex items-center space-x-6">
-                <div className="flex-shrink-0">
+                <div className="flex-shrink-0 relative overflow-hidden rounded-full w-24 h-24 border-4 border-primary/20">
                   <img
                     src={headshotImage}
                     alt="David Asaf - AI Product Engineer in Charlotte, NC"
-                    className="w-24 h-24 rounded-full object-cover object-center border-4 border-primary/20"
+                    className="w-32 h-32 object-cover object-[50%_20%] transform scale-110"
                     loading="eager"
                     fetchpriority="high"
                   />
