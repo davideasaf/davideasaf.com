@@ -155,6 +155,32 @@ export function formatDate(dateString: string): string {
   });
 }
 
+/**
+ * Get the appropriate OG image for a neural note based on its tags and content
+ */
+export function getNeuralNoteOgImage(tags: string[] = [], title: string = ""): string {
+  // Use AI workflow image for AI/ML/LLM related content
+  const aiTags = [
+    "AI",
+    "ML",
+    "LLM",
+    "GPT",
+    "Machine Learning",
+    "Generative AI",
+    "Agentic Workflows",
+  ];
+  const hasAiTag = tags.some((tag) =>
+    aiTags.some((aiTag) => tag.toLowerCase().includes(aiTag.toLowerCase())),
+  );
+
+  if (hasAiTag || title.toLowerCase().includes("llm") || title.toLowerCase().includes("ai")) {
+    return "/assets/blog/ai-workflow-example.png";
+  }
+
+  // Default fallback - could be expanded for other categories
+  return "/assets/blog/ai-workflow-example.png"; // For now, use the AI image as default
+}
+
 // HMR: reset config cache on hot updates in development to avoid stale data
 if (import.meta && import.meta.hot) {
   import.meta.hot.accept(() => {

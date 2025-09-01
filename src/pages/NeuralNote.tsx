@@ -12,6 +12,7 @@ import {
   type ContentItem,
   formatDate,
   getNeuralNoteBySlugSync,
+  getNeuralNoteOgImage,
   type NeuralNoteMetaWithCalculated,
 } from "@/lib/content";
 import { computeReadingTimeFromDOM } from "@/lib/readingTime";
@@ -105,8 +106,18 @@ const NeuralNote = () => {
         <meta name="author" content="David Asaf" />
         <meta property="og:title" content={neuralNote.meta.title} />
         <meta property="og:description" content={neuralNote.meta.excerpt} />
+        <meta property="og:type" content="article" />
+        <meta
+          property="og:image"
+          content={getNeuralNoteOgImage(neuralNote.meta.tags, neuralNote.meta.title)}
+        />
         <meta property="article:author" content="David Asaf" />
         <meta property="article:published_time" content={neuralNote.meta.date} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta
+          name="twitter:image"
+          content={getNeuralNoteOgImage(neuralNote.meta.tags, neuralNote.meta.title)}
+        />
         <link rel="canonical" href={`https://davidasaf.com/neural-notes/${slug}`} />
       </Helmet>
       <Navigation />
