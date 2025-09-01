@@ -38,6 +38,7 @@ export interface NeuralNoteMeta {
   videoUrl?: string;
   audioUrl?: string;
   videoTitle?: string;
+  banner?: string; // Banner image URL/path
   draft?: boolean;
   editorTodos?: string[];
 }
@@ -56,6 +57,9 @@ export interface ProjectMeta {
   demo?: string;
   featured: boolean;
   image?: string;
+  banner?: string; // Banner image URL/path (higher priority than image)
+  videoUrl?: string; // Video URL for projects
+  videoTitle?: string; // Video title for projects
   draft?: boolean;
   editorTodos?: string[];
 }
@@ -106,6 +110,7 @@ const NOTES_SYNC: ContentItem<NeuralNoteMetaWithCalculated>[] = Object.entries(n
       videoUrl: fm.videoUrl,
       audioUrl: fm.audioUrl,
       videoTitle: fm.videoTitle,
+      banner: fm.banner,
       draft: Boolean((fm as unknown as { draft?: unknown }).draft),
       editorTodos: normalizedEditorTodos,
       // Synchronous approximation using excerpt; precise calculation is done when needed via async helpers
@@ -199,6 +204,7 @@ export async function loadNeuralNotes(): Promise<ContentItem<NeuralNoteMetaWithC
           videoUrl: fm.videoUrl,
           audioUrl: fm.audioUrl,
           videoTitle: fm.videoTitle,
+          banner: fm.banner,
           draft: Boolean((fm as unknown as { draft?: unknown }).draft),
           editorTodos: normalizedEditorTodos,
           readTime: configuredReadTime,
@@ -280,6 +286,9 @@ export async function loadProjects(): Promise<ContentItem<ProjectMeta>[]> {
           demo: fm.demo,
           featured: Boolean(fm.featured),
           image: fm.image,
+          banner: fm.banner,
+          videoUrl: fm.videoUrl,
+          videoTitle: fm.videoTitle,
           draft: Boolean((fm as unknown as { draft?: unknown }).draft),
           editorTodos: normalizedEditorTodos,
         };
@@ -324,6 +333,42 @@ export async function getProjectBySlug(slug: string): Promise<ContentItem<Projec
     console.error(`Error loading project ${slug}:`, error);
     return null;
   }
+}
+
+// Helper function to get the primary media for display (Video > Banner > Image)
+export function getPrimaryMedia(meta: NeuralNoteMetaWithCalculated | ProjectMeta): {
+  type: "video" | "banner" | "image" | null;
+  url: string | null;
+  title?: string;
+} {
+  // Priority: Video > Banner > Image
+  if (meta.videoUrl) {
+    return {
+      type: "video",
+      url: meta.videoUrl,
+      title: meta.videoTitle || "Video",
+    };
+  }
+
+  if (meta.banner) {
+    return {
+      type: "banner",
+      url: meta.banner,
+    };
+  }
+
+  // For projects, fall back to image field
+  if ("image" in meta && meta.image) {
+    return {
+      type: "image",
+      url: meta.image,
+    };
+  }
+
+  return {
+    type: null,
+    url: null,
+  };
 }
 
 // Re-export the config-based functions for backward compatibility

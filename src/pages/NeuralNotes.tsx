@@ -2,6 +2,7 @@ import { Calendar, Clock, Volume2, Youtube } from "lucide-react";
 import { useEffect, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
+import { MediaDisplay } from "@/components/MediaDisplay";
 import Navigation from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import {
   type ContentItem,
   formatDate,
   getNeuralNotesSync,
+  getPrimaryMedia,
   type NeuralNoteMetaWithCalculated,
 } from "@/lib/content";
 import { prefetchDetailPages } from "@/lib/prefetch";
@@ -108,6 +110,13 @@ const NeuralNotes = () => {
                         <CardDescription className="text-base leading-relaxed">
                           {note.meta.excerpt}
                         </CardDescription>
+
+                        {/* Display primary media if available */}
+                        {getPrimaryMedia(note.meta).url && (
+                          <div className="mt-4">
+                            <MediaDisplay meta={note.meta} className="w-full" aspectRatio="video" />
+                          </div>
+                        )}
                       </div>
                     </div>
                   </CardHeader>
