@@ -1,0 +1,72 @@
+---
+description: Vercel project deployment configuration and connection details for davideasaf.com
+alwaysApply: false
+---
+# Vercel Project Information
+
+## Project Details
+- **Project Name**: `davideasaf-com`
+- **Project ID**: `prj_L5p1mXzV7xr3d1iVwKHj403BaYlb`
+- **Team Name**: `David Asaf's projects`
+- **Team Slug**: `david-asafs-projects`
+- **Team ID**: `team_w6w221mWrJZBd52t5VwP8Z9b`
+
+## GitHub Integration
+- **Repository**: `davideasaf/davideasaf.com`
+- **Connected**: ✅ Yes
+- **Auto-deployment**: ✅ Enabled (GitHub pushes trigger Vercel builds)
+
+## Deployment URLs
+- **Production Domain**: `davideasaf.com` (when deployed to production)
+- **Preview URLs**: Generated automatically for each branch/PR
+  - Format: `davideasaf-[random-string]-david-asafs-projects.vercel.app`
+
+## Build Configuration
+- **Framework**: Vite (React/TypeScript)
+- **Build Command**: `npm run build` or `vite build`
+- **Output Directory**: `dist`
+- **Node Version**: Latest LTS
+- **Build Features**: Fluid Compute, Edge Network, CDN
+
+## Environment Variables
+Required environment variables should be set in Vercel's dashboard:
+- `VITE_*` prefixed variables for client-side access
+- Server-side variables for API keys, etc.
+
+## Deployment Strategy
+- **Production**: Main branch deployments
+- **Preview**: All branches and pull requests
+- **Rollback**: Available for recent production deployments
+
+## Monitoring & Analytics
+- **Runtime Logs**: Available in Vercel dashboard
+- **Web Analytics**: Built-in Vercel Analytics
+- **Speed Insights**: Performance monitoring
+- **Error Tracking**: Runtime error monitoring
+
+## Access URLs
+- **Vercel Dashboard**: https://vercel.com/david-asafs-projects/davideasaf-com
+- **Live Site**: https://davideasaf.com (production)
+- **Preview Deployments**: Listed in Vercel dashboard under "Deployments"
+
+## Important Notes
+- This project uses Vercel's Hobby plan
+- Deployments are triggered automatically on GitHub pushes
+- Preview deployments expire after 30 days of inactivity
+- Use `vercel --prod` for manual production deployments if needed
+- Environment variables must be configured in Vercel dashboard, not in local .env files
+
+## Common Commands
+```bash
+# Deploy to production manually
+vercel --prod
+
+# Deploy to preview
+vercel
+
+# Check deployment status
+vercel ls
+
+# View logs
+vercel logs [deployment-url]
+```
