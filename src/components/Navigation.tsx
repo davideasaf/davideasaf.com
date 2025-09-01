@@ -65,8 +65,8 @@ const Navigation = () => {
         <div className="flex justify-between items-center py-4">
           <button type="button" onClick={goHome} className="flex items-center focus:outline-none">
             <Brain className="h-8 w-8 text-primary mr-2" />
-            <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">
-              AI Engineer
+            <span className="text-xl font-bold bg-gradient-animated bg-clip-text text-transparent animate-gradient">
+              David Asaf
             </span>
           </button>
 
