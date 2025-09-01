@@ -139,7 +139,7 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        gradient: "gradient-shift 3s ease-in-out infinite",
+        gradient: "gradient-shift 8s ease-in-out infinite",
       },
     },
   },
