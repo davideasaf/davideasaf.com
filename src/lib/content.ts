@@ -25,6 +25,45 @@ const parseFrontmatterYaml = <TMeta extends object>(raw: string | undefined): Pa
   }
 };
 
+const isNonEmptyString = (value: unknown): value is string =>
+  typeof value === "string" && value.trim().length > 0;
+
+const normalizeStringList = (value: unknown): string[] => {
+  if (Array.isArray(value)) {
+    return value
+      .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+      .map((item) => item.trim());
+  }
+
+  if (isNonEmptyString(value)) {
+    return [value.trim()];
+  }
+
+  return [];
+};
+
+const KNOWN_PROJECT_STATUSES = new Map<string, string>([
+  ["concept", "Concept"],
+  ["prototype", "Prototype"],
+  ["in progress", "In Progress"],
+  ["beta", "Beta"],
+  ["production ready", "Production Ready"],
+  ["maintenance", "Maintenance"],
+  ["completed", "Completed"],
+  ["deprecated", "Deprecated"],
+]);
+
+const normalizeProjectStatus = (value: unknown): string | undefined => {
+  if (!isNonEmptyString(value)) {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+  const canonical = KNOWN_PROJECT_STATUSES.get(trimmed.toLowerCase());
+
+  return canonical ?? trimmed;
+};
+
 // Type definitions for content
 export interface NeuralNoteMeta {
   title: string;
@@ -60,6 +99,8 @@ export interface ProjectMeta {
   banner?: string; // Banner image URL/path (higher priority than image)
   videoUrl?: string; // Video URL for projects
   videoTitle?: string; // Video title for projects
+  status?: string;
+  keyFeatures?: string[];
   draft?: boolean;
   editorTodos?: string[];
 }
@@ -263,19 +304,11 @@ export async function loadProjects(): Promise<ContentItem<ProjectMeta>[]> {
         // Extract slug from filename
         const slug = path.split("/").pop()?.replace(".mdx", "") || "";
 
-        const fm = (meta ?? {}) as Partial<ProjectMeta>;
-        const rawTags: unknown = (fm as unknown as { tags?: unknown }).tags;
-        const normalizedTags: string[] = Array.isArray(rawTags)
-          ? (rawTags as unknown[]).map((t) => String(t)).filter(Boolean)
-          : typeof rawTags === "string" && rawTags.trim().length > 0
-            ? [rawTags.trim()]
-            : [];
-        const rawEditorTodos: unknown = (fm as unknown as { editorTodos?: unknown }).editorTodos;
-        const normalizedEditorTodos: string[] = Array.isArray(rawEditorTodos)
-          ? (rawEditorTodos as unknown[]).map((t) => String(t)).filter(Boolean)
-          : typeof rawEditorTodos === "string" && rawEditorTodos.trim().length > 0
-            ? [rawEditorTodos.trim()]
-            : [];
+        const fm: Partial<ProjectMeta> = meta ?? {};
+        const normalizedTags = normalizeStringList(fm.tags);
+        const normalizedEditorTodos = normalizeStringList(fm.editorTodos);
+        const normalizedKeyFeatures = normalizeStringList(fm.keyFeatures);
+        const normalizedStatus = normalizeProjectStatus(fm.status);
 
         const normalizedMeta: ProjectMeta = {
           title: fm.title ?? slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
@@ -289,6 +322,8 @@ export async function loadProjects(): Promise<ContentItem<ProjectMeta>[]> {
           banner: fm.banner,
           videoUrl: fm.videoUrl,
           videoTitle: fm.videoTitle,
+          status: normalizedStatus,
+          keyFeatures: normalizedKeyFeatures,
           draft: Boolean((fm as unknown as { draft?: unknown }).draft),
           editorTodos: normalizedEditorTodos,
         };
@@ -335,18 +370,27 @@ export async function getProjectBySlug(slug: string): Promise<ContentItem<Projec
   }
 }
 
-// Helper function to get the primary media for display (Video > Banner > Image)
+// Helper function to get the primary media for display (Video > Audio > Banner > Image)
 export function getPrimaryMedia(meta: NeuralNoteMetaWithCalculated | ProjectMeta): {
-  type: "video" | "banner" | "image" | null;
+  type: "video" | "audio" | "banner" | "image" | null;
   url: string | null;
   title?: string;
 } {
-  // Priority: Video > Banner > Image
+  // Priority: Video > Audio > Banner > Image
   if (meta.videoUrl) {
     return {
       type: "video",
       url: meta.videoUrl,
       title: meta.videoTitle || "Video",
+    };
+  }
+
+  if ("audioUrl" in meta && typeof meta.audioUrl === "string" && meta.audioUrl.trim().length > 0) {
+    const audioUrl = meta.audioUrl.trim();
+    return {
+      type: "audio",
+      url: audioUrl,
+      title: meta.title,
     };
   }
 
