@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, useParams } from "react-router-dom";
 import Breadcrumb from "@/components/Breadcrumb";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { MediaDisplay } from "@/components/MediaDisplay";
 import Navigation from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
@@ -22,8 +23,13 @@ const Project = () => {
 
     const load = async () => {
       if (!id) {
+        const message =
+          "We couldn't determine which project to display. Please return to the projects page and choose a project.";
+        captureEvent(ANALYTICS_EVENTS.PROJECT_DETAIL_LOAD_FAILED, {
+          reason: "missing-id",
+        });
         if (isMounted) {
-          setError("Project not found");
+          setError(message);
           setProject(null);
           setLoading(false);
         }
@@ -34,7 +40,12 @@ const Project = () => {
         const result = await getProjectBySlug(id);
         if (!isMounted) return;
         if (!result) {
-          setError("Project not found");
+          const message = `We couldn't find a project named "${id}". It may have been moved or is temporarily unavailable.`;
+          captureEvent(ANALYTICS_EVENTS.PROJECT_DETAIL_LOAD_FAILED, {
+            reason: "not-found",
+            project_id: id,
+          });
+          setError(message);
           setProject(null);
         } else {
           setError(null);
@@ -43,7 +54,14 @@ const Project = () => {
       } catch (err) {
         console.error(`Failed to load project ${id}:`, err);
         if (!isMounted) return;
-        setError("Unable to load project right now. Please try again later.");
+        const message =
+          "We ran into a problem loading this project. Please refresh the page or try again shortly.";
+        captureEvent(ANALYTICS_EVENTS.PROJECT_DETAIL_LOAD_FAILED, {
+          reason: "exception",
+          project_id: id,
+          error_message: err instanceof Error ? err.message : String(err),
+        });
+        setError(message);
         setProject(null);
       } finally {
         if (isMounted) {
@@ -71,7 +89,9 @@ const Project = () => {
         <Navigation />
         <div className="pt-20 pb-12">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <p className="text-center text-muted-foreground">Loading project...</p>
+            <p className="text-center text-muted-foreground" aria-live="polite">
+              Loading project details…
+            </p>
           </div>
         </div>
       </div>
@@ -84,7 +104,7 @@ const Project = () => {
         <Navigation />
         <div className="pt-20 pb-12">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center space-y-4">
+            <div className="text-center space-y-4" role="alert" aria-live="assertive">
               <h1 className="text-2xl font-bold text-destructive">Error</h1>
               <p className="text-muted-foreground">{error || "Project not found"}</p>
               <Button asChild>
@@ -102,6 +122,13 @@ const Project = () => {
 
   const ProjectContent = project.content;
   const hasMedia = Boolean(project.meta.videoUrl || project.meta.banner || project.meta.image);
+  const primaryMediaType = project.meta.videoUrl
+    ? "video"
+    : project.meta.banner
+      ? "banner"
+      : project.meta.image
+        ? "image"
+        : null;
   const ogImage = project.meta.banner ?? project.meta.image ?? undefined;
 
   return (
@@ -163,11 +190,38 @@ const Project = () => {
 
               {hasMedia && (
                 <div className="space-y-2">
-                  <MediaDisplay
-                    meta={project.meta}
-                    aspectRatio={project.meta.videoUrl ? "video" : "wide"}
-                    className="rounded-lg"
-                  />
+                  <ErrorBoundary
+                    resetKeys={[project.meta.videoUrl, project.meta.banner, project.meta.image]}
+                    fallback={(err) => (
+                      <div
+                        className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
+                        role="alert"
+                        aria-live="assertive"
+                      >
+                        <p className="font-medium">Project media is temporarily unavailable.</p>
+                        <p>{err.message}</p>
+                      </div>
+                    )}
+                    onError={(err) =>
+                      captureEvent(ANALYTICS_EVENTS.MEDIA_RENDER_FAILED, {
+                        media_url:
+                          project.meta.videoUrl ??
+                          project.meta.banner ??
+                          project.meta.image ??
+                          null,
+                        media_type: primaryMediaType,
+                        project_id: project.slug,
+                        error_message: err.message,
+                        source: "project-detail-boundary",
+                      })
+                    }
+                  >
+                    <MediaDisplay
+                      meta={project.meta}
+                      aspectRatio={project.meta.videoUrl ? "video" : "wide"}
+                      className="rounded-lg"
+                    />
+                  </ErrorBoundary>
                   {project.meta.videoUrl && project.meta.videoTitle && (
                     <p className="text-sm text-muted-foreground text-center">
                       {project.meta.videoTitle}
@@ -254,7 +308,27 @@ const Project = () => {
             )}
 
             <section className="markdown-content max-w-none">
-              <ProjectContent />
+              <ErrorBoundary
+                resetKeys={[project.slug]}
+                fallback={() => (
+                  <div
+                    className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
+                    role="alert"
+                    aria-live="assertive"
+                  >
+                    <p className="font-medium">The project write-up couldn't be displayed.</p>
+                    <p>Please refresh the page or view the code on GitHub for more details.</p>
+                  </div>
+                )}
+                onError={(err) =>
+                  captureEvent(ANALYTICS_EVENTS.PROJECT_DETAIL_RENDER_FAILED, {
+                    project_id: project.slug,
+                    error_message: err.message,
+                  })
+                }
+              >
+                <ProjectContent />
+              </ErrorBoundary>
             </section>
           </article>
         </div>

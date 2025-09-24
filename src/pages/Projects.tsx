@@ -2,6 +2,7 @@ import { Calendar, ExternalLink, Github } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
+import ErrorBoundary from "@/components/ErrorBoundary";
 import { MediaDisplay } from "@/components/MediaDisplay";
 import Navigation from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
@@ -33,7 +34,12 @@ const Projects = () => {
       } catch (err) {
         console.error("Failed to load projects: ", err);
         if (!isMounted) return;
-        setError("Unable to load projects right now. Please try again soon.");
+        setError(
+          "We couldn't load the projects portfolio right now. Please refresh the page or try again in a moment.",
+        );
+        captureEvent(ANALYTICS_EVENTS.PROJECT_LIST_LOAD_FAILED, {
+          error_message: err instanceof Error ? err.message : String(err),
+        });
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -80,9 +86,17 @@ const Projects = () => {
           </div>
 
           {loading ? (
-            <div className="text-center py-12 text-muted-foreground">Loading projects...</div>
+            <div className="text-center py-12 text-muted-foreground" aria-live="polite">
+              Loading projects…
+            </div>
           ) : error ? (
-            <div className="text-center py-12 text-muted-foreground">{error}</div>
+            <div
+              className="text-center py-12 text-muted-foreground"
+              role="alert"
+              aria-live="assertive"
+            >
+              {error}
+            </div>
           ) : projects.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
               No projects available just yet. Check back soon for new updates!
@@ -114,11 +128,46 @@ const Projects = () => {
                     >
                       {hasMedia && (
                         <div className="p-6 pb-0">
-                          <MediaDisplay
-                            meta={project.meta}
-                            aspectRatio={project.meta.videoUrl ? "video" : "wide"}
-                            className="rounded-lg"
-                          />
+                          <ErrorBoundary
+                            resetKeys={[
+                              project.meta.videoUrl,
+                              project.meta.banner,
+                              project.meta.image,
+                            ]}
+                            fallback={(err) => (
+                              <div
+                                className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
+                                role="alert"
+                                aria-live="assertive"
+                              >
+                                <p className="font-medium">Preview unavailable</p>
+                                <p>{err.message}</p>
+                              </div>
+                            )}
+                            onError={(err) =>
+                              captureEvent(ANALYTICS_EVENTS.MEDIA_RENDER_FAILED, {
+                                project_id: project.slug,
+                                media_type: project.meta.videoUrl
+                                  ? "video"
+                                  : project.meta.banner
+                                    ? "banner"
+                                    : "image",
+                                media_url:
+                                  project.meta.videoUrl ??
+                                  project.meta.banner ??
+                                  project.meta.image ??
+                                  null,
+                                error_message: err.message,
+                                source: "project-card-boundary",
+                              })
+                            }
+                          >
+                            <MediaDisplay
+                              meta={project.meta}
+                              aspectRatio={project.meta.videoUrl ? "video" : "wide"}
+                              className="rounded-lg"
+                            />
+                          </ErrorBoundary>
                         </div>
                       )}
                       <CardHeader className="space-y-4">
