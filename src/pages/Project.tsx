@@ -3,133 +3,100 @@ import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, useParams } from "react-router-dom";
 import Breadcrumb from "@/components/Breadcrumb";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import { MediaDisplay } from "@/components/MediaDisplay";
 import Navigation from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ANALYTICS_EVENTS, captureEvent } from "@/lib/analytics";
-
-interface ProjectData {
-  id: string;
-  title: string;
-  description: string;
-  longDescription: string;
-  tags: string[];
-  github?: string;
-  demo?: string;
-  featured: boolean;
-  date: string;
-  status: string;
-  keyFeatures: string[];
-}
-
-const projects: ProjectData[] = [
-  {
-    id: "neural-content-generator",
-    title: "Neural Content Generator",
-    description:
-      "An advanced AI-powered content generation system that leverages transformer models to create high-quality, contextually relevant content across multiple domains.",
-    longDescription:
-      "This project represents a breakthrough in automated content creation, utilizing state-of-the-art language models to generate compelling, coherent, and contextually appropriate content. The system incorporates advanced prompt engineering techniques, fine-tuning methodologies, and multi-modal capabilities to deliver professional-grade content at scale.",
-    tags: ["Python", "Transformers", "OpenAI", "FastAPI", "React"],
-    github: "https://github.com/davideasaf/neural-content-generator",
-    demo: "https://neural-content-demo.vercel.app",
-    featured: true,
-    date: "2024-01",
-    status: "Active Development",
-    keyFeatures: [
-      "Multi-domain content generation",
-      "Context-aware prompt engineering",
-      "Real-time content optimization",
-      "API-first architecture",
-      "Scalable deployment pipeline",
-    ],
-  },
-  {
-    id: "agentic-workflow-orchestrator",
-    title: "Agentic Workflow Orchestrator",
-    description:
-      "A sophisticated orchestration platform for managing complex AI agent workflows with real-time monitoring and adaptive task distribution.",
-    longDescription:
-      "Built to address the challenges of coordinating multiple AI agents in enterprise environments, this orchestrator provides intelligent task distribution, conflict resolution, and performance optimization across agent networks.",
-    tags: ["TypeScript", "Node.js", "Docker", "Kubernetes", "Redis"],
-    github: "https://github.com/davideasaf/agentic-orchestrator",
-    featured: true,
-    date: "2024-02",
-    status: "Beta",
-    keyFeatures: [
-      "Intelligent agent coordination",
-      "Real-time performance monitoring",
-      "Scalable architecture",
-      "Conflict resolution algorithms",
-      "Enterprise-grade security",
-    ],
-  },
-  {
-    id: "llm-fine-tuning-toolkit",
-    title: "LLM Fine-tuning Toolkit",
-    description:
-      "A comprehensive toolkit for fine-tuning large language models with efficient training pipelines and evaluation frameworks.",
-    longDescription:
-      "This toolkit simplifies the complex process of fine-tuning LLMs for domain-specific applications, providing optimized training strategies, evaluation metrics, and deployment utilities.",
-    tags: ["Python", "PyTorch", "Hugging Face", "CUDA", "MLOps"],
-    github: "https://github.com/davideasaf/llm-fine-tuning",
-    date: "2023-11",
-    status: "Stable",
-    keyFeatures: [
-      "Efficient training pipelines",
-      "Comprehensive evaluation suite",
-      "Memory optimization techniques",
-      "Multi-GPU support",
-      "Automated hyperparameter tuning",
-    ],
-  },
-  {
-    id: "intelligent-code-reviewer",
-    title: "Intelligent Code Reviewer",
-    description:
-      "An AI-powered code review system that provides contextual feedback, security analysis, and performance optimization suggestions.",
-    longDescription:
-      "Leveraging advanced static analysis and machine learning techniques, this system provides intelligent code review capabilities that go beyond traditional linting to offer architectural insights and optimization recommendations.",
-    tags: ["Python", "JavaScript", "AST", "Machine Learning", "CI/CD"],
-    github: "https://github.com/davideasaf/intelligent-reviewer",
-    date: "2023-09",
-    status: "Maintenance",
-    keyFeatures: [
-      "Context-aware code analysis",
-      "Security vulnerability detection",
-      "Performance optimization hints",
-      "Multi-language support",
-      "CI/CD integration",
-    ],
-  },
-];
+import { type ContentItem, formatDate, getProjectBySlug, type ProjectMeta } from "@/lib/content";
 
 const Project = () => {
   const { id } = useParams<{ id: string }>();
-  const [project, setProject] = useState<ProjectData | null>(null);
-  const [_loading, _setLoading] = useState(false);
+  const [project, setProject] = useState<ContentItem<ProjectMeta> | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!id) return;
-    const foundProject = projects.find((p) => p.id === id) || null;
-    if (!foundProject) {
-      setError("Project not found");
-      setProject(null);
-    } else {
-      setError(null);
-      setProject(foundProject);
-    }
+    let isMounted = true;
+
+    const load = async () => {
+      if (!id) {
+        const message =
+          "We couldn't determine which project to display. Please return to the projects page and choose a project.";
+        captureEvent(ANALYTICS_EVENTS.PROJECT_DETAIL_LOAD_FAILED, {
+          reason: "missing-id",
+        });
+        if (isMounted) {
+          setError(message);
+          setProject(null);
+          setLoading(false);
+        }
+        return;
+      }
+
+      try {
+        const result = await getProjectBySlug(id);
+        if (!isMounted) return;
+        if (!result) {
+          const message = `We couldn't find a project named "${id}". It may have been moved or is temporarily unavailable.`;
+          captureEvent(ANALYTICS_EVENTS.PROJECT_DETAIL_LOAD_FAILED, {
+            reason: "not-found",
+            project_id: id,
+          });
+          setError(message);
+          setProject(null);
+        } else {
+          setError(null);
+          setProject(result);
+        }
+      } catch (err) {
+        console.error(`Failed to load project ${id}:`, err);
+        if (!isMounted) return;
+        const message =
+          "We ran into a problem loading this project. Please refresh the page or try again shortly.";
+        captureEvent(ANALYTICS_EVENTS.PROJECT_DETAIL_LOAD_FAILED, {
+          reason: "exception",
+          project_id: id,
+          error_message: err instanceof Error ? err.message : String(err),
+        });
+        setError(message);
+        setProject(null);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    load();
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   useEffect(() => {
-    if (project) {
-      captureEvent(ANALYTICS_EVENTS.PROJECT_DETAIL_VIEWED, { project_id: project.id });
+    if (!loading && project) {
+      captureEvent(ANALYTICS_EVENTS.PROJECT_DETAIL_VIEWED, { project_id: project.slug });
     }
-  }, [project]);
+  }, [loading, project]);
 
-  // no loading state — render immediately or show error
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navigation />
+        <div className="pt-20 pb-12">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p className="text-center text-muted-foreground" aria-live="polite">
+              Loading project details…
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (error || !project) {
     return (
@@ -137,7 +104,7 @@ const Project = () => {
         <Navigation />
         <div className="pt-20 pb-12">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center space-y-4">
+            <div className="text-center space-y-4" role="alert" aria-live="assertive">
               <h1 className="text-2xl font-bold text-destructive">Error</h1>
               <p className="text-muted-foreground">{error || "Project not found"}</p>
               <Button asChild>
@@ -153,23 +120,33 @@ const Project = () => {
     );
   }
 
+  const ProjectContent = project.content;
+  const hasMedia = Boolean(project.meta.videoUrl || project.meta.banner || project.meta.image);
+  const primaryMediaType = project.meta.videoUrl
+    ? "video"
+    : project.meta.banner
+      ? "banner"
+      : project.meta.image
+        ? "image"
+        : null;
+  const ogImage = project.meta.banner ?? project.meta.image ?? undefined;
+
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>{project.title} - David Asaf's AI Project</title>
-        <meta name="description" content={project.longDescription} />
-        <meta property="og:title" content={`${project.title} - David Asaf's AI Project`} />
-        <meta property="og:description" content={project.longDescription} />
-        <link rel="canonical" href={`https://davidasaf.com/projects/${id}`} />
+        <title>{project.meta.title} - AI Project by David Asaf</title>
+        <meta name="description" content={project.meta.description} />
+        <meta property="og:title" content={`${project.meta.title} - AI Project by David Asaf`} />
+        <meta property="og:description" content={project.meta.description} />
+        {ogImage && <meta property="og:image" content={ogImage} />}
+        {project.meta.videoUrl && <meta property="og:video:url" content={project.meta.videoUrl} />}
+        <link rel="canonical" href={`https://davideasaf.com/projects/${project.slug}`} />
       </Helmet>
       <Navigation />
       <div className="pt-20 pb-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <Breadcrumb
-            items={[
-              { label: "Projects", href: "/projects" },
-              { label: project?.title || "Loading..." },
-            ]}
+            items={[{ label: "Projects", href: "/projects" }, { label: project.meta.title }]}
           />
           <Button variant="ghost" className="mb-8" asChild>
             <Link to="/projects">
@@ -178,95 +155,182 @@ const Project = () => {
             </Link>
           </Button>
 
-          <div className="space-y-8">
-            <div className="space-y-4">
-              <div className="flex items-center gap-4 flex-wrap">
-                <h1 className="text-3xl md:text-4xl font-bold">{project.title}</h1>
-                <Badge variant={project.status === "Active Development" ? "default" : "secondary"}>
-                  {project.status}
-                </Badge>
-              </div>
-
-              <div className="flex items-center gap-4 text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  {project.date}
+          <article className="space-y-8">
+            <header className="space-y-4">
+              <div className="flex flex-wrap items-center gap-4">
+                <h1 className="text-3xl md:text-4xl font-bold leading-tight">
+                  {project.meta.title}
+                </h1>
+                <div className="flex flex-wrap gap-2">
+                  {project.meta.status && (
+                    <Badge
+                      variant={
+                        project.meta.status.toLowerCase().includes("production")
+                          ? "default"
+                          : "secondary"
+                      }
+                    >
+                      {project.meta.status}
+                    </Badge>
+                  )}
+                  {project.meta.featured && (
+                    <Badge variant="default" className="bg-gradient-primary text-white">
+                      Featured
+                    </Badge>
+                  )}
                 </div>
               </div>
 
+              <div className="flex items-center gap-4 text-muted-foreground flex-wrap">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  {formatDate(project.meta.date)}
+                </div>
+              </div>
+
+              {hasMedia && (
+                <div className="space-y-2">
+                  <ErrorBoundary
+                    resetKeys={[project.meta.videoUrl, project.meta.banner, project.meta.image]}
+                    fallback={(err) => (
+                      <div
+                        className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
+                        role="alert"
+                        aria-live="assertive"
+                      >
+                        <p className="font-medium">Project media is temporarily unavailable.</p>
+                        <p>{err.message}</p>
+                      </div>
+                    )}
+                    onError={(err) =>
+                      captureEvent(ANALYTICS_EVENTS.MEDIA_RENDER_FAILED, {
+                        media_url:
+                          project.meta.videoUrl ??
+                          project.meta.banner ??
+                          project.meta.image ??
+                          null,
+                        media_type: primaryMediaType,
+                        project_id: project.slug,
+                        error_message: err.message,
+                        source: "project-detail-boundary",
+                      })
+                    }
+                  >
+                    <MediaDisplay
+                      meta={project.meta}
+                      aspectRatio={project.meta.videoUrl ? "video" : "wide"}
+                      className="rounded-lg"
+                    />
+                  </ErrorBoundary>
+                  {project.meta.videoUrl && project.meta.videoTitle && (
+                    <p className="text-sm text-muted-foreground text-center">
+                      {project.meta.videoTitle}
+                    </p>
+                  )}
+                </div>
+              )}
+
               <p className="text-xl text-muted-foreground leading-relaxed">
-                {project.longDescription}
+                {project.meta.description}
               </p>
 
-              <div className="flex gap-4">
-                {project.github && (
+              <div className="flex gap-4 flex-wrap">
+                {project.meta.github && (
                   <Button
                     asChild
                     onClick={() =>
                       captureEvent(ANALYTICS_EVENTS.PROJECT_DETAIL_EXTERNAL_CLICKED, {
-                        project_id: project.id,
+                        project_id: project.slug,
                         target: "github",
                       })
                     }
                   >
-                    <a href={project.github} target="_blank" rel="noopener noreferrer">
+                    <a href={project.meta.github} target="_blank" rel="noopener noreferrer">
                       <Github className="mr-2 h-4 w-4" />
                       View Code
                     </a>
                   </Button>
                 )}
-                {project.demo && (
+                {project.meta.demo && (
                   <Button
                     variant="outline"
                     asChild
                     onClick={() =>
                       captureEvent(ANALYTICS_EVENTS.PROJECT_DETAIL_EXTERNAL_CLICKED, {
-                        project_id: project.id,
+                        project_id: project.slug,
                         target: "demo",
                       })
                     }
                   >
-                    <a href={project.demo} target="_blank" rel="noopener noreferrer">
+                    <a href={project.meta.demo} target="_blank" rel="noopener noreferrer">
                       <ExternalLink className="mr-2 h-4 w-4" />
                       Live Demo
                     </a>
                   </Button>
                 )}
               </div>
-            </div>
+            </header>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Key Features</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-2">
-                  {project.keyFeatures.map((feature) => (
-                    <li key={feature} className="flex items-start gap-2">
-                      <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+            {project.meta.keyFeatures && project.meta.keyFeatures.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Key Features</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-2">
+                    {project.meta.keyFeatures.map((feature) => (
+                      <li key={feature} className="flex items-start gap-2">
+                        <div className="mt-2 h-2 w-2 flex-shrink-0 rounded-full bg-primary" />
+                        <span>{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Technologies</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {project.tags.map((tag) => (
-                    <Badge key={tag} variant="outline">
-                      <Tag className="mr-1 h-3 w-3" />
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+            {project.meta.tags.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Technologies</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {project.meta.tags.map((tag) => (
+                      <Badge key={tag} variant="outline">
+                        <Tag className="mr-1 h-3 w-3" />
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            <section className="markdown-content max-w-none">
+              <ErrorBoundary
+                resetKeys={[project.slug]}
+                fallback={() => (
+                  <div
+                    className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive"
+                    role="alert"
+                    aria-live="assertive"
+                  >
+                    <p className="font-medium">The project write-up couldn't be displayed.</p>
+                    <p>Please refresh the page or view the code on GitHub for more details.</p>
+                  </div>
+                )}
+                onError={(err) =>
+                  captureEvent(ANALYTICS_EVENTS.PROJECT_DETAIL_RENDER_FAILED, {
+                    project_id: project.slug,
+                    error_message: err.message,
+                  })
+                }
+              >
+                <ProjectContent />
+              </ErrorBoundary>
+            </section>
+          </article>
         </div>
       </div>
     </div>
