@@ -38,6 +38,7 @@ export interface NeuralNoteMeta {
   videoUrl?: string;
   audioUrl?: string;
   videoTitle?: string;
+  audioTitle?: string;
   banner?: string; // Banner image URL/path
   draft?: boolean;
   editorTodos?: string[];
@@ -60,6 +61,10 @@ export interface ProjectMeta {
   banner?: string; // Banner image URL/path (higher priority than image)
   videoUrl?: string; // Video URL for projects
   videoTitle?: string; // Video title for projects
+  audioUrl?: string;
+  audioTitle?: string;
+  status?: string;
+  keyFeatures?: string[];
   draft?: boolean;
   editorTodos?: string[];
 }
@@ -276,6 +281,12 @@ export async function loadProjects(): Promise<ContentItem<ProjectMeta>[]> {
           : typeof rawEditorTodos === "string" && rawEditorTodos.trim().length > 0
             ? [rawEditorTodos.trim()]
             : [];
+        const rawKeyFeatures: unknown = (fm as unknown as { keyFeatures?: unknown }).keyFeatures;
+        const normalizedKeyFeatures: string[] = Array.isArray(rawKeyFeatures)
+          ? (rawKeyFeatures as unknown[]).map((t) => String(t)).filter(Boolean)
+          : typeof rawKeyFeatures === "string" && rawKeyFeatures.trim().length > 0
+            ? [rawKeyFeatures.trim()]
+            : [];
 
         const normalizedMeta: ProjectMeta = {
           title: fm.title ?? slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
@@ -289,6 +300,8 @@ export async function loadProjects(): Promise<ContentItem<ProjectMeta>[]> {
           banner: fm.banner,
           videoUrl: fm.videoUrl,
           videoTitle: fm.videoTitle,
+          status: typeof fm.status === "string" ? fm.status : undefined,
+          keyFeatures: normalizedKeyFeatures,
           draft: Boolean((fm as unknown as { draft?: unknown }).draft),
           editorTodos: normalizedEditorTodos,
         };
@@ -337,11 +350,11 @@ export async function getProjectBySlug(slug: string): Promise<ContentItem<Projec
 
 // Helper function to get the primary media for display (Video > Banner > Image)
 export function getPrimaryMedia(meta: NeuralNoteMetaWithCalculated | ProjectMeta): {
-  type: "video" | "banner" | "image" | null;
+  type: "video" | "audio" | "banner" | "image" | null;
   url: string | null;
   title?: string;
 } {
-  // Priority: Video > Banner > Image
+  // Priority: Video > Audio > Banner > Image
   if (meta.videoUrl) {
     return {
       type: "video",
@@ -350,10 +363,19 @@ export function getPrimaryMedia(meta: NeuralNoteMetaWithCalculated | ProjectMeta
     };
   }
 
+  if (meta.audioUrl) {
+    return {
+      type: "audio",
+      url: meta.audioUrl,
+      title: meta.title || "Audio",
+    };
+  }
+
   if (meta.banner) {
     return {
       type: "banner",
       url: meta.banner,
+      title: meta.title,
     };
   }
 
@@ -362,6 +384,7 @@ export function getPrimaryMedia(meta: NeuralNoteMetaWithCalculated | ProjectMeta
     return {
       type: "image",
       url: meta.image,
+      title: meta.title,
     };
   }
 

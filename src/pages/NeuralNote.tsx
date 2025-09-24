@@ -1,12 +1,12 @@
-import { ArrowLeft, Calendar, Clock, Tag, Volume2, Youtube } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Tag } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link, useParams } from "react-router-dom";
 import Breadcrumb from "@/components/Breadcrumb";
+import { MediaDisplay } from "@/components/MediaDisplay";
 import Navigation from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { ANALYTICS_EVENTS, captureEvent, useScrollProgressMilestones } from "@/lib/analytics";
 import {
   type ContentItem,
@@ -165,58 +165,7 @@ const NeuralNote = () => {
               </div>
 
               {/* Media Section */}
-              {(neuralNote.meta.videoUrl || neuralNote.meta.audioUrl) && (
-                <Card className="overflow-hidden">
-                  <CardContent className="p-0">
-                    {neuralNote.meta.videoUrl && (
-                      <div className="space-y-4 p-6">
-                        <div className="flex items-center gap-2 text-primary">
-                          <Youtube className="h-5 w-5" />
-                          <span className="font-medium">Watch the discussion</span>
-                        </div>
-                        <div className="aspect-video">
-                          <iframe
-                            src={neuralNote.meta.videoUrl}
-                            title={`${neuralNote.meta.title} - Video Discussion`}
-                            className="w-full h-full rounded-lg"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                            onLoad={() =>
-                              captureEvent(ANALYTICS_EVENTS.NEURAL_NOTE_MEDIA_INTERACTED, {
-                                note_slug: neuralNote.slug,
-                                media_type: "video_iframe_loaded",
-                              })
-                            }
-                          />
-                        </div>
-                      </div>
-                    )}
-
-                    {neuralNote.meta.audioUrl && !neuralNote.meta.videoUrl && (
-                      <div className="space-y-4 p-6">
-                        <div className="flex items-center gap-2 text-primary">
-                          <Volume2 className="h-5 w-5" />
-                          <span className="font-medium">Listen to the audio version</span>
-                        </div>
-                        <audio
-                          controls
-                          className="w-full"
-                          onPlay={() =>
-                            captureEvent(ANALYTICS_EVENTS.NEURAL_NOTE_MEDIA_INTERACTED, {
-                              note_slug: neuralNote.slug,
-                              media_type: "audio_play",
-                            })
-                          }
-                        >
-                          <source src={neuralNote.meta.audioUrl} type="audio/mpeg" />
-                          <track kind="captions" srcLang="en" label="captions" />
-                          Your browser does not support the audio element.
-                        </audio>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              )}
+              <MediaDisplay meta={neuralNote.meta} aspectRatio="video" />
             </header>
 
             {/* Article Content */}
