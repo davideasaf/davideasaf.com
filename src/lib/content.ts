@@ -60,6 +60,8 @@ export interface ProjectMeta {
   banner?: string; // Banner image URL/path (higher priority than image)
   videoUrl?: string; // Video URL for projects
   videoTitle?: string; // Video title for projects
+  status?: string;
+  keyFeatures?: string[];
   draft?: boolean;
   editorTodos?: string[];
 }
@@ -276,6 +278,12 @@ export async function loadProjects(): Promise<ContentItem<ProjectMeta>[]> {
           : typeof rawEditorTodos === "string" && rawEditorTodos.trim().length > 0
             ? [rawEditorTodos.trim()]
             : [];
+        const rawKeyFeatures: unknown = (fm as unknown as { keyFeatures?: unknown }).keyFeatures;
+        const normalizedKeyFeatures: string[] = Array.isArray(rawKeyFeatures)
+          ? (rawKeyFeatures as unknown[]).map((t) => String(t)).filter(Boolean)
+          : typeof rawKeyFeatures === "string" && rawKeyFeatures.trim().length > 0
+            ? [rawKeyFeatures.trim()]
+            : [];
 
         const normalizedMeta: ProjectMeta = {
           title: fm.title ?? slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
@@ -289,6 +297,8 @@ export async function loadProjects(): Promise<ContentItem<ProjectMeta>[]> {
           banner: fm.banner,
           videoUrl: fm.videoUrl,
           videoTitle: fm.videoTitle,
+          status: typeof fm.status === "string" ? fm.status : undefined,
+          keyFeatures: normalizedKeyFeatures,
           draft: Boolean((fm as unknown as { draft?: unknown }).draft),
           editorTodos: normalizedEditorTodos,
         };
