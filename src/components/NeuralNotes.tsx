@@ -1,12 +1,14 @@
 import { ArrowRight, Calendar, Clock, Play, Volume2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { MediaDisplay } from "@/components/MediaDisplay";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ANALYTICS_EVENTS, captureEvent, useObserveElementsOnce } from "@/lib/analytics";
 import {
   type ContentItem,
+  getPrimaryMedia,
   loadNeuralNotes,
   type NeuralNoteMetaWithCalculated,
 } from "@/lib/content";
@@ -86,7 +88,16 @@ const NeuralNotes = () => {
                   )}
                 </div>
 
-                {(note.meta.hasVideo || note.meta.hasAudio) && (
+                {/* Display primary media if available */}
+                {getPrimaryMedia(note.meta).url && (
+                  <MediaDisplay
+                    meta={note.meta}
+                    className="mb-4"
+                    aspectRatio={note.meta.featured && index === 0 ? "wide" : "square"}
+                  />
+                )}
+
+                {(note.meta.hasVideo || note.meta.hasAudio) && !getPrimaryMedia(note.meta).url && (
                   <div className="bg-muted rounded-lg p-4 space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">Multimedia Content Available</span>
