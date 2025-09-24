@@ -119,10 +119,7 @@ const Project = () => {
       <div className="pt-20 pb-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <Breadcrumb
-            items={[
-              { label: "Projects", href: "/projects" },
-              { label: project.meta.title },
-            ]}
+            items={[{ label: "Projects", href: "/projects" }, { label: project.meta.title }]}
           />
           <Button variant="ghost" className="mb-8" asChild>
             <Link to="/projects">
@@ -172,7 +169,9 @@ const Project = () => {
                     className="rounded-lg"
                   />
                   {project.meta.videoUrl && project.meta.videoTitle && (
-                    <p className="text-sm text-muted-foreground text-center">{project.meta.videoTitle}</p>
+                    <p className="text-sm text-muted-foreground text-center">
+                      {project.meta.videoTitle}
+                    </p>
                   )}
                 </div>
               )}

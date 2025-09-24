@@ -1,12 +1,19 @@
-import { useEffect, useState } from "react";
 import { Calendar, ExternalLink, Github } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { MediaDisplay } from "@/components/MediaDisplay";
 import Navigation from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { ANALYTICS_EVENTS, captureEvent, useObserveElementsOnce } from "@/lib/analytics";
 import { type ContentItem, formatDate, loadProjects, type ProjectMeta } from "@/lib/content";
 
@@ -83,7 +90,9 @@ const Projects = () => {
           ) : (
             <div className="grid md:grid-cols-2 gap-8">
               {projects.map((project) => {
-                const hasMedia = Boolean(project.meta.videoUrl || project.meta.banner || project.meta.image);
+                const hasMedia = Boolean(
+                  project.meta.videoUrl || project.meta.banner || project.meta.image,
+                );
                 return (
                   <Card
                     key={project.slug}
