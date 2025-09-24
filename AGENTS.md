@@ -22,9 +22,9 @@ Use this playbook to keep changes consistent with the existing AI portfolio expe
 - Keep comments purposeful (performance notes, architectural hints) and use TypeScript types or zod schemas for runtime-boundaries.
 
 ## Testing Guidelines
-- Follow the Playwright plan in `docs/epic-1-e2e-testing.md`; place new E2E specs under a `tests/e2e` tree and target built assets.
 - Until the harness is formalized, document manual test steps in PRs and include viewport coverage (mobile + desktop).
 - Use stable selectors (data attributes) for Playwright to avoid brittle UI coupling; update the docs when new flows are covered.
+- Before considering work complete, pre-commit must be run
 
 ## Commit & Pull Request Guidelines
 - Match the existing `[agent] Short imperative summary` commit style; group related changes to keep diffs reviewable.
