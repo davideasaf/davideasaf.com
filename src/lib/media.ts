@@ -8,7 +8,7 @@ export const TRUSTED_YOUTUBE_HOSTS = new Set([
   "www.youtube-nocookie.com",
 ]);
 
-const VALID_YOUTUBE_DOMAINS = [".youtube.com", ".youtube-nocookie.com"] as const;
+const VALID_YOUTUBE_DOMAINS = ["youtube.com", "youtube-nocookie.com"] as const;
 
 export const isTrustedYouTubeHostname = (hostname: string): boolean => {
   const normalized = hostname.toLowerCase();
@@ -17,16 +17,17 @@ export const isTrustedYouTubeHostname = (hostname: string): boolean => {
   }
 
   return VALID_YOUTUBE_DOMAINS.some((domain) => {
-    const naked = domain.slice(1);
-    if (normalized === naked) {
+    if (normalized === domain) {
       return true;
     }
 
-    return (
-      normalized.length > domain.length &&
-      normalized.endsWith(domain) &&
-      normalized.charAt(normalized.length - domain.length - 1) === "."
-    );
+    const dottedDomain = `.${domain}`;
+    if (!normalized.endsWith(dottedDomain)) {
+      return false;
+    }
+
+    const prefix = normalized.slice(0, -dottedDomain.length);
+    return prefix.length > 0 && prefix.split(".").every(Boolean);
   });
 };
 
