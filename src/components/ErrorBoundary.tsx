@@ -1,5 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 
+import { Button } from "@/components/ui/button";
+
 interface ErrorBoundaryProps {
   children: ReactNode;
   fallback?: ReactNode | FallbackRender;
@@ -12,7 +14,41 @@ interface ErrorBoundaryState {
   errorInfo: ErrorInfo | null;
 }
 
-type FallbackRender = (error: Error, info: ErrorInfo | null) => ReactNode;
+type FallbackRender = (
+  error: Error,
+  info: ErrorInfo | null,
+  resetErrorBoundary: () => void,
+) => ReactNode;
+
+interface DefaultFallbackProps {
+  error: Error;
+  onRetry: () => void;
+}
+
+const DefaultFallback = ({ error, onRetry }: DefaultFallbackProps) => (
+  <div
+    role="alert"
+    aria-live="assertive"
+    className="mx-auto flex w-full max-w-md flex-col items-center gap-4 rounded-lg border border-destructive/20 bg-destructive/5 p-6 text-center text-destructive"
+  >
+    <div className="space-y-2">
+      <p className="text-base font-semibold">Something went wrong</p>
+      <p className="text-sm text-destructive/80">
+        We hit an unexpected error while loading this section. You can try again below or refresh
+        the page.
+      </p>
+      <p className="text-xs text-destructive/70">{error.message}</p>
+    </div>
+    <div className="flex flex-wrap items-center justify-center gap-3">
+      <Button type="button" onClick={onRetry} variant="destructive">
+        Try again
+      </Button>
+      <Button type="button" onClick={() => window.location.reload()} variant="outline">
+        Reload page
+      </Button>
+    </div>
+  </div>
+);
 
 const haveResetKeysChanged = (prev?: unknown[], next?: unknown[]) => {
   if (prev === next) return false;
@@ -29,6 +65,10 @@ const haveResetKeysChanged = (prev?: unknown[], next?: unknown[]) => {
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   state: ErrorBoundaryState = { error: null, errorInfo: null };
 
+  resetErrorBoundary = () => {
+    this.setState({ error: null, errorInfo: null });
+  };
+
   static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
     return { error };
   }
@@ -42,7 +82,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
   componentDidUpdate(prevProps: ErrorBoundaryProps) {
     if (haveResetKeysChanged(prevProps.resetKeys, this.props.resetKeys)) {
-      this.setState({ error: null, errorInfo: null });
+      this.resetErrorBoundary();
     }
   }
 
@@ -52,12 +92,12 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
     if (error) {
       if (typeof fallback === "function") {
-        return (fallback as FallbackRender)(error, errorInfo);
+        return (fallback as FallbackRender)(error, errorInfo, this.resetErrorBoundary);
       }
       if (fallback) {
         return fallback;
       }
-      return null;
+      return <DefaultFallback error={error} onRetry={this.resetErrorBoundary} />;
     }
 
     return children;
