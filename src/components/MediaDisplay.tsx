@@ -1,3 +1,4 @@
+import { Volume2 } from "lucide-react";
 import { memo, useEffect, useMemo, useState } from "react";
 import { ANALYTICS_EVENTS, captureEvent } from "../lib/analytics";
 import type { NeuralNoteMetaWithCalculated, ProjectMeta } from "../lib/content";
@@ -62,7 +63,7 @@ const extractYouTubeId = (url: URL) => {
 };
 
 type MediaError = {
-  code: "invalid-url" | "unsupported-host" | "invalid-id" | "image-load-error";
+  code: "invalid-url" | "unsupported-host" | "invalid-id" | "image-load-error" | "audio-load-error";
   message: string;
 };
 
@@ -167,23 +168,16 @@ function MediaDisplayComponent({ meta, className = "", aspectRatio = "wide" }: M
     video: "aspect-video md:aspect-video",
     square: "aspect-square md:aspect-square",
     wide: "aspect-[4/3] md:aspect-[16/9]",
-  };
+  } as const;
 
-  const baseClasses = `w-full ${aspectClasses[aspectRatio]} bg-gray-100 rounded-lg overflow-hidden ${className}`;
+  const isAudio = media.type === "audio";
+  const aspectClass = isAudio ? "" : aspectClasses[aspectRatio];
+  const baseClasses = isAudio
+    ? `w-full rounded-lg ${className}`
+    : `w-full ${aspectClass} bg-gray-100 rounded-lg overflow-hidden ${className}`;
 
   if (error) {
-    return (
-      <div
-        className={`${baseClasses} flex items-center justify-center border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive`}
-        role="alert"
-        aria-live="assertive"
-      >
-        <div className="space-y-1 text-center">
-          <p className="font-medium">We couldn't display this media.</p>
-          <p>{error.message}</p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   if (media.type === "video") {
@@ -207,6 +201,42 @@ function MediaDisplayComponent({ meta, className = "", aspectRatio = "wide" }: M
         <div className="sr-only" aria-live="polite">
           Embedded video for {meta.title} loaded successfully.
         </div>
+      </div>
+    );
+  }
+
+  if (media.type === "audio") {
+    const title = media.title || meta.title;
+    return (
+      <div
+        className={`${baseClasses} flex flex-col justify-center bg-background border border-border p-4 gap-3`}
+        aria-live="polite"
+      >
+        <div className="flex items-center gap-2 text-primary text-sm font-medium">
+          <Volume2 className="h-4 w-4" aria-hidden="true" />
+          <span>{title ? `Audio: ${title}` : "Audio playback"}</span>
+        </div>
+        <audio
+          controls
+          className="w-full"
+          src={media.url ?? undefined}
+          crossOrigin="anonymous"
+          onPlay={() =>
+            captureEvent(ANALYTICS_EVENTS.NEURAL_NOTE_MEDIA_INTERACTED, {
+              media_type: "audio_play",
+              title: meta.title,
+            })
+          }
+          onError={() =>
+            setError({
+              code: "audio-load-error",
+              message: "The audio failed to load.",
+            })
+          }
+        >
+          <track kind="captions" srcLang="en" label="Captions" />
+          Your browser does not support the audio element.
+        </audio>
       </div>
     );
   }
