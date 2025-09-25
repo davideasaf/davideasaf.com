@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { type DependencyList, useEffect, useRef } from "react";
 
 export function initAnalytics(): void {
   if (typeof window === "undefined") return;
@@ -121,7 +121,14 @@ export function useObserveElementsOnce(
   eventName: AnalyticsEventName,
   getProps?: (el: Element) => Record<string, unknown>,
   options?: IntersectionObserverInit,
+  deps: DependencyList = [],
 ): void {
+  const getPropsRef = useRef(getProps);
+
+  useEffect(() => {
+    getPropsRef.current = getProps;
+  }, [getProps]);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     const seen = new WeakSet<Element>();
@@ -132,7 +139,8 @@ export function useObserveElementsOnce(
           if (seen.has(el)) continue;
           if (entry.isIntersecting) {
             seen.add(el);
-            captureEvent(eventName, getProps ? getProps(el) : {});
+            const props = getPropsRef.current ? getPropsRef.current(el) : {};
+            captureEvent(eventName, props);
             observer.unobserve(el);
           }
         }
@@ -145,7 +153,7 @@ export function useObserveElementsOnce(
       observer.observe(el);
     });
     return () => observer.disconnect();
-  }, [selector, eventName, getProps, options]);
+  }, [selector, eventName, options, ...deps]);
 }
 
 export function useScrollProgressMilestones(

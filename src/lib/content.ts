@@ -364,10 +364,11 @@ export function getPrimaryMedia(meta: NeuralNoteMetaWithCalculated | ProjectMeta
   }
 
   if (meta.audioUrl) {
+    const audioTitle = meta.audioTitle?.trim();
     return {
       type: "audio",
       url: meta.audioUrl,
-      title: meta.title || "Audio",
+      title: audioTitle && audioTitle.length > 0 ? audioTitle : meta.title || "Audio",
     };
   }
 

@@ -1,5 +1,5 @@
 import { ExternalLink, Github, Play } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { MediaDisplay } from "@/components/MediaDisplay";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,10 @@ import { type ContentItem, getPrimaryMedia, loadProjects, type ProjectMeta } fro
 const ProjectShowcase = () => {
   const [projects, setProjects] = useState<ContentItem<ProjectMeta>[]>([]);
   const [loading, setLoading] = useState(true);
+  const projectObservationKey = useMemo(
+    () => projects.map((project) => project.slug).join("|"),
+    [projects],
+  );
 
   useEffect(() => {
     const load = async () => {
@@ -36,10 +40,16 @@ const ProjectShowcase = () => {
 
   const sectionId = "projects";
 
-  useObserveElementsOnce("[data-pj-card]", ANALYTICS_EVENTS.PROJECT_CARD_VIEWED, (el) => ({
-    project_id: (el as HTMLElement).dataset.pid,
-    featured: (el as HTMLElement).dataset.featured === "true",
-  }));
+  useObserveElementsOnce(
+    "[data-pj-card]",
+    ANALYTICS_EVENTS.PROJECT_CARD_VIEWED,
+    (el) => ({
+      project_id: (el as HTMLElement).dataset.pid,
+      featured: (el as HTMLElement).dataset.featured === "true",
+    }),
+    undefined,
+    [projectObservationKey],
+  );
 
   return (
     <section id={sectionId} className="py-20 bg-gradient-subtle">
