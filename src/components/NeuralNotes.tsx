@@ -114,32 +114,33 @@ const NeuralNotes = () => {
                     />
                   )}
 
-                  {(note.meta.hasVideo || note.meta.hasAudio) && !getPrimaryMedia(note.meta).url && (
-                    <div className="bg-muted rounded-lg p-4 space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Multimedia Content Available</span>
-                        <div className="flex space-x-2">
-                          {note.meta.hasVideo && (
-                            <div className="h-8 w-8 flex items-center justify-center">
-                              <Play className="h-4 w-4" />
-                            </div>
-                          )}
-                          {note.meta.hasAudio && (
-                            <div className="h-8 w-8 flex items-center justify-center">
-                              <Volume2 className="h-4 w-4" />
-                            </div>
-                          )}
+                  {(note.meta.hasVideo || note.meta.hasAudio) &&
+                    !getPrimaryMedia(note.meta).url && (
+                      <div className="bg-muted rounded-lg p-4 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-medium">Multimedia Content Available</span>
+                          <div className="flex space-x-2">
+                            {note.meta.hasVideo && (
+                              <div className="h-8 w-8 flex items-center justify-center">
+                                <Play className="h-4 w-4" />
+                              </div>
+                            )}
+                            {note.meta.hasAudio && (
+                              <div className="h-8 w-8 flex items-center justify-center">
+                                <Volume2 className="h-4 w-4" />
+                              </div>
+                            )}
+                          </div>
                         </div>
+                        <p className="text-xs text-muted-foreground">
+                          {note.meta.hasVideo && note.meta.hasAudio
+                            ? "Watch the video or listen to the audio version"
+                            : note.meta.hasVideo
+                              ? "Watch the video explanation"
+                              : "Listen to the audio version"}
+                        </p>
                       </div>
-                      <p className="text-xs text-muted-foreground">
-                        {note.meta.hasVideo && note.meta.hasAudio
-                          ? "Watch the video or listen to the audio version"
-                          : note.meta.hasVideo
-                            ? "Watch the video explanation"
-                            : "Listen to the audio version"}
-                      </p>
-                    </div>
-                  )}
+                    )}
 
                   <CardTitle
                     className={`group-hover:text-primary transition-colors ${note.meta.featured && index === 0 ? "text-2xl" : "text-xl"}`}
