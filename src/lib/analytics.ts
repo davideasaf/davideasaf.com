@@ -121,6 +121,8 @@ export function useObserveElementsOnce(
   eventName: AnalyticsEventName,
   getProps?: (el: Element) => Record<string, unknown>,
   options?: IntersectionObserverInit,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _deps?: unknown[], // Deprecated: kept for backward compatibility, no longer used
 ): void {
   const getPropsRef = useRef(getProps);
   const optionsRef = useRef(options);
