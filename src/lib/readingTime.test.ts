@@ -3,17 +3,31 @@ import { readingTimeFromText, stripFrontMatter } from "./readingTime";
 
 describe("readingTime", () => {
   describe("readingTimeFromText", () => {
-    it("should calculate reading time for a short text", () => {
+    it("should calculate reading time for a short text (< 500 words)", () => {
       const text = "This is a short text with exactly ten words here.";
       const result = readingTimeFromText(text);
       expect(result).toBe("1 min read");
     });
 
-    it("should calculate reading time for a longer text", () => {
+    it("should calculate reading time for medium text (500-2000 words)", () => {
       // Create a 400-word text (should be ~2 minutes at 200 wpm)
       const words = new Array(400).fill("word").join(" ");
       const result = readingTimeFromText(words);
       expect(result).toBe("2 min read");
+    });
+
+    it("should calculate reading time for medium-large text", () => {
+      // Create a 1000-word text (should be ~5 minutes at 200 wpm)
+      const words = new Array(1000).fill("word").join(" ");
+      const result = readingTimeFromText(words);
+      expect(result).toBe("5 min read");
+    });
+
+    it("should calculate reading time for long text (> 2000 words)", () => {
+      // Create a 2500-word text (should be ~13 minutes at 200 wpm)
+      const words = new Array(2500).fill("word").join(" ");
+      const result = readingTimeFromText(words);
+      expect(result).toBe("13 min read");
     });
 
     it("should handle empty strings", () => {
@@ -35,6 +49,26 @@ describe("readingTime", () => {
       const text = "This    has    multiple    spaces    between    words";
       const result = readingTimeFromText(text);
       expect(result).toBe("1 min read");
+    });
+
+    it("should round to nearest minute", () => {
+      // 150 words = 0.75 minutes at 200 wpm, should round to 1
+      const words = new Array(150).fill("word").join(" ");
+      const result = readingTimeFromText(words);
+      expect(result).toBe("1 min read");
+    });
+
+    it("should handle HTML content by counting text only", () => {
+      const htmlText = "<p>This is <strong>HTML</strong> content with <em>tags</em></p>";
+      const result = readingTimeFromText(htmlText);
+      expect(result).toBe("1 min read");
+    });
+
+    it("should be consistent between multiple calls with same content", () => {
+      const text = new Array(300).fill("word").join(" ");
+      const result1 = readingTimeFromText(text);
+      const result2 = readingTimeFromText(text);
+      expect(result1).toBe(result2);
     });
   });
 
