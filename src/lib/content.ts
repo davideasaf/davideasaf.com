@@ -1,7 +1,7 @@
 import yaml from "js-yaml";
 import React from "react";
 import ReactDOMServer from "react-dom/server";
-import { readingTimeFromText, stripFrontMatter } from "./readingTime";
+import { readingTimeFromText } from "./readingTime";
 
 // MDX module types
 interface MdxModuleWithFrontmatter<TMeta> {
@@ -116,7 +116,7 @@ const NOTES_SYNC: ContentItem<NeuralNoteMetaWithCalculated>[] = Object.entries(n
         .replace(/\s+/g, " ")
         .trim();
       readTime = readingTimeFromText(text);
-    } catch (error) {
+    } catch (_error) {
       // Fallback to excerpt-based estimation
       readTime = readingTimeFromText(fm.excerpt ?? "");
     }
