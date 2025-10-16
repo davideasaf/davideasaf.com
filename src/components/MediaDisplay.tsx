@@ -53,7 +53,18 @@ function MediaDisplayComponent({ meta, className = "", aspectRatio = "wide" }: M
     : `w-full ${aspectClass} bg-gray-100 rounded-lg overflow-hidden ${className}`;
 
   if (error) {
-    return null;
+    return (
+      <div
+        className={`${baseClasses} flex items-center justify-center border border-destructive/30 bg-destructive/5 p-4`}
+        role="alert"
+        aria-live="assertive"
+      >
+        <div className="space-y-1 text-center text-sm text-destructive">
+          <p className="font-medium">Media failed to load</p>
+          <p>{error.message}</p>
+        </div>
+      </div>
+    );
   }
 
   if (media.type === "video") {

@@ -31,10 +31,6 @@ const haveResetKeysChanged = (prev?: unknown[], next?: unknown[]) => {
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   state: ErrorBoundaryState = { error: null, errorInfo: null };
 
-  handleRetry = () => {
-    this.setState({ error: null, errorInfo: null });
-  };
-
   static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
     return { error };
   }
