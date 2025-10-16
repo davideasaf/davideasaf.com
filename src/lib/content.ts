@@ -11,7 +11,9 @@ interface MdxModuleWithFrontmatter<TMeta> {
 
 type RawLoader = () => Promise<string>;
 
-export const parseFrontmatterYaml = <TMeta extends object>(raw: string | undefined): Partial<TMeta> => {
+export const parseFrontmatterYaml = <TMeta extends object>(
+  raw: string | undefined,
+): Partial<TMeta> => {
   if (!raw) return {};
   const match = raw.match(/^---\s*([\s\S]*?)\s*---/);
   if (!match) return {};

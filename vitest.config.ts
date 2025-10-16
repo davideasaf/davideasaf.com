@@ -1,9 +1,27 @@
 import path from "node:path";
+import mdx from "@mdx-js/rollup";
 import react from "@vitejs/plugin-react-swc";
+import remarkFrontmatter from "remark-frontmatter";
+import remarkGfm from "remark-gfm";
+import remarkMdxFrontmatter from "remark-mdx-frontmatter";
 import { defineConfig } from "vitest/config";
+import remarkImageToMdx from "./tools/remark-image-to-mdx.js";
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    // MDX plugin for processing markdown files - must come before react plugin
+    mdx({
+      remarkPlugins: [
+        remarkGfm,
+        remarkImageToMdx,
+        remarkFrontmatter,
+        // Export YAML frontmatter as `export const frontmatter = {...}`
+        [remarkMdxFrontmatter, { name: "frontmatter" }],
+      ],
+      providerImportSource: "@mdx-js/react",
+    }),
+    react(),
+  ],
   test: {
     globals: true,
     environment: "jsdom",

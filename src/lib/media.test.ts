@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { getPrimaryMedia } from "./content";
 import type { ProjectMeta } from "./content";
+import { getPrimaryMedia } from "./content";
 
 // Helper to create minimal meta objects for testing
 function createTestMeta(overrides: Partial<ProjectMeta> = {}): ProjectMeta {
