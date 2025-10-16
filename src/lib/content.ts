@@ -1,11 +1,6 @@
 import yaml from "js-yaml";
-import React from "react";
-import ReactDOMServer from "react-dom/server";
-import {
-  computeReadingTimeFromRawOrComponent,
-  readingTimeFromText,
-  stripFrontMatter,
-} from "./readingTime";
+import type React from "react";
+import { readingTimeFromText, stripFrontMatter } from "./readingTime";
 
 // MDX module types
 interface MdxModuleWithFrontmatter<TMeta> {
@@ -88,6 +83,13 @@ const noteModulesSync = import.meta.glob("/content/neural-notes/*.mdx", { eager:
   MdxModuleWithFrontmatter<NeuralNoteMeta>
 >;
 
+// Also load raw MDX files (eager) for read time calculation
+const noteRawSync = import.meta.glob("/content/neural-notes/*.mdx", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
+
 const NOTES_SYNC: ContentItem<NeuralNoteMetaWithCalculated>[] = Object.entries(noteModulesSync)
   .map(([path, mdxModule]) => {
     const MDXContent = mdxModule.default;
@@ -107,15 +109,9 @@ const NOTES_SYNC: ContentItem<NeuralNoteMetaWithCalculated>[] = Object.entries(n
         ? [rawEditorTodos.trim()]
         : [];
 
-    // Calculate read time from full content by rendering MDX component
-    let calculatedReadTime: string;
-    try {
-      const html = ReactDOMServer.renderToStaticMarkup(React.createElement(MDXContent));
-      calculatedReadTime = readingTimeFromText(html);
-    } catch {
-      // Fallback to excerpt if rendering fails
-      calculatedReadTime = readingTimeFromText(fm.excerpt ?? "");
-    }
+    // Calculate read time from raw MDX content (fast, no rendering required)
+    const rawContent = noteRawSync[path];
+    const contentForReadTime = rawContent ? stripFrontMatter(rawContent) : fm.excerpt ?? "";
 
     const normalizedMeta: NeuralNoteMetaWithCalculated = {
       title: fm.title ?? slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
@@ -133,8 +129,8 @@ const NOTES_SYNC: ContentItem<NeuralNoteMetaWithCalculated>[] = Object.entries(n
       banner: fm.banner,
       draft: Boolean((fm as unknown as { draft?: unknown }).draft),
       editorTodos: normalizedEditorTodos,
-      // Calculate from full rendered content for accuracy
-      readTime: calculatedReadTime,
+      // Calculate from raw content - consistent with async path
+      readTime: readingTimeFromText(contentForReadTime),
     };
 
     return {
@@ -195,10 +191,11 @@ export async function loadNeuralNotes(): Promise<ContentItem<NeuralNoteMetaWithC
           }
         }
 
-        const configuredReadTime = await computeReadingTimeFromRawOrComponent(
-          rawContent ? stripFrontMatter(rawContent) : undefined,
-          MDXContent,
-        );
+        // Calculate read time from raw content for consistency with sync path
+        const contentForReadTime = rawContent ? stripFrontMatter(rawContent) : "";
+        const calculatedReadTime = contentForReadTime
+          ? readingTimeFromText(contentForReadTime)
+          : "1 min read";
 
         const fm = (fmAttrs ?? {}) as Partial<NeuralNoteMeta>;
         const rawTags: unknown = (fm as unknown as { tags?: unknown }).tags;
@@ -230,7 +227,7 @@ export async function loadNeuralNotes(): Promise<ContentItem<NeuralNoteMetaWithC
           banner: fm.banner,
           draft: Boolean((fm as unknown as { draft?: unknown }).draft),
           editorTodos: normalizedEditorTodos,
-          readTime: configuredReadTime,
+          readTime: calculatedReadTime,
         };
 
         return {
