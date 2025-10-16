@@ -62,3 +62,5 @@ Projects and neural notes use YAML frontmatter in Markdown files. Key fields inc
 - Biome handles both linting and formatting - no need for separate ESLint/Prettier
 - Images in content are automatically optimized by vite-imagetools
 - The orange theme (#FF6B35) is central to the design system
+- before making commits, you must always run npm run lint. If there are linting issues they must be fixed 
+before committing.
