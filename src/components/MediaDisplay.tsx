@@ -33,7 +33,6 @@ function MediaDisplayComponent({ meta, className = "", aspectRatio = "wide" }: M
         error_message: error.message,
         title: meta.title,
       });
-      setStatus("error");
     }
   }, [error, media.type, media.url, meta.title]);
 
