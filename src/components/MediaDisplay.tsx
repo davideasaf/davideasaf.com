@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useState } from "react";
 import { ANALYTICS_EVENTS, captureEvent } from "../lib/analytics";
 import type { NeuralNoteMetaWithCalculated, ProjectMeta } from "../lib/content";
 import { getPrimaryMedia } from "../lib/content";
@@ -13,137 +13,16 @@ interface MediaDisplayProps {
   aspectRatio?: "video" | "square" | "wide";
 }
 
-const TRUSTED_YOUTUBE_HOSTS = new Set([
-  "youtube.com",
-  "www.youtube.com",
-  "m.youtube.com",
-  "youtu.be",
-  "www.youtu.be",
-  "youtube-nocookie.com",
-  "www.youtube-nocookie.com",
-]);
-
-const isTrustedYouTubeHostname = (hostname: string) => {
-  const normalized = hostname.toLowerCase();
-  if (TRUSTED_YOUTUBE_HOSTS.has(normalized)) {
-    return true;
-  }
-
-  const validDomains = [".youtube.com", ".youtube-nocookie.com"];
-  return validDomains.some((domain) => {
-    const naked = domain.slice(1);
-    if (normalized === naked) {
-      return true;
-    }
-
-    return (
-      normalized.length > domain.length &&
-      normalized.endsWith(domain) &&
-      normalized.charAt(normalized.length - domain.length - 1) === "."
-    );
-  });
-};
-
-const extractYouTubeId = (url: URL) => {
-  if (url.hostname.includes("youtu.be")) {
-    const candidate = url.pathname.split("/").filter(Boolean)[0];
-    if (candidate && candidate.length === 11) {
-      return candidate;
-    }
-  }
-
-  const searchId = url.searchParams.get("v");
-  if (searchId && searchId.length === 11) {
-    return searchId;
-  }
-
-  const pathMatch = url.pathname.match(/\/(?:embed|shorts|v)\/([^/?]+)/);
-  if (pathMatch?.[1] && pathMatch[1].length === 11) {
-    return pathMatch[1];
-  }
-
-  return null;
-};
-
-type VideoValidationResult =
-  | { status: "success"; embedUrl: string }
-  | { status: "error"; error: MediaError };
-
-const validateYouTubeUrl = (rawUrl: string): VideoValidationResult => {
-  try {
-    const parsed = new URL(rawUrl);
-    if (!isTrustedYouTubeHostname(parsed.hostname)) {
-      return {
-        status: "error",
-        error: {
-          code: "unsupported-host",
-          message:
-            "The video is hosted on an unverified domain, so it has been blocked for safety.",
-        },
-      };
-    }
-
-    const videoId = extractYouTubeId(parsed);
-    if (!videoId) {
-      return {
-        status: "error",
-        error: {
-          code: "invalid-id",
-          message: "We couldn't find a valid YouTube video identifier in the provided link.",
-        },
-      };
-    }
-
-    return {
-      status: "success",
-      embedUrl: `https://www.youtube.com/embed/${videoId}`,
-    };
-  } catch {
-    return {
-      status: "error",
-      error: {
-        code: "invalid-url",
-        message: "The video link appears to be malformed. Please verify the URL and try again.",
-      },
-    };
-  }
-};
-
 function MediaDisplayComponent({ meta, className = "", aspectRatio = "wide" }: MediaDisplayProps) {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [status, setStatus] = useState<"idle" | "loading" | "loaded" | "error">("idle");
   const [error, setError] = useState<MediaError | null>(null);
 
-  const media = useMemo(() => getPrimaryMedia(meta), [meta]);
-  const videoValidation = useMemo(() => {
-    if (media.type !== "video" || !media.url) {
-      return { status: "idle" as const, embedUrl: null, error: null };
-    }
-
-    const result = validateYouTubeUrl(media.url);
-    if (result.status === "success") {
-      return { status: "success" as const, embedUrl: result.embedUrl, error: null };
-    }
-
-    return { status: "error" as const, embedUrl: null, error: result.error };
-  }, [media]);
+  const media = getPrimaryMedia(meta);
 
   useEffect(() => {
     if (!media.url) {
-      setStatus("idle");
       setError(null);
-      return;
     }
-
-    if (media.type === "image" || media.type === "banner") {
-      setStatus("loading");
-    } else {
-      setStatus("idle");
-    }
-
-    setIsLoaded(false);
-    setError(videoValidation.error);
-  }, [media.url, media.type, videoValidation.error]);
+  }, [media.url]);
 
   useEffect(() => {
     if (error) {
@@ -179,47 +58,36 @@ function MediaDisplayComponent({ meta, className = "", aspectRatio = "wide" }: M
   }
 
   if (media.type === "video") {
-    if (videoValidation.status !== "success" || !videoValidation.embedUrl) {
-      return null;
-    }
-
     return (
-      <VideoDisplay
-        embedUrl={videoValidation.embedUrl}
-        title={media.title || meta.title}
-        className={baseClasses}
-      />
+      <div className={baseClasses}>
+        <VideoDisplay
+          url={media.url}
+          title={media.title}
+          metaTitle={meta.title}
+          onError={(error) => setError(error)}
+        />
+      </div>
     );
   }
 
   if (media.type === "audio") {
     return (
-      <AudioDisplay
-        audioUrl={media.url}
-        title={media.title || meta.title}
-        onError={(error) => setError(error)}
-        className={baseClasses}
-      />
+      <div className={baseClasses}>
+        <AudioDisplay src={media.url} metaTitle={meta.title} onError={(error) => setError(error)} />
+      </div>
     );
   }
 
   if (media.type === "banner" || media.type === "image") {
     return (
-      <ImageDisplay
-        imageUrl={media.url}
-        alt={meta.title}
-        isLoaded={isLoaded}
-        onLoad={() => {
-          setIsLoaded(true);
-          setStatus("loaded");
-        }}
-        onError={(error) => {
-          setError(error);
-          setStatus("error");
-        }}
-        className={baseClasses}
-        showLoadingState={status === "loading"}
-      />
+      <div className={baseClasses}>
+        <ImageDisplay
+          src={media.url}
+          alt={meta.title}
+          metaTitle={meta.title}
+          onError={(error) => setError(error)}
+        />
+      </div>
     );
   }
 
