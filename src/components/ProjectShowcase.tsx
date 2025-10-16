@@ -77,7 +77,7 @@ const ProjectShowcase = () => {
                 data-pj-card
                 data-pid={project.slug}
                 data-featured={project.meta.featured}
-                className={`group relative overflow-hidden transition-all duration-300 hover:shadow-elegant ${project.meta.featured ? "md:col-span-2 lg:col-span-1" : ""}`}
+                className={`group relative overflow-hidden transition-all duration-300 hover:shadow-elegant hover:scale-[1.02] cursor-pointer ${project.meta.featured ? "md:col-span-2 lg:col-span-1" : ""}`}
               >
                 {project.meta.featured && (
                   <div className="absolute top-4 right-4 z-10">
@@ -87,43 +87,53 @@ const ProjectShowcase = () => {
                   </div>
                 )}
 
-                {/* Display primary media if available */}
-                {getPrimaryMedia(project.meta).url ? (
-                  <MediaDisplay meta={project.meta} className="w-full" aspectRatio="video" />
-                ) : (
-                  <div className="aspect-video bg-muted relative overflow-hidden">
-                    <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center">
-                        <Play className="h-8 w-8 text-primary" />
+                <Link
+                  to={`/projects/${project.slug}`}
+                  className="block"
+                  onClick={() =>
+                    captureEvent(ANALYTICS_EVENTS.PROJECT_CARD_CLICKED, {
+                      project_id: project.slug,
+                    })
+                  }
+                >
+                  {/* Display primary media if available */}
+                  {getPrimaryMedia(project.meta).url ? (
+                    <MediaDisplay meta={project.meta} className="w-full" aspectRatio="video" />
+                  ) : (
+                    <div className="aspect-video bg-muted relative overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center">
+                          <Play className="h-8 w-8 text-primary" />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                <CardHeader>
-                  <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                    {project.meta.title}
-                  </CardTitle>
-                  <CardDescription className="text-base">
-                    {project.meta.description}
-                  </CardDescription>
-                </CardHeader>
+                  <CardHeader>
+                    <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                      {project.meta.title}
+                    </CardTitle>
+                    <CardDescription className="text-base">
+                      {project.meta.description}
+                    </CardDescription>
+                  </CardHeader>
 
-                <CardContent>
-                  <div className="flex flex-wrap gap-2">
-                    {project.meta.tags.slice(0, 4).map((tag) => (
-                      <Badge key={tag} variant="secondary" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                    {project.meta.tags.length > 4 && (
-                      <Badge variant="secondary" className="text-xs">
-                        +{project.meta.tags.length - 4} more
-                      </Badge>
-                    )}
-                  </div>
-                </CardContent>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      {project.meta.tags.slice(0, 4).map((tag) => (
+                        <Badge key={tag} variant="secondary" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                      {project.meta.tags.length > 4 && (
+                        <Badge variant="secondary" className="text-xs">
+                          +{project.meta.tags.length - 4} more
+                        </Badge>
+                      )}
+                    </div>
+                  </CardContent>
+                </Link>
 
                 <CardFooter className="flex justify-between">
                   <div className="flex space-x-2">
@@ -131,50 +141,51 @@ const ProjectShowcase = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() =>
+                        asChild
+                        onClick={(e) => {
+                          e.stopPropagation();
                           captureEvent(ANALYTICS_EVENTS.PROJECT_EXTERNAL_CLICKED, {
                             project_id: project.slug,
                             target: "github",
-                          })
-                        }
+                          });
+                        }}
                       >
-                        <Github className="mr-2 h-4 w-4" />
-                        Code
+                        <a
+                          href={project.meta.github}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Github className="mr-2 h-4 w-4" />
+                          Code
+                        </a>
                       </Button>
                     )}
                     {project.meta.demo && (
                       <Button
                         variant="glow"
                         size="sm"
-                        onClick={() =>
+                        asChild
+                        onClick={(e) => {
+                          e.stopPropagation();
                           captureEvent(ANALYTICS_EVENTS.PROJECT_EXTERNAL_CLICKED, {
                             project_id: project.slug,
                             target: "demo",
-                          })
-                        }
+                          });
+                        }}
                       >
-                        <ExternalLink className="mr-2 h-4 w-4" />
-                        Demo
+                        <a
+                          href={project.meta.demo}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <ExternalLink className="mr-2 h-4 w-4" />
+                          Demo
+                        </a>
                       </Button>
                     )}
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-primary hover:text-primary-glow"
-                    asChild
-                  >
-                    <Link
-                      to={`/projects/${project.slug}`}
-                      onClick={() =>
-                        captureEvent(ANALYTICS_EVENTS.PROJECT_CARD_CLICKED, {
-                          project_id: project.slug,
-                        })
-                      }
-                    >
-                      Learn More →
-                    </Link>
-                  </Button>
                 </CardFooter>
               </Card>
             ))}

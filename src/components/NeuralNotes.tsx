@@ -68,109 +68,106 @@ const NeuralNotes = () => {
               data-slug={note.slug}
               data-featured={(note.meta.featured && index === 0).toString()}
               data-tags={(note.meta.tags ?? []).join(",")}
-              className={`group hover:shadow-elegant transition-all duration-300 ${note.meta.featured && index === 0 ? "lg:col-span-2 lg:row-span-2" : ""}`}
+              className={`group hover:shadow-elegant hover:scale-[1.02] transition-all duration-300 cursor-pointer ${note.meta.featured && index === 0 ? "lg:col-span-2 lg:row-span-2" : ""}`}
             >
-              <CardHeader className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-                    <div className="flex items-center space-x-1">
-                      <Calendar className="h-4 w-4" />
-                      <span>
-                        {new Date(note.meta.date).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                          year: "numeric",
-                        })}
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Clock className="h-4 w-4" />
-                      <span>{note.meta.readTime}</span>
-                    </div>
-                  </div>
-                  {note.meta.featured && (
-                    <Badge variant="default" className="bg-gradient-primary">
-                      Featured
-                    </Badge>
-                  )}
-                </div>
-
-                {/* Display primary media if available */}
-                {getPrimaryMedia(note.meta).url && (
-                  <MediaDisplay
-                    meta={note.meta}
-                    className="mb-4"
-                    aspectRatio={note.meta.featured && index === 0 ? "wide" : "square"}
-                  />
-                )}
-
-                {(note.meta.hasVideo || note.meta.hasAudio) && !getPrimaryMedia(note.meta).url && (
-                  <div className="bg-muted rounded-lg p-4 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Multimedia Content Available</span>
-                      <div className="flex space-x-2">
-                        {note.meta.hasVideo && (
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <Play className="h-4 w-4" />
-                          </Button>
-                        )}
-                        {note.meta.hasAudio && (
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <Volume2 className="h-4 w-4" />
-                          </Button>
-                        )}
+              <Link
+                to={`/neural-notes/${note.slug}`}
+                className="block"
+                onClick={() =>
+                  captureEvent(ANALYTICS_EVENTS.NEURAL_NOTE_CARD_CLICKED, {
+                    note_slug: note.slug,
+                    position: index,
+                  })
+                }
+              >
+                <CardHeader className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                      <div className="flex items-center space-x-1">
+                        <Calendar className="h-4 w-4" />
+                        <span>
+                          {new Date(note.meta.date).toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Clock className="h-4 w-4" />
+                        <span>{note.meta.readTime}</span>
                       </div>
                     </div>
-                    <p className="text-xs text-muted-foreground">
-                      {note.meta.hasVideo && note.meta.hasAudio
-                        ? "Watch the video or listen to the audio version"
-                        : note.meta.hasVideo
-                          ? "Watch the video explanation"
-                          : "Listen to the audio version"}
-                    </p>
+                    {note.meta.featured && (
+                      <Badge variant="default" className="bg-gradient-primary">
+                        Featured
+                      </Badge>
+                    )}
                   </div>
-                )}
 
-                <CardTitle
-                  className={`group-hover:text-primary transition-colors ${note.meta.featured && index === 0 ? "text-2xl" : "text-xl"}`}
-                >
-                  {note.meta.title}
-                </CardTitle>
-                <CardDescription
-                  className={`${note.meta.featured && index === 0 ? "text-base" : "text-sm"}`}
-                >
-                  {note.meta.excerpt}
-                </CardDescription>
-              </CardHeader>
+                  {/* Display primary media if available */}
+                  {getPrimaryMedia(note.meta).url && (
+                    <MediaDisplay
+                      meta={note.meta}
+                      className="mb-4"
+                      aspectRatio={note.meta.featured && index === 0 ? "wide" : "square"}
+                    />
+                  )}
 
-              <CardContent className="space-y-4">
-                <div className="flex flex-wrap gap-2">
-                  {note.meta.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
+                  {(note.meta.hasVideo || note.meta.hasAudio) && !getPrimaryMedia(note.meta).url && (
+                    <div className="bg-muted rounded-lg p-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium">Multimedia Content Available</span>
+                        <div className="flex space-x-2">
+                          {note.meta.hasVideo && (
+                            <div className="h-8 w-8 flex items-center justify-center">
+                              <Play className="h-4 w-4" />
+                            </div>
+                          )}
+                          {note.meta.hasAudio && (
+                            <div className="h-8 w-8 flex items-center justify-center">
+                              <Volume2 className="h-4 w-4" />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {note.meta.hasVideo && note.meta.hasAudio
+                          ? "Watch the video or listen to the audio version"
+                          : note.meta.hasVideo
+                            ? "Watch the video explanation"
+                            : "Listen to the audio version"}
+                      </p>
+                    </div>
+                  )}
 
-                <Button
-                  asChild
-                  variant="ghost"
-                  className="w-full group-hover:text-primary p-0 justify-start"
-                >
-                  <Link
-                    to={`/neural-notes/${note.slug}`}
-                    onClick={() =>
-                      captureEvent(ANALYTICS_EVENTS.NEURAL_NOTE_CARD_CLICKED, {
-                        note_slug: note.slug,
-                        position: index,
-                      })
-                    }
+                  <CardTitle
+                    className={`group-hover:text-primary transition-colors ${note.meta.featured && index === 0 ? "text-2xl" : "text-xl"}`}
                   >
+                    {note.meta.title}
+                  </CardTitle>
+                  <CardDescription
+                    className={`${note.meta.featured && index === 0 ? "text-base" : "text-sm"}`}
+                  >
+                    {note.meta.excerpt}
+                  </CardDescription>
+                </CardHeader>
+
+                <CardContent className="space-y-4">
+                  <div className="flex flex-wrap gap-2">
+                    {note.meta.tags.map((tag) => (
+                      <Badge key={tag} variant="secondary" className="text-xs">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+
+                  <div className="w-full group-hover:text-primary flex items-center justify-start text-sm">
                     Continue Reading
                     <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </Button>
-              </CardContent>
+                  </div>
+                </CardContent>
+              </Link>
             </Card>
           ))}
         </div>
