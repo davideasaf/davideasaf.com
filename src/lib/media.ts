@@ -105,7 +105,10 @@ export const validateYouTubeUrl = (rawUrl: string): VideoValidationResult => {
       status: "success",
       embedUrl: `https://www.youtube.com/embed/${videoId}`,
     } satisfies VideoValidationSuccess;
-  } catch {
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.error("Failed to parse YouTube URL:", rawUrl, error);
+    }
     return {
       status: "error",
       error: {

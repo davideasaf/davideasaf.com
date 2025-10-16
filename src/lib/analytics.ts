@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export function initAnalytics(): void {
   if (typeof window === "undefined") return;
@@ -121,7 +121,17 @@ export function useObserveElementsOnce(
   eventName: AnalyticsEventName,
   getProps?: (el: Element) => Record<string, unknown>,
   options?: IntersectionObserverInit,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _deps?: unknown[], // Deprecated: kept for backward compatibility, no longer used
 ): void {
+  const getPropsRef = useRef(getProps);
+  const optionsRef = useRef(options);
+
+  useEffect(() => {
+    getPropsRef.current = getProps;
+    optionsRef.current = options;
+  }, [getProps, options]);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     const seen = new WeakSet<Element>();
@@ -132,12 +142,13 @@ export function useObserveElementsOnce(
           if (seen.has(el)) continue;
           if (entry.isIntersecting) {
             seen.add(el);
-            captureEvent(eventName, getProps ? getProps(el) : {});
+            const props = getPropsRef.current ? getPropsRef.current(el) : {};
+            captureEvent(eventName, props);
             observer.unobserve(el);
           }
         }
       },
-      { root: null, rootMargin: "0px", threshold: 0.25, ...(options || {}) },
+      { root: null, rootMargin: "0px", threshold: 0.25, ...(optionsRef.current || {}) },
     );
 
     const elements = Array.from(document.querySelectorAll(selector));
@@ -145,7 +156,7 @@ export function useObserveElementsOnce(
       observer.observe(el);
     });
     return () => observer.disconnect();
-  }, [selector, eventName, getProps, options]);
+  }, [selector, eventName]);
 }
 
 export function useScrollProgressMilestones(

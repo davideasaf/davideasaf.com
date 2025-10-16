@@ -20,48 +20,12 @@ const parseFrontmatterYaml = <TMeta extends object>(raw: string | undefined): Pa
   if (!match) return {};
   try {
     return (yaml.load(match[1]) as Partial<TMeta>) ?? {};
-  } catch {
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.error("Failed to parse frontmatter YAML:", error);
+    }
     return {};
   }
-};
-
-const isNonEmptyString = (value: unknown): value is string =>
-  typeof value === "string" && value.trim().length > 0;
-
-const normalizeStringList = (value: unknown): string[] => {
-  if (Array.isArray(value)) {
-    return value
-      .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
-      .map((item) => item.trim());
-  }
-
-  if (isNonEmptyString(value)) {
-    return [value.trim()];
-  }
-
-  return [];
-};
-
-const KNOWN_PROJECT_STATUSES = new Map<string, string>([
-  ["concept", "Concept"],
-  ["prototype", "Prototype"],
-  ["in progress", "In Progress"],
-  ["beta", "Beta"],
-  ["production ready", "Production Ready"],
-  ["maintenance", "Maintenance"],
-  ["completed", "Completed"],
-  ["deprecated", "Deprecated"],
-]);
-
-const normalizeProjectStatus = (value: unknown): string | undefined => {
-  if (!isNonEmptyString(value)) {
-    return undefined;
-  }
-
-  const trimmed = value.trim();
-  const canonical = KNOWN_PROJECT_STATUSES.get(trimmed.toLowerCase());
-
-  return canonical ?? trimmed;
 };
 
 // Type definitions for content
@@ -77,6 +41,7 @@ export interface NeuralNoteMeta {
   videoUrl?: string;
   audioUrl?: string;
   videoTitle?: string;
+  audioTitle?: string;
   banner?: string; // Banner image URL/path
   draft?: boolean;
   editorTodos?: string[];
@@ -99,6 +64,8 @@ export interface ProjectMeta {
   banner?: string; // Banner image URL/path (higher priority than image)
   videoUrl?: string; // Video URL for projects
   videoTitle?: string; // Video title for projects
+  audioUrl?: string;
+  audioTitle?: string;
   status?: string;
   keyFeatures?: string[];
   draft?: boolean;
@@ -151,6 +118,7 @@ const NOTES_SYNC: ContentItem<NeuralNoteMetaWithCalculated>[] = Object.entries(n
       videoUrl: fm.videoUrl,
       audioUrl: fm.audioUrl,
       videoTitle: fm.videoTitle,
+      audioTitle: fm.audioTitle,
       banner: fm.banner,
       draft: Boolean((fm as unknown as { draft?: unknown }).draft),
       editorTodos: normalizedEditorTodos,
@@ -208,8 +176,10 @@ export async function loadNeuralNotes(): Promise<ContentItem<NeuralNoteMetaWithC
             try {
               rawContent = await loader();
               fmAttrs = parseFrontmatterYaml<NeuralNoteMeta>(rawContent);
-            } catch {
-              // ignore and continue without raw fallback
+            } catch (error) {
+              if (import.meta.env.DEV) {
+                console.error(`Failed to load raw content for ${path}:`, error);
+              }
             }
           }
         }
@@ -245,6 +215,7 @@ export async function loadNeuralNotes(): Promise<ContentItem<NeuralNoteMetaWithC
           videoUrl: fm.videoUrl,
           audioUrl: fm.audioUrl,
           videoTitle: fm.videoTitle,
+          audioTitle: fm.audioTitle,
           banner: fm.banner,
           draft: Boolean((fm as unknown as { draft?: unknown }).draft),
           editorTodos: normalizedEditorTodos,
@@ -295,8 +266,10 @@ export async function loadProjects(): Promise<ContentItem<ProjectMeta>[]> {
             try {
               const raw = await loader();
               meta = parseFrontmatterYaml<ProjectMeta>(raw);
-            } catch {
-              // ignore
+            } catch (error) {
+              if (import.meta.env.DEV) {
+                console.error(`Failed to load raw content for ${path}:`, error);
+              }
             }
           }
         }
@@ -304,11 +277,25 @@ export async function loadProjects(): Promise<ContentItem<ProjectMeta>[]> {
         // Extract slug from filename
         const slug = path.split("/").pop()?.replace(".mdx", "") || "";
 
-        const fm: Partial<ProjectMeta> = meta ?? {};
-        const normalizedTags = normalizeStringList(fm.tags);
-        const normalizedEditorTodos = normalizeStringList(fm.editorTodos);
-        const normalizedKeyFeatures = normalizeStringList(fm.keyFeatures);
-        const normalizedStatus = normalizeProjectStatus(fm.status);
+        const fm = (meta ?? {}) as Partial<ProjectMeta>;
+        const rawTags: unknown = (fm as unknown as { tags?: unknown }).tags;
+        const normalizedTags: string[] = Array.isArray(rawTags)
+          ? (rawTags as unknown[]).map((t) => String(t)).filter(Boolean)
+          : typeof rawTags === "string" && rawTags.trim().length > 0
+            ? [rawTags.trim()]
+            : [];
+        const rawEditorTodos: unknown = (fm as unknown as { editorTodos?: unknown }).editorTodos;
+        const normalizedEditorTodos: string[] = Array.isArray(rawEditorTodos)
+          ? (rawEditorTodos as unknown[]).map((t) => String(t)).filter(Boolean)
+          : typeof rawEditorTodos === "string" && rawEditorTodos.trim().length > 0
+            ? [rawEditorTodos.trim()]
+            : [];
+        const rawKeyFeatures: unknown = (fm as unknown as { keyFeatures?: unknown }).keyFeatures;
+        const normalizedKeyFeatures: string[] = Array.isArray(rawKeyFeatures)
+          ? (rawKeyFeatures as unknown[]).map((t) => String(t)).filter(Boolean)
+          : typeof rawKeyFeatures === "string" && rawKeyFeatures.trim().length > 0
+            ? [rawKeyFeatures.trim()]
+            : [];
 
         const normalizedMeta: ProjectMeta = {
           title: fm.title ?? slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
@@ -322,7 +309,7 @@ export async function loadProjects(): Promise<ContentItem<ProjectMeta>[]> {
           banner: fm.banner,
           videoUrl: fm.videoUrl,
           videoTitle: fm.videoTitle,
-          status: normalizedStatus,
+          status: typeof fm.status === "string" ? fm.status : undefined,
           keyFeatures: normalizedKeyFeatures,
           draft: Boolean((fm as unknown as { draft?: unknown }).draft),
           editorTodos: normalizedEditorTodos,
@@ -385,12 +372,12 @@ export function getPrimaryMedia(meta: NeuralNoteMetaWithCalculated | ProjectMeta
     };
   }
 
-  if ("audioUrl" in meta && typeof meta.audioUrl === "string" && meta.audioUrl.trim().length > 0) {
-    const audioUrl = meta.audioUrl.trim();
+  if (meta.audioUrl) {
+    const audioTitle = meta.audioTitle?.trim();
     return {
       type: "audio",
-      url: audioUrl,
-      title: meta.title,
+      url: meta.audioUrl,
+      title: audioTitle && audioTitle.length > 0 ? audioTitle : meta.title || "Audio",
     };
   }
 
@@ -398,6 +385,7 @@ export function getPrimaryMedia(meta: NeuralNoteMetaWithCalculated | ProjectMeta
     return {
       type: "banner",
       url: meta.banner,
+      title: meta.title,
     };
   }
 
@@ -406,6 +394,7 @@ export function getPrimaryMedia(meta: NeuralNoteMetaWithCalculated | ProjectMeta
     return {
       type: "image",
       url: meta.image,
+      title: meta.title,
     };
   }
 

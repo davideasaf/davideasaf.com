@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { ANALYTICS_EVENTS, captureEvent } from "../lib/analytics";
 import type { NeuralNoteMetaWithCalculated, ProjectMeta } from "../lib/content";
 import { getPrimaryMedia } from "../lib/content";
@@ -13,68 +13,55 @@ interface MediaDisplayProps {
   aspectRatio?: "video" | "square" | "wide";
 }
 
-const ASPECT_CLASSES: Record<NonNullable<MediaDisplayProps["aspectRatio"]>, string> = {
-  video: "aspect-video md:aspect-video",
-  square: "aspect-square md:aspect-square",
-  wide: "aspect-[4/3] md:aspect-[16/9]",
-};
-
 function MediaDisplayComponent({ meta, className = "", aspectRatio = "wide" }: MediaDisplayProps) {
-  const [error, setError] = useState<MediaError | null>(null);
-  const mediaKeyRef = useRef<string | null>(null);
-
+  // Memoize media to avoid recalculating on every render
   const media = useMemo(() => getPrimaryMedia(meta), [meta]);
+  const [error, setError] = useState<MediaError | null>(null);
+
+  // Reset error when media URL changes (in effect, not during render)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally resets on URL change
+  useEffect(() => {
+    setError(null);
+  }, [media.url]);
 
   useEffect(() => {
-    const nextKey = `${media.type ?? "none"}::${media.url ?? "none"}`;
-    if (mediaKeyRef.current !== nextKey) {
-      setError(null);
-      mediaKeyRef.current = nextKey;
+    if (error) {
+      captureEvent(ANALYTICS_EVENTS.MEDIA_RENDER_FAILED, {
+        media_type: media.type,
+        media_url: media.url ?? null,
+        error_code: error.code,
+        error_message: error.message,
+        title: meta.title,
+      });
     }
-  }, [media.type, media.url]);
-
-  useEffect(() => {
-    if (!error) {
-      return;
-    }
-
-    captureEvent(ANALYTICS_EVENTS.MEDIA_RENDER_FAILED, {
-      media_type: media.type,
-      media_url: media.url ?? null,
-      error_code: error.code,
-      error_message: error.message,
-      title: meta.title,
-    });
   }, [error, media.type, media.url, meta.title]);
 
-  const handleError = useCallback((err: MediaError) => {
-    setError(err);
-  }, []);
-
-  if (!media.url || !media.type) {
+  if (!media.url) {
     return null;
   }
 
-  const baseClasses = `relative w-full ${ASPECT_CLASSES[aspectRatio]} rounded-lg bg-gray-100 overflow-hidden ${className}`;
+  const aspectClasses = {
+    video: "aspect-video md:aspect-video",
+    square: "aspect-square md:aspect-square",
+    wide: "aspect-[4/3] md:aspect-[16/9]",
+  } as const;
+
+  const isAudio = media.type === "audio";
+  const aspectClass = isAudio ? "" : aspectClasses[aspectRatio];
+  const baseClasses = isAudio
+    ? `w-full rounded-lg ${className}`
+    : `w-full ${aspectClass} bg-gray-100 rounded-lg overflow-hidden ${className}`;
 
   if (error) {
-    const errorClasses = [
-      baseClasses,
-      "flex",
-      "items-center",
-      "justify-center",
-      "border",
-      "border-destructive/30",
-      "bg-destructive/5",
-      "p-4",
-      "text-sm",
-      "text-destructive",
-    ].join(" ");
+    // Error container should not use aspect ratio for audio
+    const errorClasses = isAudio
+      ? `w-full rounded-lg flex items-center justify-center border border-destructive/30 bg-destructive/5 p-4 ${className}`
+      : `w-full ${aspectClass} rounded-lg flex items-center justify-center border border-destructive/30 bg-destructive/5 p-4 ${className}`;
 
     return (
       <div className={errorClasses} role="alert" aria-live="assertive">
-        <div className="space-y-1 text-center">
-          <p className="font-medium">We couldn't display this media.</p>
+        <div className="space-y-1 text-center text-sm text-destructive">
+          <p className="font-medium">Media failed to load</p>
           <p>{error.message}</p>
         </div>
       </div>
@@ -88,7 +75,7 @@ function MediaDisplayComponent({ meta, className = "", aspectRatio = "wide" }: M
           url={media.url}
           title={media.title}
           metaTitle={meta.title}
-          onError={handleError}
+          onError={(error) => setError(error)}
         />
       </div>
     );
@@ -97,7 +84,7 @@ function MediaDisplayComponent({ meta, className = "", aspectRatio = "wide" }: M
   if (media.type === "audio") {
     return (
       <div className={baseClasses}>
-        <AudioDisplay src={media.url} metaTitle={meta.title} onError={handleError} />
+        <AudioDisplay src={media.url} metaTitle={meta.title} onError={(error) => setError(error)} />
       </div>
     );
   }
@@ -107,9 +94,9 @@ function MediaDisplayComponent({ meta, className = "", aspectRatio = "wide" }: M
       <div className={baseClasses}>
         <ImageDisplay
           src={media.url}
-          alt={media.title ?? meta.title}
+          alt={meta.title}
           metaTitle={meta.title}
-          onError={handleError}
+          onError={(error) => setError(error)}
         />
       </div>
     );

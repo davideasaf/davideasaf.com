@@ -1,5 +1,5 @@
 import { ArrowRight, Calendar, Clock, Play, Volume2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { MediaDisplay } from "@/components/MediaDisplay";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,7 @@ import {
 
 const NeuralNotes = () => {
   const [notes, setNotes] = useState<ContentItem<NeuralNoteMetaWithCalculated>[]>([]);
+  const noteObservationKey = useMemo(() => notes.map((note) => note.slug).join("|"), [notes]);
 
   useEffect(() => {
     const load = async () => {
@@ -28,11 +29,17 @@ const NeuralNotes = () => {
     load();
   }, []);
 
-  useObserveElementsOnce("[data-note-card]", ANALYTICS_EVENTS.NEURAL_NOTE_CARD_VIEWED, (el) => ({
-    note_slug: (el as HTMLElement).dataset.slug,
-    featured: (el as HTMLElement).dataset.featured === "true",
-    tags: (el as HTMLElement).getAttribute("data-tags")?.split(",") ?? [],
-  }));
+  useObserveElementsOnce(
+    "[data-note-card]",
+    ANALYTICS_EVENTS.NEURAL_NOTE_CARD_VIEWED,
+    (el) => ({
+      note_slug: (el as HTMLElement).dataset.slug,
+      featured: (el as HTMLElement).dataset.featured === "true",
+      tags: (el as HTMLElement).getAttribute("data-tags")?.split(",") ?? [],
+    }),
+    undefined,
+    [noteObservationKey],
+  );
 
   const sectionId = "neural-notes";
 
