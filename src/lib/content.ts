@@ -25,6 +25,45 @@ const parseFrontmatterYaml = <TMeta extends object>(raw: string | undefined): Pa
   }
 };
 
+const isNonEmptyString = (value: unknown): value is string =>
+  typeof value === "string" && value.trim().length > 0;
+
+const _normalizeStringList = (value: unknown): string[] => {
+  if (Array.isArray(value)) {
+    return value
+      .filter((item): item is string => typeof item === "string" && item.trim().length > 0)
+      .map((item) => item.trim());
+  }
+
+  if (isNonEmptyString(value)) {
+    return [value.trim()];
+  }
+
+  return [];
+};
+
+const KNOWN_PROJECT_STATUSES = new Map<string, string>([
+  ["concept", "Concept"],
+  ["prototype", "Prototype"],
+  ["in progress", "In Progress"],
+  ["beta", "Beta"],
+  ["production ready", "Production Ready"],
+  ["maintenance", "Maintenance"],
+  ["completed", "Completed"],
+  ["deprecated", "Deprecated"],
+]);
+
+const _normalizeProjectStatus = (value: unknown): string | undefined => {
+  if (!isNonEmptyString(value)) {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+  const canonical = KNOWN_PROJECT_STATUSES.get(trimmed.toLowerCase());
+
+  return canonical ?? trimmed;
+};
+
 // Type definitions for content
 export interface NeuralNoteMeta {
   title: string;
@@ -348,7 +387,7 @@ export async function getProjectBySlug(slug: string): Promise<ContentItem<Projec
   }
 }
 
-// Helper function to get the primary media for display (Video > Banner > Image)
+// Helper function to get the primary media for display (Video > Audio > Banner > Image)
 export function getPrimaryMedia(meta: NeuralNoteMetaWithCalculated | ProjectMeta): {
   type: "video" | "audio" | "banner" | "image" | null;
   url: string | null;

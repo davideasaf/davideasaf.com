@@ -1,8 +1,11 @@
-import { Volume2 } from "lucide-react";
 import { memo, useEffect, useMemo, useState } from "react";
 import { ANALYTICS_EVENTS, captureEvent } from "../lib/analytics";
 import type { NeuralNoteMetaWithCalculated, ProjectMeta } from "../lib/content";
 import { getPrimaryMedia } from "../lib/content";
+import type { MediaError } from "../lib/media";
+import { AudioDisplay } from "./media/AudioDisplay";
+import { ImageDisplay } from "./media/ImageDisplay";
+import { VideoDisplay } from "./media/VideoDisplay";
 
 interface MediaDisplayProps {
   meta: NeuralNoteMetaWithCalculated | ProjectMeta;
@@ -60,11 +63,6 @@ const extractYouTubeId = (url: URL) => {
   }
 
   return null;
-};
-
-type MediaError = {
-  code: "invalid-url" | "unsupported-host" | "invalid-id" | "image-load-error" | "audio-load-error";
-  message: string;
 };
 
 type VideoValidationResult =
@@ -185,98 +183,43 @@ function MediaDisplayComponent({ meta, className = "", aspectRatio = "wide" }: M
       return null;
     }
 
-    const label = media.title ? `${media.title} video` : "Embedded project video";
-
     return (
-      <div className={baseClasses}>
-        <iframe
-          src={videoValidation.embedUrl}
-          title={media.title}
-          aria-label={label}
-          className="w-full h-full"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          loading="lazy"
-        />
-        <div className="sr-only" aria-live="polite">
-          Embedded video for {meta.title} loaded successfully.
-        </div>
-      </div>
+      <VideoDisplay
+        embedUrl={videoValidation.embedUrl}
+        title={media.title || meta.title}
+        className={baseClasses}
+      />
     );
   }
 
   if (media.type === "audio") {
-    const title = media.title || meta.title;
     return (
-      <div
-        className={`${baseClasses} flex flex-col justify-center bg-background border border-border p-4 gap-3`}
-        aria-live="polite"
-      >
-        <div className="flex items-center gap-2 text-primary text-sm font-medium">
-          <Volume2 className="h-4 w-4" aria-hidden="true" />
-          <span>{title ? `Audio: ${title}` : "Audio playback"}</span>
-        </div>
-        <audio
-          controls
-          className="w-full"
-          src={media.url ?? undefined}
-          crossOrigin="anonymous"
-          onPlay={() =>
-            captureEvent(ANALYTICS_EVENTS.NEURAL_NOTE_MEDIA_INTERACTED, {
-              media_type: "audio_play",
-              title: meta.title,
-            })
-          }
-          onError={() =>
-            setError({
-              code: "audio-load-error",
-              message: "The audio failed to load.",
-            })
-          }
-        >
-          <track kind="captions" srcLang="en" label="Captions" />
-          Your browser does not support the audio element.
-        </audio>
-      </div>
+      <AudioDisplay
+        audioUrl={media.url}
+        title={media.title || meta.title}
+        onError={(error) => setError(error)}
+        className={baseClasses}
+      />
     );
   }
 
   if (media.type === "banner" || media.type === "image") {
     return (
-      <div className={baseClasses}>
-        {status === "loading" && (
-          <div className="sr-only" aria-live="polite">
-            Loading media for {meta.title}
-          </div>
-        )}
-        {!isLoaded && (
-          <div
-            className="w-full h-full bg-gray-200 animate-pulse flex items-center justify-center"
-            aria-live="polite"
-          >
-            <div className="text-gray-400 text-sm">Loading...</div>
-          </div>
-        )}
-        <img
-          src={media.url}
-          alt={meta.title}
-          className={`w-full h-full object-cover object-center transition-opacity duration-300 ${
-            isLoaded ? "opacity-100" : "opacity-0"
-          }`}
-          onLoad={() => {
-            setIsLoaded(true);
-            setStatus("loaded");
-          }}
-          onError={() => {
-            setError({
-              code: "image-load-error",
-              message: "The image failed to load. Please refresh to try again.",
-            });
-            setStatus("error");
-          }}
-          loading="lazy"
-        />
-      </div>
+      <ImageDisplay
+        imageUrl={media.url}
+        alt={meta.title}
+        isLoaded={isLoaded}
+        onLoad={() => {
+          setIsLoaded(true);
+          setStatus("loaded");
+        }}
+        onError={(error) => {
+          setError(error);
+          setStatus("error");
+        }}
+        className={baseClasses}
+        showLoadingState={status === "loading"}
+      />
     );
   }
 
