@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  getNeuralNoteBySlug,
+  getNeuralNoteBySlugSync,
+  getNeuralNotesSync,
+  getProjectBySlug,
   loadNeuralNotes,
   loadProjects,
-  getNeuralNoteBySlug,
-  getProjectBySlug,
-  getNeuralNotesSync,
-  getNeuralNoteBySlugSync,
 } from "./content";
 
 describe("content loading and filtering", () => {

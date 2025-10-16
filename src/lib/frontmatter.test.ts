@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { parseFrontmatterYaml } from "./content";
 import type { NeuralNoteMeta, ProjectMeta } from "./content";
+import { parseFrontmatterYaml } from "./content";
 
 describe("frontmatter parsing", () => {
   describe("YAML frontmatter extraction", () => {
