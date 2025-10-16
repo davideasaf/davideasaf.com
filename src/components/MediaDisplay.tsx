@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { ANALYTICS_EVENTS, captureEvent } from "../lib/analytics";
 import type { NeuralNoteMetaWithCalculated, ProjectMeta } from "../lib/content";
 import { getPrimaryMedia } from "../lib/content";
@@ -14,15 +14,17 @@ interface MediaDisplayProps {
 }
 
 function MediaDisplayComponent({ meta, className = "", aspectRatio = "wide" }: MediaDisplayProps) {
-  const [error, setError] = useState<MediaError | null>(null);
-
   const media = getPrimaryMedia(meta);
+  const [error, setError] = useState<MediaError | null>(null);
+  const prevMediaUrlRef = useRef<string | null>(null);
 
-  useEffect(() => {
-    if (!media.url) {
+  // Reset error when media URL changes
+  if (prevMediaUrlRef.current !== media.url) {
+    prevMediaUrlRef.current = media.url;
+    if (error) {
       setError(null);
     }
-  }, [media.url]);
+  }
 
   useEffect(() => {
     if (error) {
