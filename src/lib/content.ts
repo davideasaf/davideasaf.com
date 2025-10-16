@@ -111,7 +111,7 @@ const NOTES_SYNC: ContentItem<NeuralNoteMetaWithCalculated>[] = Object.entries(n
 
     // Calculate read time from raw MDX content (fast, no rendering required)
     const rawContent = noteRawSync[path];
-    const contentForReadTime = rawContent ? stripFrontMatter(rawContent) : fm.excerpt ?? "";
+    const contentForReadTime = rawContent ? stripFrontMatter(rawContent) : (fm.excerpt ?? "");
 
     const normalizedMeta: NeuralNoteMetaWithCalculated = {
       title: fm.title ?? slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
