@@ -1,5 +1,6 @@
 import yaml from "js-yaml";
-import type React from "react";
+import React from "react";
+import ReactDOMServer from "react-dom/server";
 import { readingTimeFromText, stripFrontMatter } from "./readingTime";
 
 // MDX module types
@@ -83,13 +84,8 @@ const noteModulesSync = import.meta.glob("/content/neural-notes/*.mdx", { eager:
   MdxModuleWithFrontmatter<NeuralNoteMeta>
 >;
 
-// Also load raw MDX files (eager) for read time calculation
-const noteRawSync = import.meta.glob("/content/neural-notes/*.mdx", {
-  query: "?raw",
-  import: "default",
-  eager: true,
-}) as Record<string, string>;
-
+// Simple approach: render the MDX component to get word count
+// This is synchronous and works reliably
 const NOTES_SYNC: ContentItem<NeuralNoteMetaWithCalculated>[] = Object.entries(noteModulesSync)
   .map(([path, mdxModule]) => {
     const MDXContent = mdxModule.default;
@@ -109,9 +105,21 @@ const NOTES_SYNC: ContentItem<NeuralNoteMetaWithCalculated>[] = Object.entries(n
         ? [rawEditorTodos.trim()]
         : [];
 
-    // Calculate read time from raw MDX content (fast, no rendering required)
-    const rawContent = noteRawSync[path];
-    const contentForReadTime = rawContent ? stripFrontMatter(rawContent) : (fm.excerpt ?? "");
+    // Calculate reading time from rendered component
+    // This is the most reliable way - we render the component and count words
+    let readTime = "1 min read";
+    try {
+      const html = ReactDOMServer.renderToStaticMarkup(React.createElement(MDXContent));
+      // Strip HTML and count words
+      const text = html
+        .replace(/<[^>]+>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+      readTime = readingTimeFromText(text);
+    } catch (error) {
+      // Fallback to excerpt-based estimation
+      readTime = readingTimeFromText(fm.excerpt ?? "");
+    }
 
     const normalizedMeta: NeuralNoteMetaWithCalculated = {
       title: fm.title ?? slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
@@ -129,8 +137,7 @@ const NOTES_SYNC: ContentItem<NeuralNoteMetaWithCalculated>[] = Object.entries(n
       banner: fm.banner,
       draft: Boolean((fm as unknown as { draft?: unknown }).draft),
       editorTodos: normalizedEditorTodos,
-      // Calculate from raw content - consistent with async path
-      readTime: readingTimeFromText(contentForReadTime),
+      readTime,
     };
 
     return {
@@ -154,98 +161,9 @@ export function getNeuralNoteBySlugSync(
 }
 
 // Load Neural Notes from MDX files
+// Simply returns the pre-calculated sync data wrapped in a Promise for backward compatibility
 export async function loadNeuralNotes(): Promise<ContentItem<NeuralNoteMetaWithCalculated>[]> {
-  try {
-    // Import MDX components (eager for routing/build-time awareness)
-    const modules = import.meta.glob("/content/neural-notes/*.mdx", {
-      eager: true,
-    });
-    // Prepare lazy raw loaders only for fallback scenarios (no eager double-load)
-    const rawLoaders = import.meta.glob("/content/neural-notes/*.mdx", {
-      query: "?raw",
-      import: "default",
-    }) as Record<string, RawLoader>;
-
-    const posts = await Promise.all(
-      Object.entries(modules).map(async ([path, moduleExports]) => {
-        const mdxModule = moduleExports as MdxModuleWithFrontmatter<NeuralNoteMeta>;
-        const MDXContent = mdxModule.default;
-
-        // Extract slug from filename
-        const slug = path.split("/").pop()?.replace(".mdx", "") || "";
-
-        // Prefer MDX-exported frontmatter; fall back to YAML block in the raw file (lazy-loaded)
-        let rawContent: string | undefined;
-        let fmAttrs: Partial<NeuralNoteMeta> | undefined = mdxModule.frontmatter;
-        if (!fmAttrs) {
-          const loader = rawLoaders[path];
-          if (typeof loader === "function") {
-            try {
-              rawContent = await loader();
-              fmAttrs = parseFrontmatterYaml<NeuralNoteMeta>(rawContent);
-            } catch (error) {
-              if (import.meta.env.DEV) {
-                console.error(`Failed to load raw content for ${path}:`, error);
-              }
-            }
-          }
-        }
-
-        // Calculate read time from raw content for consistency with sync path
-        const contentForReadTime = rawContent ? stripFrontMatter(rawContent) : "";
-        const calculatedReadTime = contentForReadTime
-          ? readingTimeFromText(contentForReadTime)
-          : "1 min read";
-
-        const fm = (fmAttrs ?? {}) as Partial<NeuralNoteMeta>;
-        const rawTags: unknown = (fm as unknown as { tags?: unknown }).tags;
-        const normalizedTags: string[] = Array.isArray(rawTags)
-          ? (rawTags as unknown[]).map((t) => String(t)).filter(Boolean)
-          : typeof rawTags === "string" && rawTags.trim().length > 0
-            ? [rawTags.trim()]
-            : [];
-        const rawEditorTodos: unknown = (fm as unknown as { editorTodos?: unknown }).editorTodos;
-        const normalizedEditorTodos: string[] = Array.isArray(rawEditorTodos)
-          ? (rawEditorTodos as unknown[]).map((t) => String(t)).filter(Boolean)
-          : typeof rawEditorTodos === "string" && rawEditorTodos.trim().length > 0
-            ? [rawEditorTodos.trim()]
-            : [];
-
-        const normalizedMeta: NeuralNoteMetaWithCalculated = {
-          title: fm.title ?? slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
-          excerpt: fm.excerpt ?? "",
-          date: fm.date ?? "2024-01-01",
-          author: fm.author ?? "David Asaf",
-          tags: normalizedTags,
-          featured: Boolean(fm.featured),
-          hasVideo: Boolean(fm.hasVideo) || typeof fm.videoUrl === "string",
-          hasAudio: Boolean(fm.hasAudio) || typeof fm.audioUrl === "string",
-          videoUrl: fm.videoUrl,
-          audioUrl: fm.audioUrl,
-          videoTitle: fm.videoTitle,
-          audioTitle: fm.audioTitle,
-          banner: fm.banner,
-          draft: Boolean((fm as unknown as { draft?: unknown }).draft),
-          editorTodos: normalizedEditorTodos,
-          readTime: calculatedReadTime,
-        };
-
-        return {
-          slug,
-          meta: normalizedMeta,
-          content: MDXContent,
-        };
-      }),
-    );
-
-    // Exclude drafts and sort by date (newest first)
-    return posts
-      .filter((p) => !p.meta.draft)
-      .sort((a, b) => new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime());
-  } catch (error) {
-    console.error("Error loading neural notes:", error);
-    return [];
-  }
+  return Promise.resolve(NOTES_SYNC);
 }
 
 // Load Projects from MDX files
@@ -342,16 +260,11 @@ export async function loadProjects(): Promise<ContentItem<ProjectMeta>[]> {
 }
 
 // Get a specific neural note by slug
+// Simply returns the pre-calculated sync data wrapped in a Promise for backward compatibility
 export async function getNeuralNoteBySlug(
   slug: string,
 ): Promise<ContentItem<NeuralNoteMetaWithCalculated> | null> {
-  try {
-    const posts = await loadNeuralNotes();
-    return posts.find((post) => post.slug === slug) || null;
-  } catch (error) {
-    console.error(`Error loading neural note ${slug}:`, error);
-    return null;
-  }
+  return Promise.resolve(getNeuralNoteBySlugSync(slug));
 }
 
 // Get a specific project by slug
