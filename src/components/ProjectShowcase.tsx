@@ -138,23 +138,18 @@ const ProjectShowcase = () => {
                 <CardFooter className="flex justify-between">
                   <div className="flex space-x-2">
                     {project.meta.github && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        asChild
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          captureEvent(ANALYTICS_EVENTS.PROJECT_EXTERNAL_CLICKED, {
-                            project_id: project.slug,
-                            target: "github",
-                          });
-                        }}
-                      >
+                      <Button variant="outline" size="sm" asChild>
                         <a
                           href={project.meta.github}
                           target="_blank"
                           rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            captureEvent(ANALYTICS_EVENTS.PROJECT_EXTERNAL_CLICKED, {
+                              project_id: project.slug,
+                              target: "github",
+                            });
+                          }}
                         >
                           <Github className="mr-2 h-4 w-4" />
                           Code
@@ -162,23 +157,18 @@ const ProjectShowcase = () => {
                       </Button>
                     )}
                     {project.meta.demo && (
-                      <Button
-                        variant="glow"
-                        size="sm"
-                        asChild
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          captureEvent(ANALYTICS_EVENTS.PROJECT_EXTERNAL_CLICKED, {
-                            project_id: project.slug,
-                            target: "demo",
-                          });
-                        }}
-                      >
+                      <Button variant="glow" size="sm" asChild>
                         <a
                           href={project.meta.demo}
                           target="_blank"
                           rel="noopener noreferrer"
-                          onClick={(e) => e.stopPropagation()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            captureEvent(ANALYTICS_EVENTS.PROJECT_EXTERNAL_CLICKED, {
+                              project_id: project.slug,
+                              target: "demo",
+                            });
+                          }}
                         >
                           <ExternalLink className="mr-2 h-4 w-4" />
                           Demo
