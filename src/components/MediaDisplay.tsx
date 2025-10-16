@@ -1,4 +1,4 @@
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { ANALYTICS_EVENTS, captureEvent } from "../lib/analytics";
 import type { NeuralNoteMetaWithCalculated, ProjectMeta } from "../lib/content";
 import { getPrimaryMedia } from "../lib/content";
@@ -14,17 +14,15 @@ interface MediaDisplayProps {
 }
 
 function MediaDisplayComponent({ meta, className = "", aspectRatio = "wide" }: MediaDisplayProps) {
-  const media = getPrimaryMedia(meta);
+  // Memoize media to avoid recalculating on every render
+  const media = useMemo(() => getPrimaryMedia(meta), [meta]);
   const [error, setError] = useState<MediaError | null>(null);
-  const prevMediaUrlRef = useRef<string | null>(null);
 
-  // Reset error when media URL changes
-  if (prevMediaUrlRef.current !== media.url) {
-    prevMediaUrlRef.current = media.url;
-    if (error) {
-      setError(null);
-    }
-  }
+  // Reset error when media URL changes (in effect, not during render)
+  // biome-ignore lint/correctness/useExhaustiveDependencies: intentionally resets on URL change
+  useEffect(() => {
+    setError(null);
+  }, [media.url]);
 
   useEffect(() => {
     if (error) {
@@ -55,12 +53,13 @@ function MediaDisplayComponent({ meta, className = "", aspectRatio = "wide" }: M
     : `w-full ${aspectClass} bg-gray-100 rounded-lg overflow-hidden ${className}`;
 
   if (error) {
+    // Error container should not use aspect ratio for audio
+    const errorClasses = isAudio
+      ? `w-full rounded-lg flex items-center justify-center border border-destructive/30 bg-destructive/5 p-4 ${className}`
+      : `w-full ${aspectClass} rounded-lg flex items-center justify-center border border-destructive/30 bg-destructive/5 p-4 ${className}`;
+
     return (
-      <div
-        className={`${baseClasses} flex items-center justify-center border border-destructive/30 bg-destructive/5 p-4`}
-        role="alert"
-        aria-live="assertive"
-      >
+      <div className={errorClasses} role="alert" aria-live="assertive">
         <div className="space-y-1 text-center text-sm text-destructive">
           <p className="font-medium">Media failed to load</p>
           <p>{error.message}</p>
