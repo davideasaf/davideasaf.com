@@ -14,41 +14,7 @@ interface ErrorBoundaryState {
   errorInfo: ErrorInfo | null;
 }
 
-type FallbackRender = (
-  error: Error,
-  info: ErrorInfo | null,
-  resetErrorBoundary: () => void,
-) => ReactNode;
-
-interface DefaultFallbackProps {
-  error: Error;
-  onRetry: () => void;
-}
-
-const DefaultFallback = ({ error, onRetry }: DefaultFallbackProps) => (
-  <div
-    role="alert"
-    aria-live="assertive"
-    className="mx-auto flex w-full max-w-md flex-col items-center gap-4 rounded-lg border border-destructive/20 bg-destructive/5 p-6 text-center text-destructive"
-  >
-    <div className="space-y-2">
-      <p className="text-base font-semibold">Something went wrong</p>
-      <p className="text-sm text-destructive/80">
-        We hit an unexpected error while loading this section. You can try again below or refresh
-        the page.
-      </p>
-      <p className="text-xs text-destructive/70">{error.message}</p>
-    </div>
-    <div className="flex flex-wrap items-center justify-center gap-3">
-      <Button type="button" onClick={onRetry} variant="destructive">
-        Try again
-      </Button>
-      <Button type="button" onClick={() => window.location.reload()} variant="outline">
-        Reload page
-      </Button>
-    </div>
-  </div>
-);
+type FallbackRender = (error: Error, info: ErrorInfo | null) => ReactNode;
 
 const haveResetKeysChanged = (prev?: unknown[], next?: unknown[]) => {
   if (prev === next) return false;
@@ -65,10 +31,6 @@ const haveResetKeysChanged = (prev?: unknown[], next?: unknown[]) => {
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   state: ErrorBoundaryState = { error: null, errorInfo: null };
 
-  resetErrorBoundary = () => {
-    this.setState({ error: null, errorInfo: null });
-  };
-
   static getDerivedStateFromError(error: Error): Partial<ErrorBoundaryState> {
     return { error };
   }
@@ -77,8 +39,14 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     this.setState({ errorInfo: info });
     if (this.props.onError) {
       this.props.onError(error, info);
+    } else {
+      console.error("Error Boundary caught an error:", error, info);
     }
   }
+
+  resetErrorBoundary = () => {
+    this.setState({ error: null, errorInfo: null });
+  };
 
   componentDidUpdate(prevProps: ErrorBoundaryProps) {
     if (haveResetKeysChanged(prevProps.resetKeys, this.props.resetKeys)) {
@@ -92,12 +60,26 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
     if (error) {
       if (typeof fallback === "function") {
-        return (fallback as FallbackRender)(error, errorInfo, this.resetErrorBoundary);
+        return (fallback as FallbackRender)(error, errorInfo);
       }
       if (fallback) {
         return fallback;
       }
-      return <DefaultFallback error={error} onRetry={this.resetErrorBoundary} />;
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-background">
+          <div className="max-w-md w-full mx-4 text-center">
+            <div className="mb-6">
+              <h1 className="text-2xl font-bold text-foreground mb-2">Something went wrong</h1>
+              <p className="text-muted-foreground mb-4">
+                We're sorry, but something unexpected happened. Please try refreshing the page.
+              </p>
+            </div>
+            <Button onClick={this.resetErrorBoundary} variant="default" size="lg">
+              Try Again
+            </Button>
+          </div>
+        </div>
+      );
     }
 
     return children;

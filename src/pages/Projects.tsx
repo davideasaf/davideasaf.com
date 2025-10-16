@@ -1,5 +1,5 @@
 import { Calendar, ExternalLink, Github } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -22,6 +22,11 @@ const Projects = () => {
   const [projects, setProjects] = useState<ContentItem<ProjectMeta>[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const projectObservationKey = useMemo(
+    () => projects.map((project) => project.slug).join("|"),
+    [projects],
+  );
 
   useEffect(() => {
     let isMounted = true;
@@ -54,10 +59,16 @@ const Projects = () => {
     };
   }, []);
 
-  useObserveElementsOnce("[data-project-card]", ANALYTICS_EVENTS.PROJECT_CARD_VIEWED, (el) => ({
-    project_id: (el as HTMLElement).dataset.projectId,
-    featured: (el as HTMLElement).dataset.featured === "true",
-  }));
+  useObserveElementsOnce(
+    "[data-project-card]",
+    ANALYTICS_EVENTS.PROJECT_CARD_VIEWED,
+    (el) => ({
+      project_id: (el as HTMLElement).dataset.projectId,
+      featured: (el as HTMLElement).dataset.featured === "true",
+    }),
+    undefined,
+    [projectObservationKey],
+  );
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
