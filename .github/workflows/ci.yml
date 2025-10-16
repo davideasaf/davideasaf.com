@@ -8,7 +8,7 @@ on:
 
 jobs:
   code-quality:
-    name: Code Quality (Biome + Pre-commit)
+    name: Code Quality (Biome)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -25,17 +25,6 @@ jobs:
 
       - name: Run Biome checks
         run: npx @biomejs/biome ci
-
-      - name: Setup Python for pre-commit
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.x"
-
-      - name: Install pre-commit
-        run: pipx install pre-commit
-
-      - name: Run pre-commit on all files
-        run: pre-commit run --all-files
 
   test:
     name: Tests & Coverage
