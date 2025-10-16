@@ -1,5 +1,6 @@
-import yaml from "js-yaml";
 import { describe, expect, it } from "vitest";
+import { parseFrontmatterYaml } from "./content";
+import type { NeuralNoteMeta, ProjectMeta } from "./content";
 
 describe("frontmatter parsing", () => {
   describe("YAML frontmatter extraction", () => {
@@ -15,10 +16,8 @@ featured: true
 
 Content here.`;
 
-      const match = markdown.match(/^---\s*([\s\S]*?)\s*---/);
-      expect(match).not.toBeNull();
+      const frontmatter = parseFrontmatterYaml<NeuralNoteMeta>(markdown);
 
-      const frontmatter = yaml.load(match?.[1]);
       expect(frontmatter).toMatchObject({
         title: "Test Post",
         excerpt: "Test excerpt",
@@ -47,8 +46,7 @@ draft: false
 
 Content.`;
 
-      const match = markdown.match(/^---\s*([\s\S]*?)\s*---/);
-      const frontmatter = yaml.load(match?.[1]) as any;
+      const frontmatter = parseFrontmatterYaml<NeuralNoteMeta>(markdown);
 
       expect(frontmatter.title).toBe("Complete Neural Note");
       expect(frontmatter.excerpt).toBe("Full frontmatter example");
@@ -81,8 +79,7 @@ keyFeatures:
 
 Content.`;
 
-      const match = markdown.match(/^---\s*([\s\S]*?)\s*---/);
-      const frontmatter = yaml.load(match?.[1]) as any;
+      const frontmatter = parseFrontmatterYaml<ProjectMeta>(markdown);
 
       expect(frontmatter.title).toBe("Test Project");
       expect(frontmatter.description).toBe("Project description");
@@ -103,8 +100,7 @@ date: "2024-03-01"
 
 Content.`;
 
-      const match = markdown.match(/^---\s*([\s\S]*?)\s*---/);
-      const frontmatter = yaml.load(match?.[1]) as any;
+      const frontmatter = parseFrontmatterYaml<ProjectMeta>(markdown);
 
       expect(frontmatter.title).toBe("Minimal Post");
       expect(frontmatter.date).toBe("2024-03-01");
@@ -129,13 +125,14 @@ date: "${dateStr}"
 
 Content.`;
 
-        const match = markdown.match(/^---\s*([\s\S]*?)\s*---/);
-        const frontmatter = yaml.load(match?.[1]) as any;
+        const frontmatter = parseFrontmatterYaml<NeuralNoteMeta>(markdown);
 
         expect(frontmatter.date).toBeTruthy();
         // Should be parseable by Date constructor
-        const parsed = new Date(frontmatter.date);
-        expect(parsed.toString()).not.toBe("Invalid Date");
+        if (frontmatter.date) {
+          const parsed = new Date(frontmatter.date);
+          expect(parsed.toString()).not.toBe("Invalid Date");
+        }
       }
     });
 
@@ -147,8 +144,7 @@ tags: ["tag1", "tag2", "tag3"]
 
 Content.`;
 
-      const match = markdownArray.match(/^---\s*([\s\S]*?)\s*---/);
-      const frontmatter = yaml.load(match?.[1]) as any;
+      const frontmatter = parseFrontmatterYaml<NeuralNoteMeta>(markdownArray);
 
       expect(Array.isArray(frontmatter.tags)).toBe(true);
       expect(frontmatter.tags).toEqual(["tag1", "tag2", "tag3"]);
@@ -165,21 +161,21 @@ tags:
 
 Content.`;
 
-      const match = markdownList.match(/^---\s*([\s\S]*?)\s*---/);
-      const frontmatter = yaml.load(match?.[1]) as any;
+      const frontmatter = parseFrontmatterYaml<NeuralNoteMeta>(markdownList);
 
       expect(Array.isArray(frontmatter.tags)).toBe(true);
       expect(frontmatter.tags).toEqual(["tag1", "tag2", "tag3"]);
     });
 
-    it("should return null match for missing frontmatter", () => {
+    it("should return empty object for missing frontmatter", () => {
       const markdown = "# Just content\n\nNo frontmatter here.";
-      const match = markdown.match(/^---\s*([\s\S]*?)\s*---/);
 
-      expect(match).toBeNull();
+      const frontmatter = parseFrontmatterYaml<NeuralNoteMeta>(markdown);
+
+      expect(frontmatter).toEqual({});
     });
 
-    it("should throw error for malformed frontmatter", () => {
+    it("should return empty object for malformed frontmatter", () => {
       const malformed = `---
 title: "Test"
 tags: [missing bracket
@@ -188,13 +184,11 @@ date: 2024-03-15
 
 Content.`;
 
-      const match = malformed.match(/^---\s*([\s\S]*?)\s*---/);
-      expect(match).not.toBeNull();
+      // parseFrontmatterYaml catches errors and returns {} in DEV mode
+      const frontmatter = parseFrontmatterYaml<NeuralNoteMeta>(malformed);
 
-      // YAML parsing should throw for malformed syntax
-      expect(() => {
-        yaml.load(match?.[1]);
-      }).toThrow();
+      // In production, it returns an empty object on error
+      expect(frontmatter).toEqual({});
     });
 
     it("should handle empty frontmatter fields", () => {
@@ -204,8 +198,7 @@ title: "Test"
 
 Content.`;
 
-      const match = incomplete.match(/^---\s*([\s\S]*?)\s*---/);
-      const frontmatter = yaml.load(match?.[1]) as any;
+      const frontmatter = parseFrontmatterYaml<NeuralNoteMeta>(incomplete);
 
       expect(frontmatter.title).toBeDefined();
       expect(frontmatter.date).toBeUndefined();
@@ -262,8 +255,7 @@ title: "Empty"
 date: "2024-03-01"
 ---`;
 
-      const match = markdown.match(/^---\s*([\s\S]*?)\s*---/);
-      const frontmatter = yaml.load(match?.[1]) as any;
+      const frontmatter = parseFrontmatterYaml<ProjectMeta>(markdown);
 
       expect(frontmatter.title).toBe("Empty");
       expect(markdown.split("---")[2]).toBeFalsy();
@@ -289,8 +281,7 @@ excerpt: "Special chars: @#$%^&*()"
 
 Content.`;
 
-      const match = markdown.match(/^---\s*([\s\S]*?)\s*---/);
-      const frontmatter = yaml.load(match?.[1]) as any;
+      const frontmatter = parseFrontmatterYaml<ProjectMeta>(markdown);
 
       expect(frontmatter.title).toContain("quotes");
       expect(frontmatter.excerpt).toContain("@#$%");
@@ -303,8 +294,7 @@ title: "Unicode Test: 你好 🎉"
 
 Content with emoji: 🚀 and unicode: café`;
 
-      const match = markdown.match(/^---\s*([\s\S]*?)\s*---/);
-      const frontmatter = yaml.load(match?.[1]) as any;
+      const frontmatter = parseFrontmatterYaml<ProjectMeta>(markdown);
 
       expect(frontmatter.title).toContain("你好");
       expect(frontmatter.title).toContain("🎉");
