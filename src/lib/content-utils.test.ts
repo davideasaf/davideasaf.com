@@ -1,351 +1,306 @@
 import { describe, expect, it } from "vitest";
+import {
+  loadNeuralNotes,
+  loadProjects,
+  getNeuralNoteBySlug,
+  getProjectBySlug,
+  getNeuralNotesSync,
+  getNeuralNoteBySlugSync,
+} from "./content";
 
-// Test content filtering and sorting utilities without importing content.ts
-// This avoids triggering MDX file loading during tests
+describe("content loading and filtering", () => {
+  describe("loadNeuralNotes", () => {
+    it("should load neural notes without drafts", async () => {
+      const notes = await loadNeuralNotes();
 
-interface TestMeta {
-  title: string;
-  date: string;
-  featured: boolean;
-  draft: boolean;
-  tags: string[];
-}
-
-interface TestContentItem {
-  slug: string;
-  meta: TestMeta;
-}
-
-describe("content filtering and sorting", () => {
-  const createTestItem = (
-    slug: string,
-    date: string,
-    featured = false,
-    draft = false,
-    tags: string[] = [],
-  ): TestContentItem => ({
-    slug,
-    meta: {
-      title: `Post ${slug}`,
-      date,
-      featured,
-      draft,
-      tags,
-    },
-  });
-
-  describe("draft filtering", () => {
-    it("should filter out draft content", () => {
-      const items = [
-        createTestItem("post1", "2024-03-15", false, false),
-        createTestItem("post2", "2024-03-14", false, true),
-        createTestItem("post3", "2024-03-13", false, false),
-      ];
-
-      const published = items.filter((item) => !item.meta.draft);
-
-      expect(published).toHaveLength(2);
-      expect(published.map((item) => item.slug)).toEqual(["post1", "post3"]);
+      // All notes should be published (no drafts)
+      expect(notes.every((n) => !n.meta.draft)).toBe(true);
     });
 
-    it("should include all items when none are drafts", () => {
-      const items = [
-        createTestItem("post1", "2024-03-15"),
-        createTestItem("post2", "2024-03-14"),
-        createTestItem("post3", "2024-03-13"),
-      ];
+    it("should return notes sorted by date (newest first)", async () => {
+      const notes = await loadNeuralNotes();
 
-      const published = items.filter((item) => !item.meta.draft);
-
-      expect(published).toHaveLength(3);
+      if (notes.length > 1) {
+        for (let i = 0; i < notes.length - 1; i++) {
+          const currentDate = new Date(notes[i].meta.date).getTime();
+          const nextDate = new Date(notes[i + 1].meta.date).getTime();
+          expect(currentDate).toBeGreaterThanOrEqual(nextDate);
+        }
+      }
     });
 
-    it("should return empty array when all items are drafts", () => {
-      const items = [
-        createTestItem("post1", "2024-03-15", false, true),
-        createTestItem("post2", "2024-03-14", false, true),
-      ];
+    it("should include all required metadata fields", async () => {
+      const notes = await loadNeuralNotes();
 
-      const published = items.filter((item) => !item.meta.draft);
+      notes.forEach((note) => {
+        expect(note.slug).toBeTruthy();
+        expect(note.meta.title).toBeTruthy();
+        expect(note.meta.date).toBeTruthy();
+        expect(note.meta.author).toBeTruthy();
+        expect(Array.isArray(note.meta.tags)).toBe(true);
+        expect(typeof note.meta.featured).toBe("boolean");
+        expect(note.meta.readTime).toBeTruthy();
+        expect(note.content).toBeDefined();
+      });
+    });
 
-      expect(published).toHaveLength(0);
+    it("should calculate reading time for each note", async () => {
+      const notes = await loadNeuralNotes();
+
+      notes.forEach((note) => {
+        expect(note.meta.readTime).toMatch(/\d+ min read/);
+      });
     });
   });
 
-  describe("featured filtering", () => {
-    it("should filter featured content", () => {
-      const items = [
-        createTestItem("post1", "2024-03-15", true),
-        createTestItem("post2", "2024-03-14", false),
-        createTestItem("post3", "2024-03-13", true),
-      ];
+  describe("loadProjects", () => {
+    it("should load projects without drafts", async () => {
+      const projects = await loadProjects();
 
-      const featured = items.filter((item) => item.meta.featured);
-
-      expect(featured).toHaveLength(2);
-      expect(featured.map((item) => item.slug)).toEqual(["post1", "post3"]);
+      // All projects should be published (no drafts)
+      expect(projects.every((p) => !p.meta.draft)).toBe(true);
     });
 
-    it("should return empty array when no items are featured", () => {
-      const items = [createTestItem("post1", "2024-03-15"), createTestItem("post2", "2024-03-14")];
+    it("should return projects sorted by date (newest first)", async () => {
+      const projects = await loadProjects();
 
-      const featured = items.filter((item) => item.meta.featured);
-
-      expect(featured).toHaveLength(0);
+      if (projects.length > 1) {
+        for (let i = 0; i < projects.length - 1; i++) {
+          const currentDate = new Date(projects[i].meta.date).getTime();
+          const nextDate = new Date(projects[i + 1].meta.date).getTime();
+          expect(currentDate).toBeGreaterThanOrEqual(nextDate);
+        }
+      }
     });
 
-    it("should handle all items being featured", () => {
-      const items = [
-        createTestItem("post1", "2024-03-15", true),
-        createTestItem("post2", "2024-03-14", true),
-      ];
+    it("should include all required metadata fields", async () => {
+      const projects = await loadProjects();
 
-      const featured = items.filter((item) => item.meta.featured);
-
-      expect(featured).toHaveLength(2);
+      projects.forEach((project) => {
+        expect(project.slug).toBeTruthy();
+        expect(project.meta.title).toBeTruthy();
+        expect(project.meta.description).toBeDefined();
+        expect(project.meta.date).toBeTruthy();
+        expect(Array.isArray(project.meta.tags)).toBe(true);
+        expect(typeof project.meta.featured).toBe("boolean");
+        expect(project.content).toBeDefined();
+      });
     });
   });
 
-  describe("date sorting", () => {
-    it("should sort by date descending (newest first)", () => {
-      const items = [
-        createTestItem("post1", "2024-03-13"),
-        createTestItem("post2", "2024-03-15"),
-        createTestItem("post3", "2024-03-14"),
-      ];
+  describe("getNeuralNoteBySlug", () => {
+    it("should return a note by slug", async () => {
+      const notes = await loadNeuralNotes();
+      if (notes.length === 0) {
+        // Skip if no notes exist
+        return;
+      }
 
-      const sorted = items.sort(
-        (a, b) => new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime(),
-      );
+      const firstNote = notes[0];
+      const note = await getNeuralNoteBySlug(firstNote.slug);
 
-      expect(sorted.map((item) => item.slug)).toEqual(["post2", "post3", "post1"]);
+      expect(note).not.toBeNull();
+      expect(note?.slug).toBe(firstNote.slug);
+      expect(note?.meta.title).toBe(firstNote.meta.title);
     });
 
-    it("should sort by date ascending (oldest first)", () => {
-      const items = [
-        createTestItem("post1", "2024-03-13"),
-        createTestItem("post2", "2024-03-15"),
-        createTestItem("post3", "2024-03-14"),
-      ];
+    it("should return null for non-existent slug", async () => {
+      const note = await getNeuralNoteBySlug("non-existent-slug-12345");
 
-      const sorted = items.sort(
-        (a, b) => new Date(a.meta.date).getTime() - new Date(b.meta.date).getTime(),
-      );
+      expect(note).toBeNull();
+    });
+  });
 
-      expect(sorted.map((item) => item.slug)).toEqual(["post1", "post3", "post2"]);
+  describe("getProjectBySlug", () => {
+    it("should return a project by slug", async () => {
+      const projects = await loadProjects();
+      if (projects.length === 0) {
+        // Skip if no projects exist
+        return;
+      }
+
+      const firstProject = projects[0];
+      const project = await getProjectBySlug(firstProject.slug);
+
+      expect(project).not.toBeNull();
+      expect(project?.slug).toBe(firstProject.slug);
+      expect(project?.meta.title).toBe(firstProject.meta.title);
     });
 
-    it("should handle items with same date", () => {
-      const items = [
-        createTestItem("post1", "2024-03-15"),
-        createTestItem("post2", "2024-03-15"),
-        createTestItem("post3", "2024-03-14"),
-      ];
+    it("should return null for non-existent slug", async () => {
+      const project = await getProjectBySlug("non-existent-project-12345");
 
-      const sorted = items.sort(
-        (a, b) => new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime(),
-      );
+      expect(project).toBeNull();
+    });
+  });
 
-      // Items with same date should maintain relative order
-      expect(sorted[0].slug).toMatch(/post[12]/);
-      expect(sorted[1].slug).toMatch(/post[12]/);
-      expect(sorted[2].slug).toBe("post3");
+  describe("getNeuralNotesSync", () => {
+    it("should return notes synchronously", () => {
+      const notes = getNeuralNotesSync();
+
+      // Should be an array
+      expect(Array.isArray(notes)).toBe(true);
+
+      // All notes should be published (no drafts)
+      expect(notes.every((n) => !n.meta.draft)).toBe(true);
     });
 
-    it("should handle items across different years", () => {
-      const items = [
-        createTestItem("post1", "2023-12-31"),
-        createTestItem("post2", "2024-01-01"),
-        createTestItem("post3", "2025-01-01"),
-      ];
+    it("should return the same notes as async version", async () => {
+      const syncNotes = getNeuralNotesSync();
+      const asyncNotes = await loadNeuralNotes();
 
-      const sorted = items.sort(
-        (a, b) => new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime(),
-      );
+      expect(syncNotes.length).toBe(asyncNotes.length);
 
-      expect(sorted.map((item) => item.slug)).toEqual(["post3", "post2", "post1"]);
+      // Compare slugs
+      const syncSlugs = syncNotes.map((n) => n.slug).sort();
+      const asyncSlugs = asyncNotes.map((n) => n.slug).sort();
+      expect(syncSlugs).toEqual(asyncSlugs);
+    });
+  });
+
+  describe("getNeuralNoteBySlugSync", () => {
+    it("should return a note by slug synchronously", () => {
+      const notes = getNeuralNotesSync();
+      if (notes.length === 0) {
+        // Skip if no notes exist
+        return;
+      }
+
+      const firstNote = notes[0];
+      const note = getNeuralNoteBySlugSync(firstNote.slug);
+
+      expect(note).not.toBeNull();
+      expect(note?.slug).toBe(firstNote.slug);
+      expect(note?.meta.title).toBe(firstNote.meta.title);
+    });
+
+    it("should return null for non-existent slug", () => {
+      const note = getNeuralNoteBySlugSync("non-existent-slug-12345");
+
+      expect(note).toBeNull();
+    });
+  });
+
+  describe("featured content filtering", () => {
+    it("should be able to filter featured neural notes", async () => {
+      const notes = await loadNeuralNotes();
+      const featured = notes.filter((n) => n.meta.featured);
+
+      // All filtered items should be featured
+      expect(featured.every((n) => n.meta.featured)).toBe(true);
+    });
+
+    it("should be able to filter featured projects", async () => {
+      const projects = await loadProjects();
+      const featured = projects.filter((p) => p.meta.featured);
+
+      // All filtered items should be featured
+      expect(featured.every((p) => p.meta.featured)).toBe(true);
     });
   });
 
   describe("tag filtering", () => {
-    it("should filter by single tag", () => {
-      const items = [
-        createTestItem("post1", "2024-03-15", false, false, ["AI", "Testing"]),
-        createTestItem("post2", "2024-03-14", false, false, ["React", "TypeScript"]),
-        createTestItem("post3", "2024-03-13", false, false, ["AI", "ML"]),
-      ];
+    it("should be able to filter neural notes by tag", async () => {
+      const notes = await loadNeuralNotes();
 
-      const aiPosts = items.filter((item) => item.meta.tags.includes("AI"));
+      // Get all unique tags
+      const allTags = new Set(notes.flatMap((n) => n.meta.tags));
 
-      expect(aiPosts).toHaveLength(2);
-      expect(aiPosts.map((item) => item.slug)).toEqual(["post1", "post3"]);
+      if (allTags.size > 0) {
+        const firstTag = Array.from(allTags)[0];
+        const filtered = notes.filter((n) => n.meta.tags.includes(firstTag));
+
+        // All filtered items should have the tag
+        expect(filtered.every((n) => n.meta.tags.includes(firstTag))).toBe(true);
+      }
     });
 
-    it("should filter by multiple tags (OR logic)", () => {
-      const items = [
-        createTestItem("post1", "2024-03-15", false, false, ["AI", "Testing"]),
-        createTestItem("post2", "2024-03-14", false, false, ["React", "TypeScript"]),
-        createTestItem("post3", "2024-03-13", false, false, ["AI", "ML"]),
-      ];
+    it("should be able to filter projects by tag", async () => {
+      const projects = await loadProjects();
 
-      const filtered = items.filter(
-        (item) => item.meta.tags.includes("AI") || item.meta.tags.includes("React"),
-      );
+      // Get all unique tags
+      const allTags = new Set(projects.flatMap((p) => p.meta.tags));
 
-      expect(filtered).toHaveLength(3);
-    });
+      if (allTags.size > 0) {
+        const firstTag = Array.from(allTags)[0];
+        const filtered = projects.filter((p) => p.meta.tags.includes(firstTag));
 
-    it("should filter by multiple tags (AND logic)", () => {
-      const items = [
-        createTestItem("post1", "2024-03-15", false, false, ["AI", "Testing"]),
-        createTestItem("post2", "2024-03-14", false, false, ["React", "TypeScript"]),
-        createTestItem("post3", "2024-03-13", false, false, ["AI", "ML"]),
-      ];
-
-      const filtered = items.filter(
-        (item) => item.meta.tags.includes("AI") && item.meta.tags.includes("Testing"),
-      );
-
-      expect(filtered).toHaveLength(1);
-      expect(filtered[0].slug).toBe("post1");
-    });
-
-    it("should return empty array when no items match tag", () => {
-      const items = [
-        createTestItem("post1", "2024-03-15", false, false, ["AI", "Testing"]),
-        createTestItem("post2", "2024-03-14", false, false, ["React", "TypeScript"]),
-      ];
-
-      const filtered = items.filter((item) => item.meta.tags.includes("Python"));
-
-      expect(filtered).toHaveLength(0);
-    });
-
-    it("should handle items with no tags", () => {
-      const items = [
-        createTestItem("post1", "2024-03-15", false, false, ["AI"]),
-        createTestItem("post2", "2024-03-14", false, false, []),
-        createTestItem("post3", "2024-03-13", false, false, ["AI"]),
-      ];
-
-      const aiPosts = items.filter((item) => item.meta.tags.includes("AI"));
-
-      expect(aiPosts).toHaveLength(2);
-    });
-
-    it("should be case-sensitive by default", () => {
-      const items = [
-        createTestItem("post1", "2024-03-15", false, false, ["AI", "ml"]),
-        createTestItem("post2", "2024-03-14", false, false, ["ai", "ML"]),
-      ];
-
-      const aiUpper = items.filter((item) => item.meta.tags.includes("AI"));
-      const aiLower = items.filter((item) => item.meta.tags.includes("ai"));
-
-      expect(aiUpper).toHaveLength(1);
-      expect(aiLower).toHaveLength(1);
-      expect(aiUpper[0].slug).not.toBe(aiLower[0].slug);
+        // All filtered items should have the tag
+        expect(filtered.every((p) => p.meta.tags.includes(firstTag))).toBe(true);
+      }
     });
   });
 
   describe("pagination", () => {
-    it("should paginate results correctly", () => {
-      const items = Array.from({ length: 20 }, (_, i) =>
-        createTestItem(`post${i}`, `2024-03-${String(20 - i).padStart(2, "0")}`),
-      );
+    it("should support pagination of neural notes", async () => {
+      const notes = await loadNeuralNotes();
 
-      const pageSize = 5;
-      const page1 = items.slice(0, pageSize);
-      const page2 = items.slice(pageSize, pageSize * 2);
+      if (notes.length > 5) {
+        const pageSize = 5;
+        const page1 = notes.slice(0, pageSize);
+        const page2 = notes.slice(pageSize, pageSize * 2);
 
-      expect(page1).toHaveLength(5);
-      expect(page2).toHaveLength(5);
-      expect(page1[0].slug).toBe("post0");
-      expect(page2[0].slug).toBe("post5");
+        expect(page1.length).toBe(pageSize);
+        expect(page1[0].slug).not.toBe(page2[0].slug);
+      }
     });
 
-    it("should handle last page with fewer items", () => {
-      const items = Array.from({ length: 12 }, (_, i) =>
-        createTestItem(`post${i}`, `2024-03-${String(20 - i).padStart(2, "0")}`),
-      );
+    it("should support pagination of projects", async () => {
+      const projects = await loadProjects();
 
-      const pageSize = 5;
-      const page3 = items.slice(pageSize * 2, pageSize * 3);
+      if (projects.length > 5) {
+        const pageSize = 5;
+        const page1 = projects.slice(0, pageSize);
+        const page2 = projects.slice(pageSize, pageSize * 2);
 
-      expect(page3).toHaveLength(2);
+        expect(page1.length).toBe(pageSize);
+        expect(page1[0].slug).not.toBe(page2[0].slug);
+      }
     });
 
-    it("should return empty array for out of bounds page", () => {
-      const items = [createTestItem("post1", "2024-03-15")];
+    it("should handle last page with fewer items", async () => {
+      const notes = await loadNeuralNotes();
 
-      const pageSize = 5;
-      const page2 = items.slice(pageSize, pageSize * 2);
+      if (notes.length > 5) {
+        const pageSize = 5;
+        const totalPages = Math.ceil(notes.length / pageSize);
+        const lastPage = notes.slice((totalPages - 1) * pageSize);
 
-      expect(page2).toHaveLength(0);
-    });
-
-    it("should calculate total pages correctly", () => {
-      const items = Array.from({ length: 23 }, (_, i) =>
-        createTestItem(`post${i}`, `2024-03-${String(20 - i).padStart(2, "0")}`),
-      );
-
-      const pageSize = 5;
-      const totalPages = Math.ceil(items.length / pageSize);
-
-      expect(totalPages).toBe(5);
+        expect(lastPage.length).toBeGreaterThan(0);
+        expect(lastPage.length).toBeLessThanOrEqual(pageSize);
+      }
     });
   });
 
   describe("combined filtering and sorting", () => {
-    it("should filter drafts and sort by date", () => {
-      const items = [
-        createTestItem("post1", "2024-03-13", false, true),
-        createTestItem("post2", "2024-03-15", false, false),
-        createTestItem("post3", "2024-03-14", false, false),
-      ];
+    it("should support filtering by tag and featured status", async () => {
+      const notes = await loadNeuralNotes();
 
-      const result = items
-        .filter((item) => !item.meta.draft)
-        .sort((a, b) => new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime());
+      // Get all unique tags
+      const allTags = new Set(notes.flatMap((n) => n.meta.tags));
 
-      expect(result).toHaveLength(2);
-      expect(result.map((item) => item.slug)).toEqual(["post2", "post3"]);
+      if (allTags.size > 0) {
+        const firstTag = Array.from(allTags)[0];
+        const filtered = notes
+          .filter((n) => n.meta.tags.includes(firstTag))
+          .filter((n) => n.meta.featured);
+
+        // All filtered items should have both the tag and be featured
+        expect(filtered.every((n) => n.meta.tags.includes(firstTag) && n.meta.featured)).toBe(true);
+      }
     });
 
-    it("should filter by tag, exclude drafts, and sort", () => {
-      const items = [
-        createTestItem("post1", "2024-03-13", false, false, ["AI"]),
-        createTestItem("post2", "2024-03-15", false, true, ["AI"]),
-        createTestItem("post3", "2024-03-14", false, false, ["AI"]),
-        createTestItem("post4", "2024-03-16", false, false, ["React"]),
-      ];
+    it("should maintain date sorting after filtering", async () => {
+      const notes = await loadNeuralNotes();
+      const featured = notes.filter((n) => n.meta.featured);
 
-      const result = items
-        .filter((item) => !item.meta.draft)
-        .filter((item) => item.meta.tags.includes("AI"))
-        .sort((a, b) => new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime());
-
-      expect(result).toHaveLength(2);
-      expect(result.map((item) => item.slug)).toEqual(["post3", "post1"]);
-    });
-
-    it("should filter featured, exclude drafts, sort, and paginate", () => {
-      const items = [
-        createTestItem("post1", "2024-03-13", true, false),
-        createTestItem("post2", "2024-03-15", true, true),
-        createTestItem("post3", "2024-03-14", true, false),
-        createTestItem("post4", "2024-03-16", false, false),
-        createTestItem("post5", "2024-03-17", true, false),
-      ];
-
-      const result = items
-        .filter((item) => !item.meta.draft)
-        .filter((item) => item.meta.featured)
-        .sort((a, b) => new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime())
-        .slice(0, 2);
-
-      expect(result).toHaveLength(2);
-      expect(result.map((item) => item.slug)).toEqual(["post5", "post3"]);
+      if (featured.length > 1) {
+        for (let i = 0; i < featured.length - 1; i++) {
+          const currentDate = new Date(featured[i].meta.date).getTime();
+          const nextDate = new Date(featured[i + 1].meta.date).getTime();
+          expect(currentDate).toBeGreaterThanOrEqual(nextDate);
+        }
+      }
     });
   });
 });

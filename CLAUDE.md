@@ -56,11 +56,57 @@ Projects and neural notes use YAML frontmatter in Markdown files. Key fields inc
 - Projects: `github`, `demo`, `featured`
 - Neural Notes: `excerpt`, `hasVideo`, `videoUrl`
 
+### Testing Best Practices
+
+**CRITICAL: Always test production code, never duplicate it**
+
+When writing tests, follow these principles:
+
+1. **Import and test real functions** - Never duplicate production logic in tests
+   ```typescript
+   // ❌ WRONG - Duplicating logic
+   function getPrimaryMediaForTest(meta) { /* copy of production code */ }
+   const result = getPrimaryMediaForTest(meta);
+
+   // ✅ CORRECT - Testing actual production code
+   import { getPrimaryMedia } from "./content";
+   const result = getPrimaryMedia(meta);
+   ```
+
+2. **Export functions when needed for testing** - If a function needs testing but isn't exported, export it
+   ```typescript
+   // In production code
+   export const parseFrontmatterYaml = <TMeta>(...) => { /* implementation */ }
+
+   // In test
+   import { parseFrontmatterYaml } from "./content";
+   ```
+
+3. **Test integration points, not just isolated logic** - Tests should verify that production functions work correctly
+   - Test `loadNeuralNotes()` and `loadProjects()` for filtering/sorting
+   - Test actual MDX loading behavior when possible
+   - Verify real data flows through the system correctly
+
+4. **Test fixtures should complement, not replace, real testing**
+   - Use fixtures to provide test data, not to reimplement production logic
+   - Test actual functions against fixture data
+   - Fixtures are for input, not for reimplementing behavior
+
+5. **Why this matters**:
+   - **False confidence**: Tests that duplicate logic will pass even if production code is broken
+   - **Maintenance burden**: Changes to production require duplicate changes in tests
+   - **Missed regressions**: Production bugs slip through because tests validate the wrong code
+
+6. **Test runner**: Vitest with coverage reporting
+   - Run tests: `npm test`
+   - Coverage report: `npm run test:coverage`
+   - Target: 70-80% coverage for critical paths
+
 ### Important Notes
 - PostHog API keys should never be hardcoded - use environment variables
 - Feature flags should use enums/constants and minimal callsites
 - Biome handles both linting and formatting - no need for separate ESLint/Prettier
 - Images in content are automatically optimized by vite-imagetools
 - The orange theme (#FF6B35) is central to the design system
-- before making commits, you must always run npm run lint. If there are linting issues they must be fixed 
+- before making commits, you must always run npm run lint. If there are linting issues they must be fixed
 before committing.
