@@ -1,5 +1,5 @@
 import { ExternalLink, Github, Play } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { MediaDisplay } from "@/components/MediaDisplay";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +51,29 @@ const ProjectShowcase = () => {
     [projectObservationKey],
   );
 
+  // Memoized click handlers to prevent unnecessary re-renders
+  const handleGithubClick = useCallback((e: React.MouseEvent, projectSlug: string) => {
+    e.stopPropagation();
+    captureEvent(ANALYTICS_EVENTS.PROJECT_EXTERNAL_CLICKED, {
+      project_id: projectSlug,
+      target: "github",
+    });
+  }, []);
+
+  const handleDemoClick = useCallback((e: React.MouseEvent, projectSlug: string) => {
+    e.stopPropagation();
+    captureEvent(ANALYTICS_EVENTS.PROJECT_EXTERNAL_CLICKED, {
+      project_id: projectSlug,
+      target: "demo",
+    });
+  }, []);
+
+  const handleLearnMoreClick = useCallback((projectSlug: string) => {
+    captureEvent(ANALYTICS_EVENTS.PROJECT_CARD_CLICKED, {
+      project_id: projectSlug,
+    });
+  }, []);
+
   return (
     <section id={sectionId} className="py-20 bg-gradient-subtle">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -77,7 +100,7 @@ const ProjectShowcase = () => {
                 data-pj-card
                 data-pid={project.slug}
                 data-featured={project.meta.featured}
-                className={`group relative overflow-hidden transition-all duration-300 hover:shadow-elegant ${project.meta.featured ? "md:col-span-2 lg:col-span-1" : ""}`}
+                className={`group relative overflow-hidden transition-all duration-300 hover:shadow-elegant cursor-pointer ${project.meta.featured ? "md:col-span-2 lg:col-span-1" : ""}`}
               >
                 {project.meta.featured && (
                   <div className="absolute top-4 right-4 z-10">
@@ -131,12 +154,7 @@ const ProjectShowcase = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() =>
-                          captureEvent(ANALYTICS_EVENTS.PROJECT_EXTERNAL_CLICKED, {
-                            project_id: project.slug,
-                            target: "github",
-                          })
-                        }
+                        onClick={(e) => handleGithubClick(e, project.slug)}
                       >
                         <Github className="mr-2 h-4 w-4" />
                         Code
@@ -146,12 +164,7 @@ const ProjectShowcase = () => {
                       <Button
                         variant="glow"
                         size="sm"
-                        onClick={() =>
-                          captureEvent(ANALYTICS_EVENTS.PROJECT_EXTERNAL_CLICKED, {
-                            project_id: project.slug,
-                            target: "demo",
-                          })
-                        }
+                        onClick={(e) => handleDemoClick(e, project.slug)}
                       >
                         <ExternalLink className="mr-2 h-4 w-4" />
                         Demo
@@ -166,11 +179,7 @@ const ProjectShowcase = () => {
                   >
                     <Link
                       to={`/projects/${project.slug}`}
-                      onClick={() =>
-                        captureEvent(ANALYTICS_EVENTS.PROJECT_CARD_CLICKED, {
-                          project_id: project.slug,
-                        })
-                      }
+                      onClick={() => handleLearnMoreClick(project.slug)}
                     >
                       Learn More →
                     </Link>
