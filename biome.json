@@ -41,7 +41,7 @@
       "formatter": {
         "enabled": false
       },
-      "includes": ["dist/**"]
+      "includes": ["dist/**", "coverage/**"]
     },
     {
       "includes": ["**/*.css"],

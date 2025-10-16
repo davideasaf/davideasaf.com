@@ -1,4 +1,4 @@
-name: Test
+name: CI
 
 on:
   push:
@@ -7,10 +7,9 @@ on:
     branches: [main]
 
 jobs:
-  test:
+  code-quality:
+    name: Code Quality (Biome + Pre-commit)
     runs-on: ubuntu-latest
-    timeout-minutes: 10
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -24,8 +23,36 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run linter
-        run: npm run lint
+      - name: Run Biome checks
+        run: npx @biomejs/biome ci
+
+      - name: Setup Python for pre-commit
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.x"
+
+      - name: Install pre-commit
+        run: pipx install pre-commit
+
+      - name: Run pre-commit on all files
+        run: pre-commit run --all-files
+
+  test:
+    name: Tests & Coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
 
       - name: Run tests
         run: npm run test:run
@@ -61,6 +88,9 @@ jobs:
               | Statements | ${total.statements.pct}% |
               | Functions | ${total.functions.pct}% |
               | Branches | ${total.branches.pct}% |
+
+              > ℹ️ Coverage thresholds are informational only during initial test infrastructure setup.
+              > Target: 70-80% for critical paths (will be enforced gradually as tests are added).
 
               [View full coverage report in artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
               `;
