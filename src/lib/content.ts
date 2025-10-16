@@ -1,5 +1,6 @@
 import yaml from "js-yaml";
-import type React from "react";
+import React from "react";
+import ReactDOMServer from "react-dom/server";
 import {
   computeReadingTimeFromRawOrComponent,
   readingTimeFromText,
@@ -106,6 +107,16 @@ const NOTES_SYNC: ContentItem<NeuralNoteMetaWithCalculated>[] = Object.entries(n
         ? [rawEditorTodos.trim()]
         : [];
 
+    // Calculate read time from full content by rendering MDX component
+    let calculatedReadTime: string;
+    try {
+      const html = ReactDOMServer.renderToStaticMarkup(React.createElement(MDXContent));
+      calculatedReadTime = readingTimeFromText(html);
+    } catch {
+      // Fallback to excerpt if rendering fails
+      calculatedReadTime = readingTimeFromText(fm.excerpt ?? "");
+    }
+
     const normalizedMeta: NeuralNoteMetaWithCalculated = {
       title: fm.title ?? slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase()),
       excerpt: fm.excerpt ?? "",
@@ -122,8 +133,8 @@ const NOTES_SYNC: ContentItem<NeuralNoteMetaWithCalculated>[] = Object.entries(n
       banner: fm.banner,
       draft: Boolean((fm as unknown as { draft?: unknown }).draft),
       editorTodos: normalizedEditorTodos,
-      // Synchronous approximation using excerpt; precise calculation is done when needed via async helpers
-      readTime: readingTimeFromText(fm.excerpt ?? ""),
+      // Calculate from full rendered content for accuracy
+      readTime: calculatedReadTime,
     };
 
     return {
