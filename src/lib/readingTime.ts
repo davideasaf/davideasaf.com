@@ -28,8 +28,10 @@ export async function computeReadingTimeFromRawOrComponent(
     try {
       const html = ReactDOMServer.renderToStaticMarkup(React.createElement(Component));
       body = html;
-    } catch {
-      // ignore
+    } catch (error) {
+      if (import.meta.env.DEV) {
+        console.error("Failed to render component for reading time calculation:", error);
+      }
     }
   }
 

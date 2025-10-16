@@ -20,7 +20,10 @@ const parseFrontmatterYaml = <TMeta extends object>(raw: string | undefined): Pa
   if (!match) return {};
   try {
     return (yaml.load(match[1]) as Partial<TMeta>) ?? {};
-  } catch {
+  } catch (error) {
+    if (import.meta.env.DEV) {
+      console.error("Failed to parse frontmatter YAML:", error);
+    }
     return {};
   }
 };
@@ -173,8 +176,10 @@ export async function loadNeuralNotes(): Promise<ContentItem<NeuralNoteMetaWithC
             try {
               rawContent = await loader();
               fmAttrs = parseFrontmatterYaml<NeuralNoteMeta>(rawContent);
-            } catch {
-              // ignore and continue without raw fallback
+            } catch (error) {
+              if (import.meta.env.DEV) {
+                console.error(`Failed to load raw content for ${path}:`, error);
+              }
             }
           }
         }
@@ -261,8 +266,10 @@ export async function loadProjects(): Promise<ContentItem<ProjectMeta>[]> {
             try {
               const raw = await loader();
               meta = parseFrontmatterYaml<ProjectMeta>(raw);
-            } catch {
-              // ignore
+            } catch (error) {
+              if (import.meta.env.DEV) {
+                console.error(`Failed to load raw content for ${path}:`, error);
+              }
             }
           }
         }

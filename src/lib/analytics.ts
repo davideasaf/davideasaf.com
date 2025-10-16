@@ -1,4 +1,4 @@
-import { type DependencyList, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 export function initAnalytics(): void {
   if (typeof window === "undefined") return;
@@ -121,13 +121,14 @@ export function useObserveElementsOnce(
   eventName: AnalyticsEventName,
   getProps?: (el: Element) => Record<string, unknown>,
   options?: IntersectionObserverInit,
-  deps: DependencyList = [],
 ): void {
   const getPropsRef = useRef(getProps);
+  const optionsRef = useRef(options);
 
   useEffect(() => {
     getPropsRef.current = getProps;
-  }, [getProps]);
+    optionsRef.current = options;
+  }, [getProps, options]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -145,7 +146,7 @@ export function useObserveElementsOnce(
           }
         }
       },
-      { root: null, rootMargin: "0px", threshold: 0.25, ...(options || {}) },
+      { root: null, rootMargin: "0px", threshold: 0.25, ...(optionsRef.current || {}) },
     );
 
     const elements = Array.from(document.querySelectorAll(selector));
@@ -153,7 +154,7 @@ export function useObserveElementsOnce(
       observer.observe(el);
     });
     return () => observer.disconnect();
-  }, [selector, eventName, options, ...deps]);
+  }, [selector, eventName]);
 }
 
 export function useScrollProgressMilestones(
