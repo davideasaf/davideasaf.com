@@ -148,12 +148,6 @@ const Project = () => {
           <Breadcrumb
             items={[{ label: "Projects", href: "/projects" }, { label: project.meta.title }]}
           />
-          <Button variant="ghost" className="mb-8" asChild>
-            <Link to="/projects">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Projects
-            </Link>
-          </Button>
 
           <article className="space-y-8">
             <header className="space-y-4">
