@@ -56,7 +56,11 @@ Projects and neural notes use YAML frontmatter in Markdown files. Key fields inc
 - Projects: `github`, `demo`, `featured`
 - Neural Notes: `excerpt`, `hasVideo`, `videoUrl`
 
-### Testing Best Practices
+### Testing Strategy
+
+This project uses a comprehensive testing strategy with both unit tests and E2E tests:
+
+#### Unit Tests (Vitest)
 
 **CRITICAL: Always test production code, never duplicate it**
 
@@ -97,10 +101,48 @@ When writing tests, follow these principles:
    - **Maintenance burden**: Changes to production require duplicate changes in tests
    - **Missed regressions**: Production bugs slip through because tests validate the wrong code
 
-6. **Test runner**: Vitest with coverage reporting
+6. **Unit test commands**:
    - Run tests: `npm test`
+   - Run once: `npm run test:run`
    - Coverage report: `npm run test:coverage`
+   - Interactive UI: `npm run test:ui`
    - Target: 70-80% coverage for critical paths
+
+#### E2E Tests (Playwright)
+
+E2E tests validate critical user journeys and ensure the site's core functionality works correctly:
+
+1. **Test location**: All E2E tests are in `/tests/e2e/`
+2. **Framework**: Playwright with TypeScript
+3. **Browser support**: Primarily Chromium (can be expanded to Firefox, Safari/WebKit)
+4. **E2E test commands**:
+   - Run E2E tests: `npm run test:e2e`
+   - Interactive mode: `npm run test:e2e:ui`
+   - Headed mode: `npm run test:e2e:headed`
+   - Debug mode: `npm run test:e2e:debug`
+
+5. **Test structure**:
+   - Tests are organized by user flow (homepage, projects, blog, etc.)
+   - Each test file uses `.spec.ts` extension
+   - Tests run against local dev server (automatically started)
+   - Base URL: `http://localhost:8080`
+
+6. **CI/CD Integration**:
+   - E2E tests run on all PRs and pushes to main
+   - Tests run in headless Chromium in CI
+   - Test reports uploaded as artifacts
+   - Results commented on PRs automatically
+
+7. **Best practices**:
+   - Focus on critical user flows (smoke tests)
+   - Test against real content from `/content/` directory
+   - Verify YAML frontmatter parsing and display
+   - Include mobile viewport testing
+   - Keep tests fast (target: under 5 minutes total)
+   - Use clear, descriptive test names
+   - Add comments explaining what each test validates
+
+8. **Configuration**: See `playwright.config.ts` for full configuration
 
 ### Important Notes
 - PostHog API keys should never be hardcoded - use environment variables
