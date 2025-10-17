@@ -310,7 +310,7 @@ All colors MUST be HSL.
 
 .markdown-content .footnotes li {
   @apply leading-relaxed;
-  scroll-margin-top: 10rem;
+  scroll-margin-top: 16rem;
 }
 
 .markdown-content .footnotes a[href^="#fnref-"] {
