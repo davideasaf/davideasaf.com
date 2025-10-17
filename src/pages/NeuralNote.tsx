@@ -129,12 +129,6 @@ const NeuralNote = () => {
               { label: neuralNote?.meta.title || "Loading..." },
             ]}
           />
-          <Button variant="ghost" className="mb-8" asChild>
-            <Link to="/neural-notes">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Back to Neural Notes
-            </Link>
-          </Button>
 
           <article className="space-y-8">
             <header className="space-y-6">

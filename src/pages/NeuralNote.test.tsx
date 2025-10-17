@@ -219,17 +219,19 @@ describe("NeuralNote", () => {
     });
   });
 
-  it("renders back button with correct navigation", async () => {
+  it("breadcrumbs provide navigation back to Neural Notes", async () => {
     const note = mockNeuralNotes[0];
     vi.mocked(contentModule.getNeuralNoteBySlugSync).mockReturnValue(note);
 
     render(<NeuralNote />);
 
     await waitFor(() => {
-      const backButtons = screen.getAllByText("Back to Neural Notes");
-      expect(backButtons.length).toBeGreaterThan(0);
-      const parentLink = backButtons[0].closest("a");
-      expect(parentLink).toHaveAttribute("href", "/neural-notes");
+      const breadcrumbLinks = screen.getAllByRole("link");
+      const neuralNotesLink = breadcrumbLinks.find(
+        (link) => link.getAttribute("href") === "/neural-notes",
+      );
+      expect(neuralNotesLink).toBeInTheDocument();
+      expect(neuralNotesLink).toHaveTextContent("Neural Notes");
     });
   });
 
