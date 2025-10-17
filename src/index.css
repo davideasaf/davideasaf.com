@@ -285,3 +285,38 @@ All colors MUST be HSL.
 .markdown-content figcaption {
   @apply text-sm text-muted-foreground text-center mt-2 italic;
 }
+
+/* Footnotes */
+.markdown-content sup {
+  @apply text-primary;
+}
+
+.markdown-content sup a {
+  @apply no-underline font-semibold;
+  transition: var(--transition-smooth);
+}
+
+.markdown-content sup a:hover {
+  @apply text-primary-glow;
+}
+
+.markdown-content .footnotes {
+  @apply mt-12 pt-8 border-t border-border;
+}
+
+.markdown-content .footnotes ol {
+  @apply text-sm text-muted-foreground space-y-3;
+}
+
+.markdown-content .footnotes li {
+  @apply leading-relaxed;
+}
+
+.markdown-content .footnotes a[href^="#fnref-"] {
+  @apply text-primary ml-2;
+}
+
+/* Smooth scroll behavior for anchor links */
+html {
+  scroll-behavior: smooth;
+}
