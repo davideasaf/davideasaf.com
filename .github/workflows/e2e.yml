@@ -1,0 +1,70 @@
+name: E2E Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  e2e-tests:
+    name: E2E Tests (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Browsers
+        run: npx playwright install chromium --with-deps
+
+      - name: Run Playwright tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Comment test results on PR
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            let comment = '## E2E Test Results\n\n';
+
+            // Check if tests passed or failed based on job status
+            const testStatus = '${{ job.status }}';
+            if (testStatus === 'success') {
+              comment += '✅ All E2E tests passed!\n\n';
+            } else {
+              comment += '❌ Some E2E tests failed. Please check the workflow run for details.\n\n';
+            }
+
+            comment += `[View full Playwright report in artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})\n\n`;
+            comment += '> 🎭 Tests run with Playwright on Chromium browser';
+
+            await github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
