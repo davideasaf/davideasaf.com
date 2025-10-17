@@ -1,8 +1,8 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import * as contentModule from "@/lib/content";
+import { mockProjects } from "@/test/fixtures/content";
 import { render, screen, waitFor } from "@/test/test-utils";
 import ProjectShowcase from "./ProjectShowcase";
-import { mockProjects } from "@/test/fixtures/content";
-import * as contentModule from "@/lib/content";
 
 // Mock the content module
 vi.mock("@/lib/content", async () => {
@@ -59,7 +59,9 @@ describe("ProjectShowcase", () => {
       expect(screen.getByText("AI Chatbot Platform")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("An intelligent chatbot powered by machine learning")).toBeInTheDocument();
+    expect(
+      screen.getByText("An intelligent chatbot powered by machine learning"),
+    ).toBeInTheDocument();
   });
 
   it("displays project tags correctly", async () => {
@@ -117,7 +119,9 @@ describe("ProjectShowcase", () => {
 
     await waitFor(() => {
       const links = screen.getAllByRole("link");
-      const projectLink = links.find((link) => link.getAttribute("href") === "/projects/ai-chatbot");
+      const projectLink = links.find(
+        (link) => link.getAttribute("href") === "/projects/ai-chatbot",
+      );
       expect(projectLink).toBeInTheDocument();
     });
   });
@@ -155,9 +159,9 @@ describe("ProjectShowcase", () => {
 
     await waitFor(() => {
       // Should only render first 4 projects
-      const projectCards = screen.getAllByRole("link").filter((link) =>
-        link.getAttribute("href")?.startsWith("/projects/"),
-      );
+      const projectCards = screen
+        .getAllByRole("link")
+        .filter((link) => link.getAttribute("href")?.startsWith("/projects/"));
       // Each project has multiple links (card, github, demo), so we check that we don't have more than 4 unique project slugs
       const uniqueProjects = new Set(
         projectCards.map((link) => link.getAttribute("href")?.split("/")[2]).filter(Boolean),

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@/test/test-utils";
-import { mockProjects } from "@/test/fixtures/content";
 import * as contentModule from "@/lib/content";
+import { mockProjects } from "@/test/fixtures/content";
+import { render, screen, waitFor } from "@/test/test-utils";
 import Projects from "./Projects";
 
 // Mock the content module
@@ -150,7 +150,9 @@ describe("Projects", () => {
 
     await waitFor(() => {
       const links = screen.getAllByRole("link");
-      const projectLink = links.find((link) => link.getAttribute("href") === "/projects/ai-chatbot");
+      const projectLink = links.find(
+        (link) => link.getAttribute("href") === "/projects/ai-chatbot",
+      );
       expect(projectLink).toBeInTheDocument();
     });
   });

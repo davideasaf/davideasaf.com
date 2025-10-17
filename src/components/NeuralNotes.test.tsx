@@ -1,8 +1,8 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import * as contentModule from "@/lib/content";
+import { mockNeuralNotes } from "@/test/fixtures/content";
 import { render, screen, waitFor } from "@/test/test-utils";
 import NeuralNotes from "./NeuralNotes";
-import { mockNeuralNotes } from "@/test/fixtures/content";
-import * as contentModule from "@/lib/content";
 
 // Mock the content module
 vi.mock("@/lib/content", async () => {
@@ -169,9 +169,9 @@ describe("NeuralNotes", () => {
 
     await waitFor(() => {
       // Should only render first 3 notes
-      const noteCards = screen.getAllByRole("link").filter((link) =>
-        link.getAttribute("href")?.startsWith("/neural-notes/"),
-      );
+      const noteCards = screen
+        .getAllByRole("link")
+        .filter((link) => link.getAttribute("href")?.startsWith("/neural-notes/"));
       const uniqueNotes = new Set(
         noteCards.map((link) => link.getAttribute("href")?.split("/")[2]).filter(Boolean),
       );

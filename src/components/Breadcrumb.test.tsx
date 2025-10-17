@@ -1,6 +1,6 @@
+import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { render, screen } from "@/test/test-utils";
-import userEvent from "@testing-library/user-event";
 import Breadcrumb from "./Breadcrumb";
 
 describe("Breadcrumb", () => {
@@ -12,10 +12,7 @@ describe("Breadcrumb", () => {
   });
 
   it("renders breadcrumb items correctly", () => {
-    const items = [
-      { label: "Projects", href: "/projects" },
-      { label: "My Project" },
-    ];
+    const items = [{ label: "Projects", href: "/projects" }, { label: "My Project" }];
     render(<Breadcrumb items={items} />);
 
     expect(screen.getByText("Projects")).toBeInTheDocument();
@@ -23,10 +20,7 @@ describe("Breadcrumb", () => {
   });
 
   it("renders clickable breadcrumb items with href", () => {
-    const items = [
-      { label: "Projects", href: "/projects" },
-      { label: "My Project" },
-    ];
+    const items = [{ label: "Projects", href: "/projects" }, { label: "My Project" }];
     render(<Breadcrumb items={items} />);
 
     const projectsLink = screen.getByRole("link", { name: "Projects" });
@@ -34,10 +28,7 @@ describe("Breadcrumb", () => {
   });
 
   it("renders last breadcrumb item as non-clickable", () => {
-    const items = [
-      { label: "Projects", href: "/projects" },
-      { label: "Current Project" },
-    ];
+    const items = [{ label: "Projects", href: "/projects" }, { label: "Current Project" }];
     render(<Breadcrumb items={items} />);
 
     // Last item should not be a link
@@ -46,10 +37,7 @@ describe("Breadcrumb", () => {
   });
 
   it("renders separators between items", () => {
-    const items = [
-      { label: "Projects", href: "/projects" },
-      { label: "My Project" },
-    ];
+    const items = [{ label: "Projects", href: "/projects" }, { label: "My Project" }];
     const { container } = render(<Breadcrumb items={items} />);
 
     // Check for ChevronRight icons (separators)
