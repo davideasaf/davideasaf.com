@@ -78,9 +78,7 @@ describe("Index (Home Page)", () => {
     const { container } = render(<Index />);
 
     const sections = container.querySelectorAll("[data-testid]");
-    const sectionIds = Array.from(sections).map((section) =>
-      section.getAttribute("data-testid"),
-    );
+    const sectionIds = Array.from(sections).map((section) => section.getAttribute("data-testid"));
 
     expect(sectionIds).toEqual([
       "navigation",

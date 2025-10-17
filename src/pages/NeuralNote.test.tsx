@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { render, screen, waitFor } from "@/test/test-utils";
-import { mockNeuralNotes } from "@/test/fixtures/content";
 import * as contentModule from "@/lib/content";
 import * as readingTimeModule from "@/lib/readingTime";
+import { mockNeuralNotes } from "@/test/fixtures/content";
+import { render, screen, waitFor } from "@/test/test-utils";
 import NeuralNote from "./NeuralNote";
 
 // Mock the content module

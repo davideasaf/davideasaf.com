@@ -53,11 +53,7 @@ describe("VideoDisplay", () => {
   it("handles youtu.be short URLs", () => {
     const onError = vi.fn();
     render(
-      <VideoDisplay
-        url="https://youtu.be/dQw4w9WgXcQ"
-        metaTitle="Test Video"
-        onError={onError}
-      />,
+      <VideoDisplay url="https://youtu.be/dQw4w9WgXcQ" metaTitle="Test Video" onError={onError} />,
     );
 
     const iframe = screen.getByTitle("Test Video video");
@@ -66,9 +62,7 @@ describe("VideoDisplay", () => {
 
   it("calls onError with invalid URL", () => {
     const onError = vi.fn();
-    render(
-      <VideoDisplay url="https://invalid-url.com" metaTitle="Test Video" onError={onError} />,
-    );
+    render(<VideoDisplay url="https://invalid-url.com" metaTitle="Test Video" onError={onError} />);
 
     expect(onError).toHaveBeenCalled();
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
