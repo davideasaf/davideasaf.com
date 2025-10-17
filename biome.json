@@ -41,7 +41,7 @@
       "formatter": {
         "enabled": false
       },
-      "includes": ["dist/**", "coverage/**"]
+      "includes": ["dist/**", "coverage/**", "playwright-report/**", "test-results/**"]
     },
     {
       "includes": ["**/*.css"],
