@@ -46,8 +46,15 @@ export default defineConfig({
         // Exclude simple UI components initially (focus on logic)
         "src/components/ui/**",
       ],
-      // Note: Thresholds will be added gradually as test coverage increases
-      // Target 70-80% coverage for critical paths (per issue #38 requirements)
+      // Coverage thresholds enforced in CI (set at -10% of current coverage)
+      // Current coverage: 48.09% → Threshold: 38%
+      // Target: 70-80% coverage for critical paths (per issue #38 requirements)
+      thresholds: {
+        lines: 38,
+        functions: 38,
+        branches: 38,
+        statements: 38,
+      },
     },
   },
   resolve: {

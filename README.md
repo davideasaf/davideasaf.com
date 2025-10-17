@@ -137,13 +137,69 @@ git push origin feature/new-neural-note
 - `npm run format` - Format code with Biome
 - `npm run check` - Run Biome checks (lint + format)
 - `npm run fix` - Auto-fix Biome issues
+- `npm test` - Run tests in watch mode
+- `npm run test:run` - Run tests once
+- `npm run test:coverage` - Run tests with coverage report
+- `npm run test:ui` - Run tests with interactive UI
+
+### Testing
+
+This project uses **Vitest** for unit testing with a focus on critical application paths (80/20 approach).
+
+#### Running Tests
+
+```bash
+# Run tests in watch mode (recommended during development)
+npm test
+
+# Run tests once
+npm run test:run
+
+# Run tests with coverage report
+npm run test:coverage
+
+# Run tests with interactive UI
+npm run test:ui
+```
+
+#### Testing Philosophy
+
+We follow the **80/20 principle**: focus on high-value tests that catch the most critical bugs with minimal test code.
+
+**What we test:**
+- Content processing (Markdown/MDX parsing, frontmatter extraction)
+- Core UI components (reusable components used across pages)
+- Data transformations (formatting, filtering, sorting)
+- Page-level component logic
+- Error boundaries and error handling
+
+**What we don't test (initially):**
+- Third-party library internals
+- Simple presentational components with no logic
+- One-off edge cases with low probability
+
+#### Coverage Requirements
+
+- **Minimum threshold**: 38% overall coverage (enforced in CI)
+- **Target**: 70-80% coverage for critical paths
+- **Coverage reports**: Generated automatically in CI and available locally via `npm run test:coverage`
+
+#### Writing Tests
+
+Tests should:
+1. **Import and test real functions** - Never duplicate production logic in tests
+2. **Export functions when needed** - Export functions that need testing
+3. **Test integration points** - Verify that production functions work correctly
+4. **Use fixtures for data** - Provide test data, not reimplemented logic
+
+See `CLAUDE.md` for detailed testing best practices.
 
 ### Code Quality
 
 This project uses automated code quality checks:
 
-- **Pre-commit hooks**: Automatically run Biome checks on staged files before commit
-- **CI/CD validation**: GitHub Actions runs the same checks on pull requests
+- **Pre-commit hooks**: Automatically run Biome checks and tests on staged files before commit
+- **CI/CD validation**: GitHub Actions runs linting, tests, and coverage checks on pull requests
 - **Biome configuration**: Enforces 2-space indentation, double quotes, 100 line width
 
 #### Bypassing Hooks
@@ -164,6 +220,10 @@ pre-commit run --all-files
 npm run check    # Check and auto-fix
 npm run lint     # Lint only
 npm run format   # Format only
+
+# Run tests
+npm run test:run          # Quick test run
+npm run test:coverage     # With coverage report
 ```
 
 ## 📱 Sections

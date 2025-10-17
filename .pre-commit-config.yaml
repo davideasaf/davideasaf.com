@@ -8,3 +8,10 @@ repos:
         types: [text]
         files: "\\.(jsx?|tsx?|c(js|ts)|m(js|ts)|d\\.(ts|cts|mts)|jsonc?|css)$"
         pass_filenames: true
+      - id: vitest-run
+        name: Run unit tests
+        entry: npm run test:run
+        language: system
+        types: [text]
+        files: "\\.(jsx?|tsx?|c(js|ts)|m(js|ts)|d\\.(ts|cts|mts))$"
+        pass_filenames: false
