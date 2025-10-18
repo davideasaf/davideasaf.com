@@ -310,7 +310,7 @@ All colors MUST be HSL.
 
 .markdown-content .footnotes li {
   @apply leading-relaxed;
-  scroll-margin-top: 16rem;
+  scroll-margin-top: 2rem;
 }
 
 .markdown-content .footnotes a[href^="#fnref-"] {
@@ -320,4 +320,5 @@ All colors MUST be HSL.
 /* Smooth scroll behavior for anchor links */
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
 }
