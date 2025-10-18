@@ -142,18 +142,21 @@ const NeuralNote = () => {
                     className="absolute inset-0 w-full h-full object-cover"
                   />
 
+                  {/* Dark Gradient Overlay for Text Readability */}
+                  <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/60" />
+
                   {/* Overlay Content */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 sm:px-6 lg:px-8">
-                    <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-white drop-shadow-lg mb-6">
+                    <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-white drop-shadow-[0_4px_8px_rgba(0,0,0,0.8)] mb-6">
                       {neuralNote.meta.title}
                     </h1>
 
-                    <div className="flex items-center gap-4 text-white flex-wrap justify-center mb-4">
-                      <div className="flex items-center gap-2 drop-shadow-md">
+                    <div className="flex items-center gap-4 text-white flex-wrap justify-center mb-4 drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                      <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
                         {formatDate(neuralNote.meta.date)}
                       </div>
-                      <div className="flex items-center gap-2 drop-shadow-md">
+                      <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4" />
                         {neuralNote.meta.readTime ?? computedReadTime}
                       </div>
@@ -163,10 +166,8 @@ const NeuralNote = () => {
                       {(neuralNote.meta.tags ?? []).map((tag) => (
                         <Badge
                           key={tag}
-                          variant="outline"
-                          className="bg-white/20 backdrop-blur-sm text-white border-white/40"
+                          className="bg-black/90 text-white font-medium px-3 py-1 border-0 drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]"
                         >
-                          <Tag className="mr-1 h-3 w-3" />
                           {tag}
                         </Badge>
                       ))}
