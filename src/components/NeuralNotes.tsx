@@ -90,6 +90,7 @@ const NeuralNotes = () => {
                             month: "short",
                             day: "numeric",
                             year: "numeric",
+                            timeZone: "UTC",
                           })}
                         </span>
                       </div>
