@@ -131,36 +131,82 @@ const NeuralNote = () => {
           />
 
           <article className="space-y-8">
-            <header className="space-y-6">
-              <div className="space-y-4">
-                <h1 className="text-3xl md:text-4xl font-bold leading-tight">
-                  {neuralNote.meta.title}
-                </h1>
+            {/* Hero Header with Featured Image Background */}
+            {neuralNote.meta.banner ? (
+              <header className="relative -mx-4 sm:-mx-6 lg:-mx-8 mb-8">
+                {/* Hero Image Background */}
+                <div className="relative w-full aspect-video overflow-hidden">
+                  <img
+                    src={neuralNote.meta.banner}
+                    alt={neuralNote.meta.title}
+                    className="absolute inset-0 w-full h-full object-cover"
+                  />
 
-                <div className="flex items-center gap-4 text-muted-foreground flex-wrap">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    {formatDate(neuralNote.meta.date)}
+                  {/* Overlay Content */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 sm:px-6 lg:px-8">
+                    <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight text-white drop-shadow-lg mb-6">
+                      {neuralNote.meta.title}
+                    </h1>
+
+                    <div className="flex items-center gap-4 text-white flex-wrap justify-center mb-4">
+                      <div className="flex items-center gap-2 drop-shadow-md">
+                        <Calendar className="h-4 w-4" />
+                        {formatDate(neuralNote.meta.date)}
+                      </div>
+                      <div className="flex items-center gap-2 drop-shadow-md">
+                        <Clock className="h-4 w-4" />
+                        {neuralNote.meta.readTime ?? computedReadTime}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {(neuralNote.meta.tags ?? []).map((tag) => (
+                        <Badge
+                          key={tag}
+                          variant="outline"
+                          className="bg-white/20 backdrop-blur-sm text-white border-white/40"
+                        >
+                          <Tag className="mr-1 h-3 w-3" />
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4" />
-                    {neuralNote.meta.readTime ?? computedReadTime}
+                </div>
+              </header>
+            ) : (
+              /* Fallback: Standard Header when no banner */
+              <header className="space-y-6">
+                <div className="space-y-4">
+                  <h1 className="text-3xl md:text-4xl font-bold leading-tight">
+                    {neuralNote.meta.title}
+                  </h1>
+
+                  <div className="flex items-center gap-4 text-muted-foreground flex-wrap">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      {formatDate(neuralNote.meta.date)}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      {neuralNote.meta.readTime ?? computedReadTime}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    {(neuralNote.meta.tags ?? []).map((tag) => (
+                      <Badge key={tag} variant="outline">
+                        <Tag className="mr-1 h-3 w-3" />
+                        {tag}
+                      </Badge>
+                    ))}
                   </div>
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                  {(neuralNote.meta.tags ?? []).map((tag) => (
-                    <Badge key={tag} variant="outline">
-                      <Tag className="mr-1 h-3 w-3" />
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-
-              {/* Media Section */}
-              <MediaDisplay meta={neuralNote.meta} aspectRatio="video" />
-            </header>
+                {/* Media Section for video/audio */}
+                <MediaDisplay meta={neuralNote.meta} aspectRatio="video" />
+              </header>
+            )}
 
             {/* Article Content */}
             <div className="markdown-content max-w-none">
