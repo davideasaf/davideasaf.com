@@ -7,7 +7,7 @@ import Navigation from "@/components/Navigation";
 import NeuralNotes from "@/components/NeuralNotes";
 import ProjectShowcase from "@/components/ProjectShowcase";
 import { initAnalytics, useSectionsViewed } from "@/lib/analytics";
-import { SITE_NAME, SITE_URL, getAbsoluteUrl } from "@/lib/config";
+import { getAbsoluteUrl, SITE_NAME, SITE_URL } from "@/lib/config";
 
 const Index = () => {
   useSectionsViewed(["hero", "about", "projects", "neural-notes", "contact"], 0.5);
