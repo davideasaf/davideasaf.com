@@ -1,5 +1,9 @@
 import yaml from "js-yaml";
 
+// Site URL constants for absolute URLs in meta tags
+export const SITE_URL = "https://davideasaf.com";
+export const SITE_NAME = "David Asaf - AI Product Engineer";
+
 // Type definitions for site configuration
 export interface SiteConfig {
   site: {
@@ -180,6 +184,19 @@ export function getNeuralNoteOgImage(tags: string[] = [], title: string = ""): s
 
   // Default fallback - could be expanded for other categories
   return "/assets/blog/ai-workflow-example.png"; // For now, use the AI image as default
+}
+
+/**
+ * Convert a relative URL to an absolute URL for Open Graph and Twitter Card meta tags
+ */
+export function getAbsoluteUrl(path: string): string {
+  // If the path is already absolute (starts with http:// or https://), return it as-is
+  if (path.startsWith("http://") || path.startsWith("https://")) {
+    return path;
+  }
+  // If the path starts with /, remove it to avoid double slashes
+  const cleanPath = path.startsWith("/") ? path.slice(1) : path;
+  return `${SITE_URL}/${cleanPath}`;
 }
 
 // HMR: reset config cache on hot updates in development to avoid stale data

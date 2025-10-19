@@ -7,6 +7,7 @@ import Navigation from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ANALYTICS_EVENTS, captureEvent } from "@/lib/analytics";
+import { SITE_NAME, SITE_URL, getAbsoluteUrl } from "@/lib/config";
 import {
   type ContentItem,
   formatDate,
@@ -31,19 +32,41 @@ const NeuralNotes = () => {
     });
   }, [neuralNotes.length]);
 
+  const pageUrl = `${SITE_URL}/neural-notes`;
+  const pageTitle = "Neural Notes by David Asaf | AI Engineering Insights & Thought Leadership";
+  const pageDescription =
+    "Deep insights on AI, agentic workflows, and the future of intelligent systems by David Asaf. Thoughts from the frontier of AI product engineering in Charlotte, NC.";
+
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>Neural Notes by David Asaf | AI Engineering Insights & Thought Leadership</title>
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <link rel="canonical" href={pageUrl} />
+
+        {/* Open Graph tags */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={pageUrl} />
+        <meta property="og:site_name" content={SITE_NAME} />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
         <meta
-          name="description"
-          content="Deep insights on AI, agentic workflows, and the future of intelligent systems by David Asaf. Thoughts from the frontier of AI product engineering in Charlotte, NC."
+          property="og:image"
+          content={getAbsoluteUrl("/assets/blog/ai-workflow-example.png")}
         />
-        <meta property="og:title" content="Neural Notes by David Asaf | AI Thought Leadership" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="Neural Notes - AI Insights by David Asaf" />
+
+        {/* Twitter Card tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
         <meta
-          property="og:description"
-          content="Explore cutting-edge AI insights and thought leadership from David Asaf on generative AI, agentic workflows, and the future of intelligent systems."
+          name="twitter:image"
+          content={getAbsoluteUrl("/assets/blog/ai-workflow-example.png")}
         />
+        <meta name="twitter:image:alt" content="Neural Notes - AI Insights by David Asaf" />
       </Helmet>
       <Navigation />
       <div className="pt-20 pb-12">

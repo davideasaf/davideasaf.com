@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ANALYTICS_EVENTS, captureEvent } from "@/lib/analytics";
+import { SITE_NAME, SITE_URL, getAbsoluteUrl } from "@/lib/config";
 import { type ContentItem, formatDate, getProjectBySlug, type ProjectMeta } from "@/lib/content";
 
 const Project = () => {
@@ -129,18 +130,46 @@ const Project = () => {
       : project.meta.image
         ? "image"
         : null;
-  const ogImage = project.meta.banner ?? project.meta.image ?? undefined;
+  const ogImage = project.meta.banner ?? project.meta.image ?? "/assets/hero-bg-1200.jpg";
+  const pageUrl = `${SITE_URL}/projects/${project.slug}`;
+  const pageTitle = `${project.meta.title} - AI Project by David Asaf`;
 
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>{project.meta.title} - AI Project by David Asaf</title>
+        <title>{pageTitle}</title>
         <meta name="description" content={project.meta.description} />
-        <meta property="og:title" content={`${project.meta.title} - AI Project by David Asaf`} />
+        <link rel="canonical" href={pageUrl} />
+
+        {/* Open Graph tags */}
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={pageUrl} />
+        <meta property="og:site_name" content={SITE_NAME} />
+        <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={project.meta.description} />
-        {ogImage && <meta property="og:image" content={ogImage} />}
-        {project.meta.videoUrl && <meta property="og:video:url" content={project.meta.videoUrl} />}
-        <link rel="canonical" href={`https://davideasaf.com/projects/${project.slug}`} />
+        <meta property="og:image" content={getAbsoluteUrl(ogImage)} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content={project.meta.title} />
+        {project.meta.videoUrl && (
+          <>
+            <meta property="og:video" content={project.meta.videoUrl} />
+            <meta property="og:video:url" content={project.meta.videoUrl} />
+            <meta property="og:video:type" content="text/html" />
+          </>
+        )}
+        <meta property="article:published_time" content={project.meta.date} />
+        <meta property="article:author" content="David Asaf" />
+        {project.meta.tags.map((tag) => (
+          <meta key={tag} property="article:tag" content={tag} />
+        ))}
+
+        {/* Twitter Card tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={project.meta.description} />
+        <meta name="twitter:image" content={getAbsoluteUrl(ogImage)} />
+        <meta name="twitter:image:alt" content={project.meta.title} />
       </Helmet>
       <Navigation />
       <div className="pt-20 pb-12">

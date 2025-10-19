@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ANALYTICS_EVENTS, captureEvent, useObserveElementsOnce } from "@/lib/analytics";
+import { SITE_NAME, SITE_URL, getAbsoluteUrl } from "@/lib/config";
 import { type ContentItem, formatDate, loadProjects, type ProjectMeta } from "@/lib/content";
 
 const Projects = () => {
@@ -69,19 +70,35 @@ const Projects = () => {
     undefined,
     [projectObservationKey],
   );
+  const pageUrl = `${SITE_URL}/projects`;
+  const pageTitle = "AI Projects by David Asaf | Generative AI & Machine Learning Portfolio";
+  const pageDescription =
+    "Explore David Asaf's portfolio of AI and machine learning projects including neural content generation, agentic workflows, and intelligent automation systems.";
+
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>AI Projects by David Asaf | Generative AI & Machine Learning Portfolio</title>
-        <meta
-          name="description"
-          content="Explore David Asaf's portfolio of AI and machine learning projects including neural content generation, agentic workflows, and intelligent automation systems."
-        />
-        <meta property="og:title" content="AI Projects by David Asaf | Charlotte, NC" />
-        <meta
-          property="og:description"
-          content="Portfolio of innovative AI projects by David Asaf - Neural Content Generator, Agentic Workflow Orchestrator, and more."
-        />
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <link rel="canonical" href={pageUrl} />
+
+        {/* Open Graph tags */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={pageUrl} />
+        <meta property="og:site_name" content={SITE_NAME} />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:image" content={getAbsoluteUrl("/assets/hero-bg-1200.jpg")} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content="David Asaf AI Projects Portfolio" />
+
+        {/* Twitter Card tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+        <meta name="twitter:image" content={getAbsoluteUrl("/assets/hero-bg-1200.jpg")} />
+        <meta name="twitter:image:alt" content="David Asaf AI Projects Portfolio" />
       </Helmet>
       <Navigation />
       <div className="pt-20 pb-12">
