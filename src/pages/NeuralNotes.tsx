@@ -7,7 +7,7 @@ import Navigation from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ANALYTICS_EVENTS, captureEvent } from "@/lib/analytics";
-import { SITE_NAME, SITE_URL, getAbsoluteUrl } from "@/lib/config";
+import { getAbsoluteUrl, SITE_NAME, SITE_URL } from "@/lib/config";
 import {
   type ContentItem,
   formatDate,

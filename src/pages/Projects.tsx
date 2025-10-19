@@ -16,7 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ANALYTICS_EVENTS, captureEvent, useObserveElementsOnce } from "@/lib/analytics";
-import { SITE_NAME, SITE_URL, getAbsoluteUrl } from "@/lib/config";
+import { getAbsoluteUrl, SITE_NAME, SITE_URL } from "@/lib/config";
 import { type ContentItem, formatDate, loadProjects, type ProjectMeta } from "@/lib/content";
 
 const Projects = () => {

@@ -8,7 +8,7 @@ import Navigation from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ANALYTICS_EVENTS, captureEvent, useScrollProgressMilestones } from "@/lib/analytics";
-import { SITE_NAME, SITE_URL, getAbsoluteUrl } from "@/lib/config";
+import { getAbsoluteUrl, SITE_NAME, SITE_URL } from "@/lib/config";
 import {
   type ContentItem,
   formatDate,
