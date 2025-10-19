@@ -11,6 +11,47 @@ featured: true
 
 Over the past 72 hours, I've experienced a paradigm shift in how I think about AI-powered automation. Claude Skills has fundamentally changed my financial management workflow, and I believe it represents the future direction of agentic AI development.
 
+## How It Works: The Skill Workflow
+
+```mermaid
+%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#FF6B35', 'primaryTextColor':'#fff', 'primaryBorderColor':'#E55A2B', 'lineColor':'#FF6B35', 'secondaryColor':'#FFF5F2', 'tertiaryColor':'#FFE5DD', 'background':'#ffffff', 'mainBkg':'#FF6B35', 'secondaryBkg':'#FFF5F2', 'tertiaryBkg':'#FFE5DD', 'nodeBorder':'#E55A2B', 'clusterBkg':'#FFF5F2', 'clusterBorder':'#FF6B35', 'titleColor':'#2C3E50', 'edgeLabelBackground':'#ffffff', 'fontFamily':'system-ui'}}}%%
+flowchart TD
+    Start([📸 Upload Receipt]) --> Parse[Parse Receipt Items]
+
+    Parse --> Context{Need Context?}
+
+    Context -->|Categories| LoadCat[📥 Load Category Mappings]
+    Context -->|Transaction| LoadTx[📥 Load Transaction Data]
+    Context -->|Budget Rules| LoadBudget[📥 Load Budget Rules]
+
+    LoadCat --> Categorize[🏷️ Categorize Each Item]
+    LoadTx --> Categorize
+    LoadBudget --> Categorize
+
+    Categorize --> Split[✂️ Split Transaction]
+    Split --> Notes[📝 Add Itemized Notes]
+    Notes --> Update[💾 Update Monarch Money]
+
+    Update --> Done([✅ Done])
+
+    style Start fill:#FF6B35,stroke:#E55A2B,stroke-width:3px,color:#fff
+    style Done fill:#FF6B35,stroke:#E55A2B,stroke-width:3px,color:#fff
+    style Context fill:#FFE5DD,stroke:#FF6B35,stroke-width:2px,color:#2C3E50
+    style LoadCat fill:#FFF5F2,stroke:#FF6B35,stroke-width:2px,color:#2C3E50
+    style LoadTx fill:#FFF5F2,stroke:#FF6B35,stroke-width:2px,color:#2C3E50
+    style LoadBudget fill:#FFF5F2,stroke:#FF6B35,stroke-width:2px,color:#2C3E50
+    style Parse fill:#FFE5DD,stroke:#FF6B35,stroke-width:2px,color:#2C3E50
+    style Categorize fill:#FFE5DD,stroke:#FF6B35,stroke-width:2px,color:#2C3E50
+    style Split fill:#FFE5DD,stroke:#FF6B35,stroke-width:2px,color:#2C3E50
+    style Notes fill:#FFE5DD,stroke:#FF6B35,stroke-width:2px,color:#2C3E50
+    style Update fill:#FFE5DD,stroke:#FF6B35,stroke-width:2px,color:#2C3E50
+
+    classDef contextLoad fill:#FFF5F2,stroke:#FF6B35,stroke-width:2px,color:#2C3E50
+    class LoadCat,LoadTx,LoadBudget contextLoad
+```
+
+**Key insight**: Notice how context loads progressively - category mappings, transaction data, and budget rules only load when needed, not all at once. This is progressive context loading in action.
+
 ## The Challenge: Box Store Receipts
 
 I use Monarch Money to manage my finances, and while it's an excellent platform, there's always room for workflow improvements. Monarch Money recently released a Chrome extension that automatically breaks down purchases from Amazon and Target - it's been incredibly beneficial. But what about Costco? Walmart? Sam's Club?
@@ -33,7 +74,7 @@ Instead of a single "Walmart - $147.32" transaction, I now get properly categori
 
 This is where things get interesting from an architectural perspective.
 
-For my Monarch Money integration, I chose to build small TypeScript helper functions rather than importing a heavy MCP server with thousands of tokens of context. **This decision has proven transformative.**
+For my Monarch Money integration, I chose to build small custom helper tools rather than importing a heavy MCP server with thousands of tokens of context. **This decision, combined with progressive context loading, has proven transformative.**
 
 ### The Context Problem
 
@@ -50,30 +91,36 @@ More often than not, it won't remember. Massive context windows don't automatica
 
 Claude Skills introduces something more valuable than massive context windows: **progressive context loading**.
 
-Instead of dumping everything into context upfront, Skills allow you to:
-- Load information only when needed
-- Keep context focused and relevant
-- Maintain true "memory" of important details
-- Reduce token waste on irrelevant information
+This is the breakthrough that changes everything. Instead of dumping everything into context upfront, Skills intelligently load information only when it becomes relevant to the current task.
 
-For my Monarch Money skill, this means:
+Think of it like working memory versus a filing cabinet. You don't need every file on your desk at once - you need the right file at the right moment. Progressive context loading delivers exactly that:
+
+- **Load on demand**: Information arrives when needed, not before
+- **Stay focused**: Context remains relevant to the current task
+- **True memory**: Important details persist across interactions
+- **Zero waste**: No tokens spent on irrelevant information
+
+For my Monarch Money skill, this manifests beautifully:
 - Transaction history loads only when analyzing patterns
 - Category mappings load only when categorizing
 - Budget rules load only when validating splits
 - Receipt parsing utilities load only when processing receipts
 
-The result? A skill that "remembers" my financial preferences and patterns better than a 2M token context window ever could.
+The result? A skill that "remembers" my financial preferences and patterns better than a 2M token context window ever could. **Context efficiency matters more than context size.**
 
-## The TypeScript Advantage
+## The Custom Tools Advantage
 
-Building lightweight TypeScript functions within a skill provides several benefits:
+Building lightweight custom tools within a skill - whether in TypeScript, Python, or any language with execution capability - provides several benefits:
 
-**Precision**: Each function does exactly what I need, nothing more
+**Precision**: Each tool does exactly what I need, nothing more
+**Flexibility**: Use any language or runtime that fits your workflow
 **Performance**: No bloat from unused MCP server capabilities
 **Maintainability**: Simple, focused code that's easy to update
-**Context efficiency**: Only the relevant function context loads per task
+**Context efficiency**: Only the relevant tool context loads per task
 
 Compare this to importing a full-featured financial MCP server that might include hundreds of functions I'll never use, each consuming precious context tokens.
+
+The real power isn't the language choice - it's the ability to include custom code execution within your skill. As long as you provide the execution environment, Claude can leverage your tools effectively.
 
 ## The Future of Agentic AI
 
@@ -98,8 +145,8 @@ But more importantly, it's shown me a better way to build AI workflows - one tha
 If you're building AI automation workflows, I highly recommend exploring Claude Skills:
 
 1. **Start small**: Build focused, single-purpose skills
-2. **Think progressive**: Load context when needed, not upfront
-3. **Keep it light**: Simple TypeScript functions often beat heavy servers
+2. **Think progressive**: Embrace progressive context loading - information when needed, not upfront
+3. **Keep it light**: Simple custom tools often beat heavy MCP servers
 4. **Measure impact**: Context efficiency matters more than context size
 
 The financial management use case is just one example. The principles apply to any domain where you need AI to "remember" preferences, patterns, and processes across multiple interactions.
