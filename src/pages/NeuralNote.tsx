@@ -8,6 +8,7 @@ import Navigation from "@/components/Navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ANALYTICS_EVENTS, captureEvent, useScrollProgressMilestones } from "@/lib/analytics";
+import { SITE_NAME, SITE_URL, getAbsoluteUrl } from "@/lib/config";
 import {
   type ContentItem,
   formatDate,
@@ -98,27 +99,47 @@ const NeuralNote = () => {
     );
   }
 
+  const pageUrl = `${SITE_URL}/neural-notes/${slug}`;
+  const pageTitle = `${neuralNote.meta.title} - Neural Notes by David Asaf`;
+  const ogImage = getNeuralNoteOgImage(neuralNote.meta.tags, neuralNote.meta.title);
+
   return (
     <div className="min-h-screen bg-background">
       <Helmet>
-        <title>{neuralNote.meta.title} - Neural Notes by David Asaf</title>
+        <title>{pageTitle}</title>
         <meta name="description" content={neuralNote.meta.excerpt} />
         <meta name="author" content="David Asaf" />
+        <link rel="canonical" href={pageUrl} />
+
+        {/* Open Graph tags */}
+        <meta property="og:type" content="article" />
+        <meta property="og:url" content={pageUrl} />
+        <meta property="og:site_name" content={SITE_NAME} />
         <meta property="og:title" content={neuralNote.meta.title} />
         <meta property="og:description" content={neuralNote.meta.excerpt} />
-        <meta property="og:type" content="article" />
-        <meta
-          property="og:image"
-          content={getNeuralNoteOgImage(neuralNote.meta.tags, neuralNote.meta.title)}
-        />
-        <meta property="article:author" content="David Asaf" />
+        <meta property="og:image" content={getAbsoluteUrl(ogImage)} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:image:alt" content={neuralNote.meta.title} />
         <meta property="article:published_time" content={neuralNote.meta.date} />
+        <meta property="article:author" content="David Asaf" />
+        {(neuralNote.meta.tags ?? []).map((tag) => (
+          <meta key={tag} property="article:tag" content={tag} />
+        ))}
+        {neuralNote.meta.videoUrl && (
+          <>
+            <meta property="og:video" content={neuralNote.meta.videoUrl} />
+            <meta property="og:video:url" content={neuralNote.meta.videoUrl} />
+            <meta property="og:video:type" content="text/html" />
+          </>
+        )}
+
+        {/* Twitter Card tags */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta
-          name="twitter:image"
-          content={getNeuralNoteOgImage(neuralNote.meta.tags, neuralNote.meta.title)}
-        />
-        <link rel="canonical" href={`https://davidasaf.com/neural-notes/${slug}`} />
+        <meta name="twitter:title" content={neuralNote.meta.title} />
+        <meta name="twitter:description" content={neuralNote.meta.excerpt} />
+        <meta name="twitter:image" content={getAbsoluteUrl(ogImage)} />
+        <meta name="twitter:image:alt" content={neuralNote.meta.title} />
       </Helmet>
       <Navigation />
       <div className="pt-20 pb-12">
