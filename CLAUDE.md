@@ -51,7 +51,21 @@ This is a React-based portfolio website built with modern web technologies:
 - MDX support for rich content with custom remark plugins
 
 ### Content Creation
-Projects and neural notes use YAML frontmatter in Markdown files. Key fields include:
+
+**CRITICAL: File Extension Requirements**
+
+All content files MUST use the `.mdx` extension, NOT `.md`:
+- Neural Notes: `/content/neural-notes/*.mdx` (NOT .md)
+- Projects: `/content/projects/*.mdx` (NOT .md)
+
+The content loading system uses `import.meta.glob("/content/neural-notes/*.mdx")` and `import.meta.glob("/content/projects/*.mdx")` (see `src/lib/content.ts`). Files with `.md` extension will be ignored and will NOT appear on the site.
+
+**When creating new content:**
+1. Always use `.mdx` extension
+2. Verify the file appears in the glob pattern
+3. Test that the content loads correctly on the site
+
+Projects and neural notes use YAML frontmatter in MDX files. Key fields include:
 - `title`, `description`, `date`, `tags`
 - Projects: `github`, `demo`, `featured`
 - Neural Notes: `excerpt`, `hasVideo`, `videoUrl`
