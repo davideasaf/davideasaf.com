@@ -1,10 +1,17 @@
 ---
 title: "Managing Money - Claude Skills Edition"
-date: "2025-10-19"
-description: "How Claude Skills revolutionized my financial management workflow through intelligent context control and lightweight integrations"
+date: "2024-10-19"
+author: "David Asaf"
 excerpt: "Discover how Claude Skills' progressive context loading transformed my Monarch Money workflow - from receipt categorization to transaction splitting - proving that smart context management beats massive token windows every time."
-tags: ["AI", "Claude", "Financial Management", "Automation", "Developer Tools"]
+tags:
+  - "AI"
+  - "Claude"
+  - "Financial Management"
+  - "Automation"
+  - "Developer Tools"
 featured: true
+hasVideo: false
+hasAudio: false
 ---
 
 # Managing Money - Claude Skills Edition
@@ -13,42 +20,7 @@ Over the past 72 hours, I've experienced a paradigm shift in how I think about A
 
 ## How It Works: The Skill Workflow
 
-```mermaid
-%%{init: {'theme':'base', 'themeVariables': { 'primaryColor':'#FF6B35', 'primaryTextColor':'#fff', 'primaryBorderColor':'#E55A2B', 'lineColor':'#FF6B35', 'secondaryColor':'#FFF5F2', 'tertiaryColor':'#FFE5DD', 'background':'#ffffff', 'mainBkg':'#FF6B35', 'secondaryBkg':'#FFF5F2', 'tertiaryBkg':'#FFE5DD', 'nodeBorder':'#E55A2B', 'clusterBkg':'#FFF5F2', 'clusterBorder':'#FF6B35', 'titleColor':'#2C3E50', 'edgeLabelBackground':'#ffffff', 'fontFamily':'system-ui'}}}%%
-flowchart TD
-    Start([📸 Upload Receipt]) --> Parse[Parse Receipt Items]
-
-    Parse --> Context{Need Context?}
-
-    Context -->|Categories| LoadCat[📥 Load Category Mappings]
-    Context -->|Transaction| LoadTx[📥 Load Transaction Data]
-    Context -->|Budget Rules| LoadBudget[📥 Load Budget Rules]
-
-    LoadCat --> Categorize[🏷️ Categorize Each Item]
-    LoadTx --> Categorize
-    LoadBudget --> Categorize
-
-    Categorize --> Split[✂️ Split Transaction]
-    Split --> Notes[📝 Add Itemized Notes]
-    Notes --> Update[💾 Update Monarch Money]
-
-    Update --> Done([✅ Done])
-
-    style Start fill:#FF6B35,stroke:#E55A2B,stroke-width:3px,color:#fff
-    style Done fill:#FF6B35,stroke:#E55A2B,stroke-width:3px,color:#fff
-    style Context fill:#FFE5DD,stroke:#FF6B35,stroke-width:2px,color:#2C3E50
-    style LoadCat fill:#FFF5F2,stroke:#FF6B35,stroke-width:2px,color:#2C3E50
-    style LoadTx fill:#FFF5F2,stroke:#FF6B35,stroke-width:2px,color:#2C3E50
-    style LoadBudget fill:#FFF5F2,stroke:#FF6B35,stroke-width:2px,color:#2C3E50
-    style Parse fill:#FFE5DD,stroke:#FF6B35,stroke-width:2px,color:#2C3E50
-    style Categorize fill:#FFE5DD,stroke:#FF6B35,stroke-width:2px,color:#2C3E50
-    style Split fill:#FFE5DD,stroke:#FF6B35,stroke-width:2px,color:#2C3E50
-    style Notes fill:#FFE5DD,stroke:#FF6B35,stroke-width:2px,color:#2C3E50
-    style Update fill:#FFE5DD,stroke:#FF6B35,stroke-width:2px,color:#2C3E50
-
-    classDef contextLoad fill:#FFF5F2,stroke:#FF6B35,stroke-width:2px,color:#2C3E50
-    class LoadCat,LoadTx,LoadBudget contextLoad
-```
+![Monarch Money Claude Skill Workflow](/assets/monarch-money-workflow.png)
 
 **Key insight**: Notice how context loads progressively - category mappings, transaction data, and budget rules only load when needed, not all at once. This is progressive context loading in action.
 
@@ -161,4 +133,4 @@ That's the real game changer.
 
 ---
 
-*Want to learn more about building Claude Skills? Check out the [official documentation](https://docs.anthropic.com/en/docs/build-with-claude/claude-skills) or explore my [Monarch Money skill on GitHub](https://github.com/yourusername/monarch-money-claude-skill).*
+*Want to learn more about building Claude Skills? Check out the [official documentation](https://docs.anthropic.com/en/docs/build-with-claude/claude-skills).*
