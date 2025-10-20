@@ -1,0 +1,27 @@
+%%{init: {'theme':'base', 'themeVariables': { 'edgeLabelBackground':'#fff', 'primaryTextColor':'#000', 'lineColor':'#999', 'arrowheadColor':'#999'}}}%%
+graph TD
+    Start[🧾 User Uploads Receipt] --> Parse[🤖 Claude: Parse Receipt Items]
+    Parse --> Find[🔍 Script: npm run find<br/>Search Transaction by Date/Merchant]
+    Find --> Categories[📂 Script: npm run categories<br/>Get Categories from Local Cache]
+
+    Categories --> Categorize[🤖 Claude: Group Items by Category<br/>Create splits.json with Notes]
+    Categorize --> Validate[✅ Script: npm run validate<br/>Check Amounts Sum & Category IDs]
+
+    Validate --> Decision{Valid?}
+    Decision -->|No| Error[❌ Show Error to User]
+    Decision -->|Yes| Split[✂️ Script: npm run split-receipt<br/>Split Transaction + Add Notes]
+
+    Split --> Done[✅ Done: Transaction Split<br/>with Itemized Notes in Monarch]
+
+    style Parse fill:#FFE5CC,stroke:#FF6B35,stroke-width:2px,color:#000
+    style Categorize fill:#FFE5CC,stroke:#FF6B35,stroke-width:2px,color:#000
+    style Find fill:#E3F2FD,stroke:#2196F3,stroke-width:2px,color:#000
+    style Categories fill:#E3F2FD,stroke:#2196F3,stroke-width:2px,color:#000
+    style Validate fill:#E3F2FD,stroke:#2196F3,stroke-width:2px,color:#000
+    style Split fill:#E3F2FD,stroke:#2196F3,stroke-width:2px,color:#000
+    style Start fill:#FF6B35,color:#fff,stroke:#FF6B35,stroke-width:3px
+    style Done fill:#4CAF50,color:#fff,stroke:#4CAF50,stroke-width:3px
+    style Error fill:#f44336,color:#fff,stroke:#f44336,stroke-width:2px
+    style Decision fill:#FFF3E0,stroke:#FF6B35,stroke-width:2px,color:#000
+
+    linkStyle default stroke:#999,stroke-width:2px

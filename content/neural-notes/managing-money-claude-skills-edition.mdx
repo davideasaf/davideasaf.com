@@ -20,9 +20,13 @@ Over the past 72 hours, I've experienced a paradigm shift in how I think about A
 
 ## How It Works: The Skill Workflow
 
+<a href="../../src/assets/blog/monarch-money-workflow.png" target="_blank" style={{ display: 'block', maxWidth: '650px', margin: '0 auto', cursor: 'pointer' }}>
+
 ![Monarch Money Claude Skill Workflow](../../src/assets/blog/monarch-money-workflow.png "sizes=(min-width: 768px) 720px, 100vw; widths=400,800,1200; formats=avif,webp,jpg; q=85")
 
-**Key insight**: Notice how context loads progressively - category mappings, transaction data, and budget rules only load when needed, not all at once. This is progressive context loading in action.
+</a>
+
+**Key insight**: Notice how Claude orchestrates multiple focused scripts - finding transactions, loading cached categories, validating splits, and executing changes. Each script does one thing well, and Claude chains them together intelligently. *(Click diagram to enlarge)*
 
 ## The Challenge: Box Store Receipts
 
@@ -123,6 +127,19 @@ If you're building AI automation workflows, I highly recommend exploring Claude 
 
 The financial management use case is just one example. The principles apply to any domain where you need AI to "remember" preferences, patterns, and processes across multiple interactions.
 
+## Explore the Code
+
+Want to see how it works? The complete skill implementation is open source:
+
+**Repository:** [davideasaf/davideasaf-marketplace](https://github.com/davideasaf/davideasaf-marketplace/tree/main/monarch-money/skills/monarch-money-handling)
+
+Key files to explore:
+- [`SKILL.md`](https://github.com/davideasaf/davideasaf-marketplace/blob/main/monarch-money/skills/monarch-money-handling/SKILL.md) - Complete skill documentation
+- [`scripts/`](https://github.com/davideasaf/davideasaf-marketplace/tree/main/monarch-money/skills/monarch-money-handling/scripts) - TypeScript implementation
+- [`SCRIPTS_REFERENCE.md`](https://github.com/davideasaf/davideasaf-marketplace/blob/main/monarch-money/skills/monarch-money-handling/SCRIPTS_REFERENCE.md) - Detailed script documentation
+
+The skill uses the [monarchmoney-ts](https://github.com/keithah/monarchmoney-ts) SDK with custom GraphQL queries adapted from browser network traffic.
+
 ## Conclusion
 
 Claude Skills represents a maturation of the agentic AI space. We're moving beyond the "bigger is better" mentality of context windows toward smarter, more efficient context management.
@@ -133,4 +150,4 @@ That's the real game changer.
 
 ---
 
-*Want to learn more about building Claude Skills? Check out the [official documentation](https://docs.anthropic.com/en/docs/build-with-claude/claude-skills).*
+*Want to learn more about building Claude Skills? Check out the [official documentation](https://docs.anthropic.com/en/docs/build-with-claude/claude-skills). Want to try this skill? Get it from the [davideasaf-marketplace repository](https://github.com/davideasaf/davideasaf-marketplace/tree/main/monarch-money/skills/monarch-money-handling).*
